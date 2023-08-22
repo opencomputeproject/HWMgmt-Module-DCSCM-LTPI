@@ -1,0 +1,514 @@
+/////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2022 Intel Corporation
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
+/////////////////////////////////////////////////////////////////////////////////
+
+// -------------------------------------------------------------------
+// -- Author        : Katarzyna Krzewska
+// -- Date          : August 2022
+// -- Project Name  : LTPI
+// -- Description   :
+// -- Description of Control and Status Registers reduce to Lattice register
+// -------------------------------------------------------------------
+
+addrmap ltpi_csr_light {
+    name = "LTPI CSR";
+    desc = "Description of Control and Status Registers";
+
+    default regwidth = 32;
+    default sw = rw;
+    default hw = r;
+
+    reg {
+        name = "LTPI link Status";
+
+        field {
+            desc = "Local LTPI Link State (SCM)";
+            sw = r;
+            hw = rw;
+        } local_link_state [19:16] = 0;
+
+        field {
+            desc = "Remote LTPI Link State (HPM)";
+            sw = r;
+            hw = rw;
+        } remote_link_state [15:12] = 0;
+
+        field {
+            desc = "LTPI Link Speed";
+            sw = r;
+            hw = rw;
+        } link_speed [11:8] = 0;
+
+        field {
+            desc = "DDR Mode";
+            sw = r;
+            hw = rw;
+        } DDR_mode [7:7] = 0;
+
+        field {
+            desc = "Link Configure/Accept Timeout Error";
+            sw = rw;
+            hw = rw;
+            woclr;
+        } link_cfg_acpt_timeout_error [5:5] = 0;
+
+        field {
+            desc = "Link Speed Timeout Error";
+            sw = rw;
+            hw = rw;
+            woclr;
+        } link_speed_timeout_error [4:4] = 0;
+
+        field {
+            desc = "Unknown Comma Symbol Error";
+            sw = rw;
+            hw = rw;
+            woclr;
+        } unknown_comma_error [3:3] = 0;
+
+        field {
+            desc = "Frame CRC error";
+            sw = rw;
+            hw = rw;
+            woclr;
+        } frm_CRC_error [2:2] = 0;
+
+        field {
+            desc = "LTPI Link Lost Error";
+            sw = rw;
+            hw = rw;
+            woclr;
+        } link_lost_error [1:1] = 0;
+
+        field {
+            desc = "LTPI Link Aligned";
+            sw = r;
+            hw = rw;
+        } aligned [0:0] = 0;
+    } LTPI_Link_Status @ 0x0;
+
+    reg {
+        name = "LTPI Detect Capabilities Local";
+
+        field {
+            desc = "Link Speed Capabilities";
+            sw = rw;
+            hw = r;
+        } link_Speed_capab [23:8] = 0x800F;
+
+        field {
+            
+            desc = "Local LTPI Major Version";
+            sw = r;
+            hw = r;
+        } local_Major_Version [7:4] = 0x1;
+
+        field {
+            desc = "Local LTPI Minor Version";
+            sw = r;
+            hw = r;
+        } local_Minor_Version [3:0] = 0x1; 
+    } LTPI_Detect_Capabilities_Local @ 0x4;
+
+    reg {
+        name = "LTPI Detect Capabilities Remote";
+
+        field {
+            desc = "Link Speed Capabilities";
+            sw = r;
+            hw = rw;
+        } link_Speed_capab [23:8] = 0;
+
+        field {
+            desc = "Remote LTPI Major Version";
+            sw = r;
+            hw = rw;
+        } remote_Major_Version [7:4] = 0;
+
+        field {
+            desc = "Remote LTPI Minor Version";
+            sw = r;
+            hw = rw;
+        } remote_Minor_Version [3:0] = 0;
+    } LTPI_Detect_Capabilities_Remote @ 0x8;
+
+    reg {
+        name = "LTPI Platform ID Local";
+
+        field {
+            desc = "Local LTPI Platform ID";
+            sw = r;
+            hw = r;
+        } platform_ID_local [15:0] = 0x1234;
+    } LTPI_platform_ID_local @ 0xC;
+
+    // reg {
+    //     name = "LTPI Platform ID Remote";
+
+    //     field {
+    //         desc = "Remote LTPI Platform ID";
+    //         sw = r;
+    //         hw = rw;
+    //     } platform_ID_remote [15:0] = 0;
+    // } LTPI_platform_ID_remote @ 0x10;
+
+    reg {
+        name = "LTPI Advertise Capabilities Local Low";
+        field {
+            desc = "I2C Channels support Echo mode";
+            sw = rw;
+            hw = rw;
+        } I2C_channel_echo_support [30:30] = 0x0;
+        field {
+            desc = "I2C Channels enable";
+            sw = rw;
+            hw = rw;
+        } I2C_channel_en [29:24] = 0x0;
+
+        field {
+            desc = "Normal Latancy GPIO Channel Capabilities";
+            sw = rw;
+            hw = rw;
+        } NL_GPIO_nb [17:8] = 0x0;
+
+        field {
+            desc = "Supported Channels";
+            sw = rw;
+            hw = rw;
+        } supported_channel [4:0] = 0x0;
+    } LTPI_Advertise_Capab_local_LOW @ 0x14;
+
+    reg {
+        name = "LTPI Advertise Capabilities Local High";
+        field {
+            desc = "OEM Capabilities";
+            sw = rw;
+            hw = rw;
+        } OEM_capab[31:16] = 0x0;
+
+        field {
+            desc = "UART Channel Capabilities";
+            sw = rw;
+            hw = rw;
+        } UART_channel_cpbl [14:8] = 0x0;
+
+        field {
+            desc = "I2C Channels speed";
+            sw = rw;
+            hw = rw;
+        } I2C_channel_speed [5:0] = 0;
+    } LTPI_Advertise_Capab_local_HIGH @ 0x18;
+
+    reg {
+        name = "LTPI Advertise Capabilities Remote Low";
+        field {
+            desc = "I2C Channels support Echo mode";
+            sw = r;
+            hw = rw;
+        } I2C_channel_echo_support [30:30] = 0x0;
+        field {
+            desc = "I2C Channels enable";
+            sw = r;
+            hw = rw;
+        } I2C_channel_en [29:24] = 0;
+
+        field {
+            desc = "Normal Latancy GPIO Channel Capabilities";
+            sw = r;
+            hw = rw;
+        } NL_GPIO_nb [17:8] = 0;
+
+        field {
+            desc = "Supported Channels";
+            sw = r;
+            hw = rw;
+        } supported_channel [4:0] = 0x0;
+    } LTPI_Advertise_Capab_remote_LOW @ 0x1C;
+
+    reg {
+        name = "LTPI Advertise Capabilities Remote High";
+        field {
+            desc = "OEM Capabilities";
+            sw = r;
+            hw = rw;
+        } OEM_capab[31:16] = 0x0;
+
+        field {
+            desc = "UART Channel Capabilities";
+            sw = r;
+            hw = rw;
+        } UART_channel_cpbl [14:8] = 0x0;
+
+        field {
+            desc = "I2C Channels speed";
+            sw = r;
+            hw = rw;
+        } I2C_channel_speed [5:0] = 0;
+    } LTPI_Advertise_Capab_remote_HIGH @ 0x20;
+
+    reg {
+        name = "LTPI Default Configuration Low";
+        field {
+            desc = "I2C Channels support Echo mode";
+            sw = r;
+            hw = r;
+        } I2C_channel_echo_support [30:30] = 0x1;
+        field {
+            desc = "I2C Channels enable";
+            sw = r;
+            hw = r;
+        } I2C_channel_en [29:24] = 0x3F; 
+
+        field {
+            desc = "Normal Latancy GPIO Channel Capabilities";
+            sw = r;
+            hw = r;
+        } NL_GPIO_nb [17:8] = 0x3FF;
+
+        field {
+            desc = "Supported Channels";
+            sw = r;
+            hw = r;
+        } supported_channel [4:0] = 0x7;
+    } LTPI_Config_Capab_LOW @ 0x24;
+
+    reg {
+        name = "LTPI Default Configuration High";
+        field {
+            desc = "OEM Capabilities";
+            sw = r;
+            hw = r;
+        } OEM_capab[31:16] = 0x00;
+
+        field {
+            desc = "UART Channel Capabilities";
+            sw = r;
+            hw = r;
+        } UART_channel_cpbl [14:8] = 0x08;
+
+        field {
+            desc = "I2C Channels speed";
+            sw = r;
+            hw = r;
+        } I2C_channel_speed [5:0] = 0; 
+    } LTPI_Config_Capab_HIGH @ 0x28;
+
+    // reg {
+    //     name = "LTPI Link Alignment Error Counter";
+
+    //     field {
+    //         desc = "LTPI Link Alignment Error Counter";
+    //         sw = rw;
+    //         hw = rw;
+    //         woclr;
+    //     } err_cnt [31:0] = 0;
+    // } link_aligment_err_cnt @ 0x2C;
+
+    // reg {
+    //     name = "LTPI Link Lost Error Counter";
+
+    //     field {
+    //         desc = "LTPI Link Lost Error Counter";
+    //         sw = rw;
+    //         hw = rw;
+    //         woclr;
+    //     } err_cnt [31:0] = 0;
+    // } link_lost_err_cnt @ 0x30;
+
+    // reg {
+    //     name = "LTPI CRC Error Counter";
+
+    //     field {
+    //         desc = "LTPI CRC Error Counter";
+    //         sw = rw;
+    //         hw = rw;
+    //         woclr;
+    //     } err_cnt [31:0] = 0;
+    // } link_crc_err_cnt @ 0x34;
+
+    // reg {
+    //     name = "LTPI Unknown Comma Error Counter";
+
+    //     field {
+    //         desc = "LTPI Unknown Comma Error Counter";
+    //         sw = rw;
+    //         hw = rw;
+    //         woclr;
+    //     } err_cnt [31:0] = 0;
+    // } unknown_comma_err_cnt @ 0x38;
+
+    // reg {
+    //     name = "LTPI Link Speed Timeout Error Counter";
+
+    //     field {
+    //         desc = "LTPI Link Speed Timeout Error Counter";
+    //         sw = rw;
+    //         hw = rw;
+    //         woclr;
+    //     } err_cnt [31:0] = 0;
+    // } link_speed_timeout_err_cnt @ 0x3C;
+
+    // reg {
+    //     name = "LTPI Link Configure/Accept Timeout Error Counter";
+
+    //     field {
+    //         desc = "LTPI Link Configure/Accept Timeout Error Counter";
+    //         sw = rw;
+    //         hw = rw;
+    //         woclr;
+    //     } err_cnt [31:0] = 0;
+    // } link_cfg_acpt_timeout_err_cnt @ 0x40;
+
+    // reg {
+    //     name = "Link Training RX Frames Counter Low";
+
+    //     field {
+    //         desc = "Link Configure/Accept Frames Received Counter";
+    //         sw = rw;
+    //         hw = rw;
+    //         woclr;
+    //     } link_cfg_acpt_frm_cnt [31:24] = 0;
+
+    //     field {
+    //         desc = "Link Speed Frames Received Counter";
+    //         sw = rw;
+    //         hw = rw;
+    //         woclr;
+    //     } link_speed_frm_cnt [23:16] = 0;
+
+    //     field {
+    //         desc = "Link Detect Frames Received Counter";
+    //         sw = rw;
+    //         hw = rw;
+    //         woclr;
+    //     } link_detect_frm_cnt [15:0] = 0;
+    // } linkig_training_frm_rcv_cnt_low @ 0x44;
+
+    // reg {
+    //     name = "Link Training RX Frames Counter High";
+
+    //     field {
+    //         desc = "Link Advertise Frames Received Counter";
+    //         sw = rw;
+    //         hw = rw;
+    //         woclr;
+    //     } link_advertise_frm_cnt [31:0] = 0;
+    // } linkig_training_frm_rcv_cnt_high @ 0x48;
+
+    // reg {
+    //     name = "Link Training TX Frames Counter Low";
+
+    //     field {
+    //         desc = "Link Configure/Accept Frames Sent Counter";
+    //         sw = rw;
+    //         hw = rw;
+    //         woclr;
+    //     } link_cfg_acpt_frm_cnt [31:24] = 0;
+
+    //     field {
+    //         desc = "Link Speed Frames Sent Counter";
+    //         sw = rw;
+    //         hw = rw;
+    //         woclr;
+    //     } link_speed_frm_cnt [23:16] = 0;
+
+    //     field {
+    //         desc = "Link Detect Frames Sent Counter";
+    //         sw = rw;
+    //         hw = rw;
+    //         woclr;
+    //     } link_detect_frm_cnt [15:0] = 0;
+    // } linkig_training_frm_snt_cnt_low @ 0x4C;
+
+    // reg {
+    //     name = "Link Training TX Frames Counter High";
+
+    //     field {
+    //         desc = "Link Advertise Frames Sent Counter";
+    //         sw = rw;
+    //         hw = rw;
+    //         woclr;
+    //     } link_advertise_frm_cnt [31:0] = 0;
+    // } linkig_training_frm_snt_cnt_high @ 0x50;
+
+    // reg {
+    //     name = "Operational RX Frames Counter";
+
+    //     field {
+    //         desc = "Operational Frames Received";
+    //         sw = rw;
+    //         hw = rw;
+    //         woclr;
+    //     } frm_cnt [31:0] = 0;
+    // } operational_frm_rcv_cnt @ 0x54;
+
+    // reg {
+    //     name = "Operational TX Frames Counter";
+
+    //     field {
+    //         desc = "Operational Frames Transmitted";
+    //         sw = rw;
+    //         hw = rw;
+    //         woclr;
+    //     } frm_cnt [31:0] = 0;
+    // } operational_frm_snt_cnt @ 0x58;
+
+    reg {
+        name = "LTPI Link Control";
+
+        field {
+            desc = "Trigger Configuration State";
+            sw = rw;
+            hw = r;
+        } trigger_config_st [11:11] = 1;
+
+        field {
+            desc = "Automatically Move to Configuration State";
+            sw = rw;
+            hw = r;
+        } auto_move_config [10:10] = 0; 
+
+        field {
+            desc = "Data Channel Reset";
+            sw = rw;
+            hw = r;
+        } data_channel_reset [9:9] = 0; 
+
+        field {
+            desc = "LTPI I2C Channel Reset";
+            sw = rw;
+            hw = r;
+        } I2C_channel_reset [8:2] = 0;
+
+        field {
+            desc = "LTPI Link Retraining Reset";
+            sw = rw;
+            hw = r;
+        } retraining_req [1:1] = 0;
+
+        field {
+            desc = "LTPI Link Software Reset";
+            sw = rw;
+            hw = r;
+        } software_reset [0:0] = 0;
+    } LTPI_Link_Ctrl @ 0x80;
+
+};

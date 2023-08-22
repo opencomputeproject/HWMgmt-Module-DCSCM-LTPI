@@ -1,0 +1,300 @@
+/////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2022 Intel Corporation
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
+/////////////////////////////////////////////////////////////////////////////////
+
+// -------------------------------------------------------------------
+// -- Author        : Jakub Wiczynski
+// -- Date          : October 2022
+// -- Project Name  : LTPI
+// -- Description   :
+// -- Description of Control and Status Registers for Data Channel Controller
+// -------------------------------------------------------------------
+
+addrmap ltpi_data_channel_controller_csr_rdl {
+    name = "LTPI DATA CHANNEL Controller Dev CSR";
+    desc = "Description of Control and Status Registers";
+
+    default regwidth = 8;
+    default sw = rw;
+    default hw = r;
+
+    reg {
+        name = "Request Command";
+
+        field {
+            desc = "Command";
+            sw = rw;
+            hw = r;
+        } cmd [7:0] = 0;
+    } REQ_CMD @ 0x400;
+
+    reg {
+        name = "Request TAG";
+
+        field {
+            desc = "Tag";
+            sw = rw;
+            hw = r;
+        } tag [7:0] = 0;
+    } REQ_TAG @ 0x401;
+
+    reg {
+        name = "Request Byte Enable";
+
+        field {
+            desc = "Byte Enable";
+            sw = rw;
+            hw = r;
+        } ben [3:0] = 0;
+    } REQ_BEN @ 0x402;
+
+    reg {
+        name = "Request Address [7:0]";
+
+        field {
+            desc = "Address[7:0]";
+            sw   = rw;
+            hw   = r;
+        } addr [7:0] = 0;
+    } REQ_ADDR0 @ 0x404;
+
+    reg {
+        name = "Request Address [15:8]";
+
+        field {
+            desc = "Address[15:8]";
+            sw   = rw;
+            hw   = r;
+        } addr [7:0] = 0;
+    } REQ_ADDR1 @ 0x405;
+
+    reg {
+        name = "Request Address [23:16]";
+
+        field {
+            desc = "Address[23:16]";
+            sw   = rw;
+            hw   = r;
+        } addr [7:0] = 0;
+    } REQ_ADDR2 @ 0x406;
+
+    reg {
+        name = "Request Address [31:24]";
+
+        field {
+            desc = "Address[31:24]";
+            sw   = rw;
+            hw   = r;
+        } addr [7:0] = 0;
+    } REQ_ADDR3 @ 0x407;
+
+    reg {
+        name = "Request Data [7:0]";
+
+        field {
+            desc = "Data[7:0]";
+            sw   = rw;
+            hw   = r;
+        } data [7:0] = 0;
+    } REQ_DATA0 @ 0x408;
+
+    reg {
+        name = "Request Data [15:8]";
+
+        field {
+            desc = "Data[15:8]";
+            sw   = rw;
+            hw   = r;
+        } data [7:0] = 0;
+    } REQ_DATA1 @ 0x409;
+
+    reg {
+        name = "Request Data [23:16]";
+
+        field {
+            desc = "Data[23:16]";
+            sw   = rw;
+            hw   = r;
+        } data [7:0] = 0;
+    } REQ_DATA2 @ 0x40A;
+
+    reg {
+        name = "Request Data [31:24]";
+
+        field {
+            desc = "Data[31:24]";
+            sw   = rw;
+            hw   = r;
+        } data [7:0] = 0;
+    } REQ_DATA3 @ 0x40B;
+
+    reg {
+        name = "Response Command";
+
+        field {
+            desc = "Command";
+            sw = r;
+            hw = w;
+        } cmd [7:0] = 0;
+    } RESP_CMD @ 0x40C;
+
+    reg {
+        name = "Response TAG";
+
+        field {
+            desc = "Tag";
+            sw = r;
+            hw = w;
+        } tag [7:0] = 0;
+    } RESP_TAG @ 0x40D;
+
+    reg {
+        name = "Response Byte Enable";
+
+        field {
+            desc = "Byte Enable";
+            sw = r;
+            hw = w;
+        } ben [3:0] = 0;
+    } RESP_BEN @ 0x40E;
+
+    reg {
+        name = "Reponse Status";
+
+        field {
+            desc = "Status";
+            sw = r;
+            hw = w;
+        } status [3:0] = 0;
+    } RESP_STATUS @ 0x40F;
+
+    reg {
+        name = "Response Address [7:0]";
+
+        field {
+            desc = "Address[7:0]";
+            sw   = r;
+            hw   = w;
+        } addr [7:0] = 0;
+    } RESP_ADDR0 @ 0x410;
+
+    reg {
+        name = "Response Address [15:8]";
+
+        field {
+            desc = "Address[15:8]";
+            sw   = r;
+            hw   = w;
+        } addr [7:0] = 0;
+    } RESP_ADDR1 @ 0x411;
+
+    reg {
+        name = "Response Address [23:16]";
+
+        field {
+            desc = "Address[23:16]";
+            sw   = r;
+            hw   = w;
+        } addr [7:0] = 0;
+    } RESP_ADDR2 @ 0x412;
+
+    reg {
+        name = "Response Address [31:24]";
+
+        field {
+            desc = "Address[31:24]";
+            sw   = r;
+            hw   = w;
+        } addr [7:0] = 0;
+    } RESP_ADDR3 @ 0x413;
+
+    reg {
+        name = "Response Data [7:0]";
+
+        field {
+            desc = "Data[7:0]";
+            sw   = r;
+            hw   = w;
+        } data [7:0] = 0;
+    } RESP_DATA0 @ 0x414;
+
+    reg {
+        name = "Response Data [15:8]";
+
+        field {
+            desc = "Data[15:8]";
+            sw   = r;
+            hw   = w;
+        } data [7:0] = 0;
+    } RESP_DATA1 @ 0x415;
+
+    reg {
+        name = "Response Data [23:16]";
+
+        field {
+            desc = "Data[23:16]";
+            sw   = r;
+            hw   = w;
+        } data [7:0] = 0;
+    } RESP_DATA2 @ 0x416;
+
+    reg {
+        name = "Response Data [31:24]";
+
+        field {
+            desc = "Data[31:24]";
+            sw   = r;
+            hw   = w;
+        } data [7:0] = 0;
+    } RESP_DATA3 @ 0x417;
+
+    reg {
+        name = "Status";
+
+        field {
+            desc = "Request Write";
+            sw = rw;
+            hw = r;
+            woset;
+            hwclr;
+        } request_write [3:3] = 0;
+
+        field {
+            desc = "Request Ready";
+            sw   = r;
+            hw   = w;
+        } request_ready [2:2] = 0;
+
+        field {
+            desc = "Response Read";
+            sw   = rw;
+            hw   = r;
+            woset;
+            hwclr;
+        } response_read [1:1] = 0;
+
+        field {
+            desc = "Response Ready";
+            sw   = r;
+            hw   = w;
+        } response_ready [0:0] = 0;
+    } STATUS @ 0x418;
+};

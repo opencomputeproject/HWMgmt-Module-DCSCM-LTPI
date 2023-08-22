@@ -1,0 +1,52 @@
+set_global_assignment -entity "i2c_target_avmm_bridge" -library "i2c_target_avmm_bridge" -name IP_TOOL_NAME "Qsys"
+set_global_assignment -entity "i2c_target_avmm_bridge" -library "i2c_target_avmm_bridge" -name IP_TOOL_VERSION "21.1"
+set_global_assignment -entity "i2c_target_avmm_bridge" -library "i2c_target_avmm_bridge" -name IP_TOOL_ENV "Qsys"
+set_global_assignment -library "i2c_target_avmm_bridge" -name SOPCINFO_FILE [file join $::quartus(qip_path) "../../../i2c_target_avmm_bridge.sopcinfo"]
+set_global_assignment -entity "i2c_target_avmm_bridge" -library "i2c_target_avmm_bridge" -name SLD_INFO "QSYS_NAME i2c_target_avmm_bridge HAS_SOPCINFO 1 GENERATION_ID 1675650376"
+set_global_assignment -library "i2c_target_avmm_bridge" -name MISC_FILE [file join $::quartus(qip_path) "../i2c_target_avmm_bridge.cmp"]
+set_global_assignment -library "i2c_target_avmm_bridge" -name SLD_FILE [file join $::quartus(qip_path) "i2c_target_avmm_bridge.debuginfo"]
+set_global_assignment -entity "i2c_target_avmm_bridge" -library "i2c_target_avmm_bridge" -name IP_TARGETED_DEVICE_FAMILY "MAX 10"
+set_global_assignment -entity "i2c_target_avmm_bridge" -library "i2c_target_avmm_bridge" -name IP_GENERATED_DEVICE_FAMILY "{MAX 10}"
+set_global_assignment -entity "i2c_target_avmm_bridge" -library "i2c_target_avmm_bridge" -name IP_QSYS_MODE "STANDALONE"
+set_global_assignment -name SYNTHESIS_ONLY_QIP ON
+set_global_assignment -library "i2c_target_avmm_bridge" -name MISC_FILE [file join $::quartus(qip_path) "../../../i2c_target_avmm_bridge.qsys"]
+set_global_assignment -entity "i2c_target_avmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_NAME "aTJjX3RhcmdldF9hdm1tX2JyaWRnZQ=="
+set_global_assignment -entity "i2c_target_avmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_DISPLAY_NAME "aTJjX3RhcmdldF9hdm1tX2JyaWRnZQ=="
+set_global_assignment -entity "i2c_target_avmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_REPORT_HIERARCHY "On"
+set_global_assignment -entity "i2c_target_avmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_INTERNAL "Off"
+set_global_assignment -entity "i2c_target_avmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_VERSION "MS4w"
+set_global_assignment -entity "i2c_target_avmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_PARAMETER "QVVUT19HRU5FUkFUSU9OX0lE::MTY3NTY1MDM3Ng==::QXV0byBHRU5FUkFUSU9OX0lE"
+set_global_assignment -entity "i2c_target_avmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0VfRkFNSUxZ::TUFYIDEw::QXV0byBERVZJQ0VfRkFNSUxZ"
+set_global_assignment -entity "i2c_target_avmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0U=::MTBNMjVEQUYyNTZDOEc=::QXV0byBERVZJQ0U="
+set_global_assignment -entity "i2c_target_avmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0VfU1BFRURHUkFERQ==::OA==::QXV0byBERVZJQ0VfU1BFRURHUkFERQ=="
+set_global_assignment -entity "i2c_target_avmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_PARAMETER "QVVUT19BVkFMT05fTUFTVEVSX0FERFJFU1NfV0lEVEg=::QWRkcmVzc1dpZHRoID0gLTE=::QXV0byBBRERSRVNTX1dJRFRI"
+set_global_assignment -entity "i2c_target_avmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_PARAMETER "QVVUT19DTE9DS19DTE9DS19SQVRF::LTE=::QXV0byBDTE9DS19SQVRF"
+set_global_assignment -entity "i2c_target_avmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_PARAMETER "QVVUT19DTE9DS19DTE9DS19ET01BSU4=::LTE=::QXV0byBDTE9DS19ET01BSU4="
+set_global_assignment -entity "i2c_target_avmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_PARAMETER "QVVUT19DTE9DS19SRVNFVF9ET01BSU4=::LTE=::QXV0byBSRVNFVF9ET01BSU4="
+set_global_assignment -entity "altera_i2cslave_to_avlmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_NAME "YWx0ZXJhX2kyY3NsYXZlX3RvX2F2bG1tX2JyaWRnZQ=="
+set_global_assignment -entity "altera_i2cslave_to_avlmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_DISPLAY_NAME "STJDIFNsYXZlIFRvIEF2YWxvbi1NTSBNYXN0ZXIgQnJpZGdlIEludGVsIEZQR0EgSVA="
+set_global_assignment -entity "altera_i2cslave_to_avlmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_REPORT_HIERARCHY "Off"
+set_global_assignment -entity "altera_i2cslave_to_avlmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_INTERNAL "Off"
+set_global_assignment -entity "altera_i2cslave_to_avlmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_AUTHOR "SW50ZWwgQ29ycG9yYXRpb24="
+set_global_assignment -entity "altera_i2cslave_to_avlmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_VERSION "MjEuMQ=="
+set_global_assignment -entity "altera_i2cslave_to_avlmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_DESCRIPTION "STJDIFNsYXZlIFRvIEF2YWxvbiBNYXN0ZXIgQnJpZGdlIGlzIGEgY29sbGVjdGlvbiBvZiBwcmUtd2lyZWQgY29tcG9uZW50cyB0aGF0IHByb3ZpZGUgYW4gQXZhbG9uIE1hc3RlciB1c2luZyBhbiBleHRlcm5hbCBJMkMgaW50ZXJmYWNl"
+set_global_assignment -entity "altera_i2cslave_to_avlmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_PARAMETER "STJDX1NMQVZFX0FERFJFU1M=::ODU=::STJDIFNsYXZlIEFkZHJlc3M="
+set_global_assignment -entity "altera_i2cslave_to_avlmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_PARAMETER "QllURV9BRERSRVNTSU5H::Mg==::Qnl0ZSBBZGRyZXNzaW5nIG1vZGU="
+set_global_assignment -entity "altera_i2cslave_to_avlmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_PARAMETER "QUREUkVTU19TVEVBTElORw==::MA==::Tm8uIG9mIEFkZHJlc3MgU3RlYWxpbmcgYml0"
+set_global_assignment -entity "altera_i2cslave_to_avlmm_bridge" -library "i2c_target_avmm_bridge" -name IP_COMPONENT_PARAMETER "UkVBRF9PTkxZ::MA==::RW5hYmxlIFJlYWQgb25seSBtb2Rl"
+
+set_global_assignment -library "i2c_target_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "i2c_target_avmm_bridge.v"]
+set_global_assignment -library "i2c_target_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altera_i2cslave_to_avlmm_bridge.v"]
+set_global_assignment -library "i2c_target_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altr_i2c_avl_mst_intf_gen.v"]
+set_global_assignment -library "i2c_target_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altr_i2c_clk_cnt.v"]
+set_global_assignment -library "i2c_target_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altr_i2c_condt_det.v"]
+set_global_assignment -library "i2c_target_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altr_i2c_databuffer.v"]
+set_global_assignment -library "i2c_target_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altr_i2c_rxshifter.v"]
+set_global_assignment -library "i2c_target_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altr_i2c_slvfsm.v"]
+set_global_assignment -library "i2c_target_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altr_i2c_spksupp.v"]
+set_global_assignment -library "i2c_target_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altr_i2c_txout.v"]
+set_global_assignment -library "i2c_target_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altr_i2c_txshifter.v"]
+
+set_global_assignment -entity "altera_i2cslave_to_avlmm_bridge" -library "i2c_target_avmm_bridge" -name IP_TOOL_NAME "altera_i2cslave_to_avlmm_bridge"
+set_global_assignment -entity "altera_i2cslave_to_avlmm_bridge" -library "i2c_target_avmm_bridge" -name IP_TOOL_VERSION "21.1"
+set_global_assignment -entity "altera_i2cslave_to_avlmm_bridge" -library "i2c_target_avmm_bridge" -name IP_TOOL_ENV "Qsys"

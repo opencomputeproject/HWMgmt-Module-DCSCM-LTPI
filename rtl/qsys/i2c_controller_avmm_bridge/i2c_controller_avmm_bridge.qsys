@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system name="$${FILENAME}">
+ <component
+   name="$${FILENAME}"
+   displayName="$${FILENAME}"
+   version="1.0"
+   description=""
+   tags=""
+   categories="System" />
+ <parameter name="bonusData"><![CDATA[bonusData 
+{
+   element i2c_master
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
+}
+]]></parameter>
+ <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
+ <parameter name="device" value="10M25DAF256C8G" />
+ <parameter name="deviceFamily" value="MAX 10" />
+ <parameter name="deviceSpeedGrade" value="8" />
+ <parameter name="fabricMode" value="QSYS" />
+ <parameter name="generateLegacySim" value="false" />
+ <parameter name="generationId" value="0" />
+ <parameter name="globalResetBus" value="false" />
+ <parameter name="hdlLanguage" value="VERILOG" />
+ <parameter name="hideFromIPCatalog" value="false" />
+ <parameter name="lockedInterfaceDefinition" value="" />
+ <parameter name="maxAdditionalLatency" value="1" />
+ <parameter name="projectName" value="" />
+ <parameter name="sopcBorderPoints" value="false" />
+ <parameter name="systemHash" value="0" />
+ <parameter name="testBenchDutName" value="" />
+ <parameter name="timeStamp" value="0" />
+ <parameter name="useTestBenchNamingPattern" value="false" />
+ <instanceScript></instanceScript>
+ <interface name="i2c_clock" internal="i2c_master.clock" type="clock" dir="end" />
+ <interface name="i2c_csr" internal="i2c_master.csr" type="avalon" dir="end" />
+ <interface
+   name="i2c_irq"
+   internal="i2c_master.interrupt_sender"
+   type="interrupt"
+   dir="end" />
+ <interface
+   name="i2c_reset"
+   internal="i2c_master.reset_sink"
+   type="reset"
+   dir="end" />
+ <interface
+   name="i2c_serial"
+   internal="i2c_master.i2c_serial"
+   type="conduit"
+   dir="end" />
+ <module name="i2c_master" kind="altera_avalon_i2c" version="21.1" enabled="1">
+  <parameter name="FIFO_DEPTH" value="64" />
+  <parameter name="USE_AV_ST" value="0" />
+  <parameter name="clockRate" value="0" />
+ </module>
+ <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
+ <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
+</system>

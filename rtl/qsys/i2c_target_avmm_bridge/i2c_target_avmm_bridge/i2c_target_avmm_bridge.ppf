@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pinplan
+ variation_name="i2cslave_to_avlmm_bridge_0"
+ megafunction_name="ALTERA_I2CSLAVE_TO_AVLMM_BRIDGE"
+ specifies="all_ports">
+ <global>
+  <pin name="clk" direction="input" scope="external" />
+  <pin name="address[31..0]" direction="output" scope="external" />
+  <pin name="read" direction="output" scope="external" />
+  <pin name="readdata[31..0]" direction="input" scope="external" />
+  <pin name="readdatavalid" direction="input" scope="external" />
+  <pin name="waitrequest" direction="input" scope="external" />
+  <pin name="write" direction="output" scope="external" />
+  <pin name="byteenable[3..0]" direction="output" scope="external" />
+  <pin name="writedata[31..0]" direction="output" scope="external" />
+  <pin name="rst_n" direction="input" scope="external" />
+  <pin name="i2c_data_in" direction="input" scope="external" />
+  <pin name="i2c_clk_in" direction="input" scope="external" />
+  <pin name="i2c_data_oe" direction="output" scope="external" />
+  <pin name="i2c_clk_oe" direction="output" scope="external" />
+ </global>
+</pinplan>

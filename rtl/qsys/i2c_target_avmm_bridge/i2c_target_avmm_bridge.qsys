@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system name="$${FILENAME}">
+ <component
+   name="$${FILENAME}"
+   displayName="$${FILENAME}"
+   version="1.0"
+   description=""
+   tags="INTERNAL_COMPONENT=true"
+   categories="System" />
+ <parameter name="bonusData"><![CDATA[bonusData 
+{
+   element i2cslave_to_avlmm_bridge_0
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
+}
+]]></parameter>
+ <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
+ <parameter name="device" value="10M25DAF256C8G" />
+ <parameter name="deviceFamily" value="MAX 10" />
+ <parameter name="deviceSpeedGrade" value="8" />
+ <parameter name="fabricMode" value="QSYS" />
+ <parameter name="generateLegacySim" value="false" />
+ <parameter name="generationId" value="0" />
+ <parameter name="globalResetBus" value="false" />
+ <parameter name="hdlLanguage" value="VERILOG" />
+ <parameter name="hideFromIPCatalog" value="true" />
+ <parameter name="lockedInterfaceDefinition" value="" />
+ <parameter name="maxAdditionalLatency" value="1" />
+ <parameter name="projectName" value="" />
+ <parameter name="sopcBorderPoints" value="false" />
+ <parameter name="systemHash" value="0" />
+ <parameter name="testBenchDutName" value="" />
+ <parameter name="timeStamp" value="0" />
+ <parameter name="useTestBenchNamingPattern" value="false" />
+ <instanceScript></instanceScript>
+ <interface
+   name="avalon_master"
+   internal="i2cslave_to_avlmm_bridge_0.avalon_master"
+   type="avalon"
+   dir="start">
+  <port name="address" internal="address" />
+  <port name="read" internal="read" />
+  <port name="readdata" internal="readdata" />
+  <port name="readdatavalid" internal="readdatavalid" />
+  <port name="waitrequest" internal="waitrequest" />
+  <port name="write" internal="write" />
+  <port name="byteenable" internal="byteenable" />
+  <port name="writedata" internal="writedata" />
+ </interface>
+ <interface
+   name="clock"
+   internal="i2cslave_to_avlmm_bridge_0.clock"
+   type="clock"
+   dir="end">
+  <port name="clk" internal="clk" />
+ </interface>
+ <interface
+   name="conduit_end"
+   internal="i2cslave_to_avlmm_bridge_0.conduit_end"
+   type="conduit"
+   dir="end">
+  <port name="i2c_data_in" internal="i2c_data_in" />
+  <port name="i2c_clk_in" internal="i2c_clk_in" />
+  <port name="i2c_data_oe" internal="i2c_data_oe" />
+  <port name="i2c_clk_oe" internal="i2c_clk_oe" />
+ </interface>
+ <interface
+   name="reset"
+   internal="i2cslave_to_avlmm_bridge_0.reset"
+   type="reset"
+   dir="end">
+  <port name="rst_n" internal="rst_n" />
+ </interface>
+ <module
+   name="i2cslave_to_avlmm_bridge_0"
+   kind="altera_i2cslave_to_avlmm_bridge"
+   version="21.1"
+   enabled="1"
+   autoexport="1">
+  <parameter name="ADDRESS_STEALING" value="0" />
+  <parameter name="BYTE_ADDRESSING" value="2" />
+  <parameter name="I2C_SLAVE_ADDRESS" value="85" />
+  <parameter name="READ_ONLY" value="0" />
+ </module>
+ <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
+ <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
+</system>

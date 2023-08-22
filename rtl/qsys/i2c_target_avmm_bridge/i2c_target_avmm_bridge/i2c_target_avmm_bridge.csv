@@ -1,0 +1,27 @@
+# system info i2c_target_avmm_bridge on 2023.02.06.03:26:15
+system_info:
+name,value
+DEVICE,10M25DAF256C8G
+DEVICE_FAMILY,MAX 10
+GENERATION_ID,1675650375
+#
+#
+# Files generated for i2c_target_avmm_bridge on 2023.02.06.03:26:15
+files:
+filepath,kind,attributes,module,is_top
+simulation/i2c_target_avmm_bridge.v,VERILOG,,i2c_target_avmm_bridge,true
+simulation/submodules/altera_i2cslave_to_avlmm_bridge.v,VERILOG,,altera_i2cslave_to_avlmm_bridge,false
+simulation/submodules/altr_i2c_avl_mst_intf_gen.v,VERILOG,,altera_i2cslave_to_avlmm_bridge,false
+simulation/submodules/altr_i2c_clk_cnt.v,VERILOG,,altera_i2cslave_to_avlmm_bridge,false
+simulation/submodules/altr_i2c_condt_det.v,VERILOG,,altera_i2cslave_to_avlmm_bridge,false
+simulation/submodules/altr_i2c_databuffer.v,VERILOG,,altera_i2cslave_to_avlmm_bridge,false
+simulation/submodules/altr_i2c_rxshifter.v,VERILOG,,altera_i2cslave_to_avlmm_bridge,false
+simulation/submodules/altr_i2c_slvfsm.v,VERILOG,,altera_i2cslave_to_avlmm_bridge,false
+simulation/submodules/altr_i2c_spksupp.v,VERILOG,,altera_i2cslave_to_avlmm_bridge,false
+simulation/submodules/altr_i2c_txout.v,VERILOG,,altera_i2cslave_to_avlmm_bridge,false
+simulation/submodules/altr_i2c_txshifter.v,VERILOG,,altera_i2cslave_to_avlmm_bridge,false
+#
+# Map from instance-path to kind of module
+instances:
+instancePath,module
+i2c_target_avmm_bridge.i2cslave_to_avlmm_bridge_0,altera_i2cslave_to_avlmm_bridge

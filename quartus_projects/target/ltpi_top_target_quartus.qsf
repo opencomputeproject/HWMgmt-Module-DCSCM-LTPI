@@ -1,0 +1,159 @@
+# -------------------------------------------------------------------------- #
+#
+# Copyright (C) 2021  Intel Corporation. All rights reserved.
+# Your use of Intel Corporation's design tools, logic functions 
+# and other software and tools, and any partner logic 
+# functions, and any output files from any of the foregoing 
+# (including device programming or simulation files), and any 
+# associated documentation or information are expressly subject 
+# to the terms and conditions of the Intel Program License 
+# Subscription Agreement, the Intel Quartus Prime License Agreement,
+# the Intel FPGA IP License Agreement, or other applicable license
+# agreement, including, without limitation, that your use is for
+# the sole purpose of programming logic devices manufactured by
+# Intel and sold by Intel or its authorized distributors.  Please
+# refer to the applicable agreement for further details, at
+# https://fpgasoftware.intel.com/eula.
+#
+# -------------------------------------------------------------------------- #
+#
+# Quartus Prime
+# Version 21.1.0 Build 842 10/21/2021 SJ Standard Edition
+# Date created = 02:20:08  October 27, 2022
+#
+# -------------------------------------------------------------------------- #
+#
+# Notes:
+#
+# 1) The default values for assignments are stored in the file:
+#		ltpi_top_target_quartus_assignment_defaults.qdf
+#    If this file doesn't exist, see file:
+#		assignment_defaults.qdf
+#
+# 2) Intel recommends that you do not modify this file. This
+#    file is updated automatically by the Quartus Prime software
+#    and any changes you make may be lost or overwritten.
+#
+# -------------------------------------------------------------------------- #
+
+
+# -------------------------------------------------------------------------- #
+#
+# Copyright (C) 2021  Intel Corporation. All rights reserved.
+# Your use of Intel Corporation's design tools, logic functions 
+# and other software and tools, and any partner logic 
+# functions, and any output files from any of the foregoing 
+# (including device programming or simulation files), and any 
+# associated documentation or information are expressly subject 
+# to the terms and conditions of the Intel Program License 
+# Subscription Agreement, the Intel Quartus Prime License Agreement,
+# the Intel FPGA IP License Agreement, or other applicable license
+# agreement, including, without limitation, that your use is for
+# the sole purpose of programming logic devices manufactured by
+# Intel and sold by Intel or its authorized distributors.  Please
+# refer to the applicable agreement for further details, at
+# https://fpgasoftware.intel.com/eula.
+#
+# -------------------------------------------------------------------------- #
+#
+# Quartus Prime
+# Version 21.1.0 Build 842 10/21/2021 SJ Standard Edition
+# Date created = 06:19:14  October 26, 2022
+#
+# -------------------------------------------------------------------------- #
+#
+# Notes:
+#
+# 1) The default values for assignments are stored in the file:
+#		ltpi_top_target_quartus_assignment_defaults.qdf
+#    If this file doesn't exist, see file:
+#		assignment_defaults.qdf
+#
+# 2) Intel recommends that you do not modify this file. This
+#    file is updated automatically by the Quartus Prime software
+#    and any changes you make may be lost or overwritten.
+#
+# -------------------------------------------------------------------------- #
+
+
+set_global_assignment -name TOP_LEVEL_ENTITY ltpi_top_target_quartus
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+set_global_assignment -name VERILOG_INPUT_VERSION SYSTEMVERILOG_2005
+set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
+set_global_assignment -name LAST_QUARTUS_VERSION "21.1.0 Standard Edition"
+
+set_global_assignment -name FAMILY "MAX 10"
+set_global_assignment -name DEVICE 10M25DAF256C8G
+set_global_assignment -name VERILOG_MACRO SYNTHESIS
+set_global_assignment -name VERILOG_MACRO OVL_ASSERT_OFF
+
+set_global_assignment -name SEARCH_PATH ../../logic/rtl/logic/include
+
+
+source ../../quartus/quartus_ltpi_target/pinout_assignment_target.tcl
+
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/CLOCK_MGMT/m10_pll_ip/m10_pll_reconfig_file/m10_pll_reconfig_file.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/mgmt_interface/ltpi_data_channel_target/ltpi_data_channel_target_mm.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/mgmt_interface/ltpi_data_channel_controller/ltpi_data_channel_controller_mm.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/CSR/RDL/ltpi_csr_light.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/CSR/RDL/ltpi_csr_light_pkg.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/mgmt_interface/ltpi_data_channel_controller/ltpi_data_channel_controller_csr.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/mgmt_interface/ltpi_data_channel_controller/ltpi_data_channel_controller_fifo.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/mgmt_interface/ltpi_data_channel_controller/rdl/ltpi_data_channel_controller_csr_rdl.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/mgmt_interface/ltpi_data_channel_controller/rdl/ltpi_data_channel_controller_csr_rdl_pkg.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/mgmt_interface/ltpi_data_channel_target/ltpi_data_channel_target_fifo.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/mgmt_interface/ltpi_data_channel_target/ltpi_data_channel_target.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/mgmt_interface/mgmt_data_channel_controller.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/mgmt_interface/mgmt_data_channel_target.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/smbus_relay/smbus_relay_target/smbus_relay_target.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/package/ltpi_pkg.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/ltpi_top/ltpi_top_target/ltpi_top_target.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/quartus_ip/altera_gpio_lite.sv
+set_global_assignment -name QIP_FILE ../../rtl/modules/mgmt_ltpi/quartus_ip/lvds_cdc_fifo_m10/lvds_cdc_fifo_m10.qip
+set_global_assignment -name QIP_FILE ../../rtl/modules/mgmt_ltpi/quartus_ip/lvds_2to8bit_fifo_m10/lvds_2to8bit_fifo_m10.qip
+set_global_assignment -name QIP_FILE ../../rtl/modules/mgmt_ltpi/quartus_ip/gpio_ddr_out/gpio_ddr_out.qip
+set_global_assignment -name QIP_FILE ../../rtl/modules/mgmt_ltpi/quartus_ip/gpio_ddr_in/gpio_ddr_in.qip
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/mgmt_phy/mgmt_phy_top.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/mgmt_phy/mgmt_phy_target/mgmt_phy_target.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/mgmt_phy/mgmt_ltpi_frm_tx/mgmt_ltpi_frm_tx.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/mgmt_phy/mgmt_ltpi_frm_rx/mgmt_ltpi_frm_rx.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/mgmt_ltpi_top/mgmt_ltpi_top.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/mgmt_interface/smbus_echo.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/mgmt_interface/mgmt_uart.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/mgmt_interface/mgmt_smbus.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/mgmt_interface/mgmt_gpio.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/lvds_phy_tx/lvds_phy_tx.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/lvds_phy_rx/lvds_phy_rx.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/ltpi_phy_rx/ltpi_phy_rx.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/mgmt_ltpi/ltpi_phy_tx/ltpi_phy_tx.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/CSR/RDL/ltpi_csr_pkg.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/CSR/RDL/ltpi_csr.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/CSR/ltpi_csr_avmm/ltpi_csr_avmm.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/CSR/avmm_target_model/avmm_target_model.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/CSR/avmm_mux/avmm_mux.sv
+set_global_assignment -name VERILOG_FILE ../../rtl/modules/CRC/crc8/crc8.v
+set_global_assignment -name QIP_FILE ../../rtl/modules/CLOCK_MGMT/pll_lvds/pll_lvds.qip
+set_global_assignment -name QIP_FILE ../../rtl/modules/CLOCK_MGMT/pll_cpu/pll_cpu.qip
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/CLOCK_MGMT/m10_pll_top/m10_pll_top_tester_hw.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/CLOCK_MGMT/m10_pll_top/m10_pll_top_tester.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/CLOCK_MGMT/m10_pll_top/m10_pll_top.sv
+set_global_assignment -name QIP_FILE ../../rtl/modules/CLOCK_MGMT/m10_pll_ip/m10_reconfig/m10_pll_reconfig.qip
+set_global_assignment -name QIP_FILE ../../rtl/modules/CLOCK_MGMT/m10_pll_ip/m10_pll_reconfig_memory/m10_pll_reconfig_memory.qip
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/modules/async_input_filter/async_input_filter.sv
+set_global_assignment -name VERILOG_FILE ../../rtl/modules/8b10b/encoder_8b10b/encoder_8b10b.v
+set_global_assignment -name VERILOG_FILE ../../rtl/modules/8b10b/decoder_8b10b/decoder_8b10b.v
+set_global_assignment -name SYSTEMVERILOG_FILE ../../logic/rtl/logic/packages/logic_avalon_mm_pkg.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../logic/rtl/logic/interfaces/logic_avalon_mm_if.sv
+set_global_assignment -name QSYS_FILE ../../rtl/qsys/i2c_target_avmm_bridge/i2c_target_avmm_bridge.qsys
+set_global_assignment -name SDC_FILE ../../quartus/quartus_ltpi_target/timing_constraints.sdc
+set_global_assignment -name MIF_FILE ../../rtl/modules/CLOCK_MGMT/m10_pll_ip/m10_pll_reconfig_memory/m10_pll_reconfig_memory.mif
+set_global_assignment -name SYSTEMVERILOG_FILE ../../logic/rtl/logic/packages/logic_pkg.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/ltpi_top_quartus/ltpi_top_target_quartus/ltpi_top_target_quartus.sv
+set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
+set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
+set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
+set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

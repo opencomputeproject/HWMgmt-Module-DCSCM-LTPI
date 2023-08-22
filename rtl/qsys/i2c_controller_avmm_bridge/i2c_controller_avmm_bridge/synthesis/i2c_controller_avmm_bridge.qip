@@ -1,0 +1,52 @@
+set_global_assignment -entity "i2c_controller_avmm_bridge" -library "i2c_controller_avmm_bridge" -name IP_TOOL_NAME "Qsys"
+set_global_assignment -entity "i2c_controller_avmm_bridge" -library "i2c_controller_avmm_bridge" -name IP_TOOL_VERSION "21.1"
+set_global_assignment -entity "i2c_controller_avmm_bridge" -library "i2c_controller_avmm_bridge" -name IP_TOOL_ENV "Qsys"
+set_global_assignment -library "i2c_controller_avmm_bridge" -name SOPCINFO_FILE [file join $::quartus(qip_path) "../../i2c_controller_avmm_bridge.sopcinfo"]
+set_global_assignment -entity "i2c_controller_avmm_bridge" -library "i2c_controller_avmm_bridge" -name SLD_INFO "QSYS_NAME i2c_controller_avmm_bridge HAS_SOPCINFO 1 GENERATION_ID 1675739599"
+set_global_assignment -library "i2c_controller_avmm_bridge" -name MISC_FILE [file join $::quartus(qip_path) "../i2c_controller_avmm_bridge.cmp"]
+set_global_assignment -library "i2c_controller_avmm_bridge" -name SLD_FILE [file join $::quartus(qip_path) "i2c_controller_avmm_bridge.debuginfo"]
+set_global_assignment -entity "i2c_controller_avmm_bridge" -library "i2c_controller_avmm_bridge" -name IP_TARGETED_DEVICE_FAMILY "MAX 10"
+set_global_assignment -entity "i2c_controller_avmm_bridge" -library "i2c_controller_avmm_bridge" -name IP_GENERATED_DEVICE_FAMILY "{MAX 10}"
+set_global_assignment -entity "i2c_controller_avmm_bridge" -library "i2c_controller_avmm_bridge" -name IP_QSYS_MODE "SYSTEM"
+set_global_assignment -name SYNTHESIS_ONLY_QIP ON
+set_global_assignment -library "i2c_controller_avmm_bridge" -name MISC_FILE [file join $::quartus(qip_path) "../../i2c_controller_avmm_bridge.qsys"]
+set_global_assignment -entity "i2c_controller_avmm_bridge" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_NAME "aTJjX2NvbnRyb2xsZXJfYXZtbV9icmlkZ2U="
+set_global_assignment -entity "i2c_controller_avmm_bridge" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_DISPLAY_NAME "aTJjX2NvbnRyb2xsZXJfYXZtbV9icmlkZ2U="
+set_global_assignment -entity "i2c_controller_avmm_bridge" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_REPORT_HIERARCHY "On"
+set_global_assignment -entity "i2c_controller_avmm_bridge" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_INTERNAL "Off"
+set_global_assignment -entity "i2c_controller_avmm_bridge" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_VERSION "MS4w"
+set_global_assignment -entity "i2c_controller_avmm_bridge" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_PARAMETER "QVVUT19HRU5FUkFUSU9OX0lE::MTY3NTczOTU5OQ==::QXV0byBHRU5FUkFUSU9OX0lE"
+set_global_assignment -entity "i2c_controller_avmm_bridge" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0VfRkFNSUxZ::TUFYIDEw::QXV0byBERVZJQ0VfRkFNSUxZ"
+set_global_assignment -entity "i2c_controller_avmm_bridge" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0U=::MTBNMjVEQUYyNTZDOEc=::QXV0byBERVZJQ0U="
+set_global_assignment -entity "i2c_controller_avmm_bridge" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0VfU1BFRURHUkFERQ==::OA==::QXV0byBERVZJQ0VfU1BFRURHUkFERQ=="
+set_global_assignment -entity "i2c_controller_avmm_bridge" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_PARAMETER "QVVUT19JMkNfQ0xPQ0tfQ0xPQ0tfUkFURQ==::LTE=::QXV0byBDTE9DS19SQVRF"
+set_global_assignment -entity "i2c_controller_avmm_bridge" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_PARAMETER "QVVUT19JMkNfQ0xPQ0tfQ0xPQ0tfRE9NQUlO::LTE=::QXV0byBDTE9DS19ET01BSU4="
+set_global_assignment -entity "i2c_controller_avmm_bridge" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_PARAMETER "QVVUT19JMkNfQ0xPQ0tfUkVTRVRfRE9NQUlO::LTE=::QXV0byBSRVNFVF9ET01BSU4="
+set_global_assignment -entity "altera_avalon_i2c" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_NAME "YWx0ZXJhX2F2YWxvbl9pMmM="
+set_global_assignment -entity "altera_avalon_i2c" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_DISPLAY_NAME "QXZhbG9uIEkyQyAoTWFzdGVyKSBJbnRlbCBGUEdBIElQ"
+set_global_assignment -entity "altera_avalon_i2c" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_REPORT_HIERARCHY "Off"
+set_global_assignment -entity "altera_avalon_i2c" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_INTERNAL "Off"
+set_global_assignment -entity "altera_avalon_i2c" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_AUTHOR "SW50ZWwgQ29ycG9yYXRpb24="
+set_global_assignment -entity "altera_avalon_i2c" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_VERSION "MjEuMQ=="
+set_global_assignment -entity "altera_avalon_i2c" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_DESCRIPTION "STJDIENvcmUgd2l0aCBBdmFsb24gTU0gU2xhdmUgSW50ZXJmYWNlIGZvciBjb25maWd1cmF0aW9u"
+set_global_assignment -entity "altera_avalon_i2c" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_PARAMETER "VVNFX0FWX1NU::MA==::SW50ZXJmYWNlIGZvciB0cmFuc2ZlciBjb21tYW5kIEZpZm8gYW5kIHJlY2VpdmUgZGF0YSBGaWZvIGFjY2Vzc2Vz"
+set_global_assignment -entity "altera_avalon_i2c" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_PARAMETER "RklGT19ERVBUSA==::NjQ=::RGVwdGggb2YgRmlmbw=="
+set_global_assignment -entity "altera_avalon_i2c" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_PARAMETER "RklGT19ERVBUSF9MT0cy::Ng==::RklGT19ERVBUSF9MT0cy"
+set_global_assignment -entity "altera_avalon_i2c" -library "i2c_controller_avmm_bridge" -name IP_COMPONENT_PARAMETER "Y2xvY2tSYXRl::MA==::Y2xvY2tSYXRl"
+
+set_global_assignment -library "i2c_controller_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "i2c_controller_avmm_bridge.v"]
+set_global_assignment -library "i2c_controller_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altera_avalon_i2c.v"]
+set_global_assignment -library "i2c_controller_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altera_avalon_i2c_csr.v"]
+set_global_assignment -library "i2c_controller_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altera_avalon_i2c_clk_cnt.v"]
+set_global_assignment -library "i2c_controller_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altera_avalon_i2c_condt_det.v"]
+set_global_assignment -library "i2c_controller_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altera_avalon_i2c_condt_gen.v"]
+set_global_assignment -library "i2c_controller_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altera_avalon_i2c_fifo.v"]
+set_global_assignment -library "i2c_controller_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altera_avalon_i2c_mstfsm.v"]
+set_global_assignment -library "i2c_controller_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altera_avalon_i2c_rxshifter.v"]
+set_global_assignment -library "i2c_controller_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altera_avalon_i2c_txshifter.v"]
+set_global_assignment -library "i2c_controller_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altera_avalon_i2c_spksupp.v"]
+set_global_assignment -library "i2c_controller_avmm_bridge" -name VERILOG_FILE [file join $::quartus(qip_path) "submodules/altera_avalon_i2c_txout.v"]
+
+set_global_assignment -entity "altera_avalon_i2c" -library "i2c_controller_avmm_bridge" -name IP_TOOL_NAME "altera_avalon_i2c"
+set_global_assignment -entity "altera_avalon_i2c" -library "i2c_controller_avmm_bridge" -name IP_TOOL_VERSION "21.1"
+set_global_assignment -entity "altera_avalon_i2c" -library "i2c_controller_avmm_bridge" -name IP_TOOL_ENV "Qsys"
