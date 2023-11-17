@@ -13,5 +13,6 @@ The architecure details and a user guide covering how to build LTPI IP and run a
 The list of unit tests implemented for LTPI IP is located [docs/LTPI_test_plan.xlsx](docs/LTPI_test_plan.xlsx)
         
 # License:
-Unless otherwise identified in the header file, all source code are released under MIT license.
+Unless otherwise identified in the header file, all source code in ths repository is under MIT license and all documentation is under Creative Commons Attribution 4.0 International License available at http://creativecommons.org/licenses/by/4.0/
+
 
