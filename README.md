@@ -1,15 +1,14 @@
 LTPI Project
 ===========
 
-Introduction:
+Overview:
 -----
-    LTPI is a protocol and interface designed for tunneling various low-speed signals 
-    between the HPM and SCM. 
-    The LTPI protocol goes over the LVDS (Low Voltage Differential Signals) electrical 
-    interfaces supported by majority of the CPLDs and FPGAs. 
-    It allows for tunneling of not only GPIOs but also low speed serial interfaces 
-    such as SMBus, I2C, UART.
+    This repository contains RTL code of LTPI IP that is compliant with the DC-SCM 2.x LTPI Specification. The DC-SCM 2.x LTPI specificatio is developed under Hardware Management Module Sub-project: https://www.opencompute.org/wiki/Hardware_Management/Hardware_Management_Module 
 
+Documentation:
+-----
+    This LTPI IP architecure documentation and User Guide is located [here](docs/LTPI_User_Guide.pdf)
+        
 
 License:
 -----
