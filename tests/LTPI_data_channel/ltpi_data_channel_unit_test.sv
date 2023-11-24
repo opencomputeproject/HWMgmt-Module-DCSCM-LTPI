@@ -631,6 +631,8 @@ ltpi_data_channel_controller_driver u_controller_driver = new (u_avmm);
                     begin
                         wait(mgmt_ltpi_top_controller.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.ltpi_frame_tx.frame_subtype == 1) ;
                         wait(mgmt_ltpi_top_controller.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == frame_length);
+                        wait(mgmt_ltpi_top_controller.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 0);
+                        wait(mgmt_ltpi_top_controller.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == frame_length);
                         TRG_add_crc_err <= 0;
                         wait(mgmt_ltpi_top_controller.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 0);
                         TRG_add_crc_err <= 1;
@@ -663,6 +665,8 @@ ltpi_data_channel_controller_driver u_controller_driver = new (u_avmm);
                 fork 
                     begin
                         wait(mgmt_ltpi_top_controller.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.ltpi_frame_tx.frame_subtype == 1) ;
+                        wait(mgmt_ltpi_top_controller.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == frame_length);
+                        wait(mgmt_ltpi_top_controller.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 0);
                         wait(mgmt_ltpi_top_controller.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == frame_length);
                         TRG_add_crc_err <= 0;
                         wait(mgmt_ltpi_top_controller.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 0);
@@ -750,6 +754,9 @@ ltpi_data_channel_controller_driver u_controller_driver = new (u_avmm);
                     begin
                         wait(mgmt_ltpi_top_target.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.ltpi_frame_tx.frame_subtype == 1) ;
                         wait(mgmt_ltpi_top_target.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == frame_length);
+                        wait(mgmt_ltpi_top_target.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 0);
+                        wait(mgmt_ltpi_top_target.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == frame_length);
+                        
                         CTRL_add_crc_err <= 0;
                         wait(mgmt_ltpi_top_target.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 0);
                         CTRL_add_crc_err <= 1;
@@ -783,6 +790,8 @@ ltpi_data_channel_controller_driver u_controller_driver = new (u_avmm);
                 fork 
                     begin
                         wait(mgmt_ltpi_top_target.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.ltpi_frame_tx.frame_subtype == 1) ;
+                        wait(mgmt_ltpi_top_target.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == frame_length);
+                        wait(mgmt_ltpi_top_target.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 0);
                         wait(mgmt_ltpi_top_target.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == frame_length);
                         CTRL_add_crc_err <= 0;
                         wait(mgmt_ltpi_top_target.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 0);

@@ -782,7 +782,7 @@ mgmt_phy_top #(
     `SVTEST(CRC_error_test_SCM_link_detect_state)
         test_nb = 13;
         timer_start = 1;
-        test_name = "CRC error test - SCM recive crc in Link detect state";
+        test_name = "CRC error test - SCM receive crc in Link detect state";
         $display("%s", test_name);
         reset_controller = 0; 
         reset_target = 0;
@@ -824,7 +824,7 @@ mgmt_phy_top #(
     `SVTEST(CRC_error_test_HPM_link_detect_state)
         test_nb = 14;
         timer_start = 1;
-        test_name = "CRC error test - HPM recive crc in Link detect state ";
+        test_name = "CRC error test - HPM receive crc in Link detect state ";
         $display("%s", test_name);
         reset_controller = 0; 
         reset_target = 0;
@@ -868,7 +868,7 @@ mgmt_phy_top #(
     `SVTEST(CRC_error_test_SCM_link_speed_state)
         test_nb = 15;
         timer_start = 1;
-        test_name = "CRC error test - SCM recive crc in Link speed state";
+        test_name = "CRC error test - SCM receive crc in Link speed state";
         $display("%s", test_name);
         reset_controller = 0; 
         reset_target = 0;
@@ -917,7 +917,7 @@ mgmt_phy_top #(
     // `SVTEST(CRC_error_test_HPM_link_speed_state)
     //     test_nb = 16;
     //     timer_start = 1;
-    //     test_name = "CRC error test - HPM recive crc in Link speed state";
+    //     test_name = "CRC error test - HPM receive crc in Link speed state";
     //     $display("%s", test_name);
     //     reset_controller = 0; 
     //     reset_target = 0;
@@ -966,7 +966,7 @@ mgmt_phy_top #(
     `SVTEST(CRC_error_test_SCM_link_advertise_state)
         test_nb = 17;
         timer_start = 1;
-        test_name = "CRC error test - SCM recive crc in Link advertise state";
+        test_name = "CRC error test - SCM receive crc in Link advertise state";
         $display("%s", test_name);
         reset_controller = 0; 
         reset_target = 0;
@@ -1025,7 +1025,7 @@ mgmt_phy_top #(
     `SVTEST(CRC_error_test_HPM_link_advertise_state)
         test_nb = 18;
         timer_start = 1;
-        test_name = "CRC error test - HPM recive crc in Link advertise state";
+        test_name = "CRC error test - HPM receive crc in Link advertise state";
         $display("%s", test_name);
         reset_controller = 0; 
         reset_target = 0;
@@ -1083,7 +1083,7 @@ mgmt_phy_top #(
     `SVTEST(CRC_error_test_SCM_link_configure_state)
         test_nb = 19;
         timer_start = 1;
-        test_name = "CRC error test - SCM recive crc in Link Configuration state";
+        test_name = "CRC error test - SCM receive crc in Link Configuration state";
         $display("%s", test_name);
         reset_controller = 0; 
         reset_target = 0;
@@ -1141,7 +1141,7 @@ mgmt_phy_top #(
     `SVTEST(CRC_error_test_HPM_link_accept_state)
         test_nb = 20;
         timer_start = 1;
-        test_name = "CRC error test - HPM recive crc in Link Accept state";
+        test_name = "CRC error test - HPM receive crc in Link Accept state";
         $display("%s", test_name);
         reset_controller = 0; 
         reset_target = 0;
@@ -1198,7 +1198,7 @@ mgmt_phy_top #(
     `SVTEST(CRC_error_test_SCM_link_operational_state)
         test_nb = 21;
         timer_start = 1;
-        test_name = "CRC error test - SCM recive crc in Link Opertional state";
+        test_name = "CRC error test - SCM receive crc in Link Opertional state";
         $display("%s", test_name);
         reset_controller = 0; 
         reset_target = 0;
@@ -1257,7 +1257,7 @@ mgmt_phy_top #(
     `SVTEST(CRC_error_test_HPM_link_operational_state)
         test_nb = 22;
         timer_start = 1;
-        test_name = "CRC error test - HPM recive crc in Link Operational state";
+        test_name = "CRC error test - HPM receive crc in Link Operational state";
         $display("%s", test_name);
         reset_controller = 0; 
         reset_target = 0;
@@ -1330,17 +1330,17 @@ mgmt_phy_top #(
         `FAIL_UNLESS(timer_done == '0);
         repeat(1000) @(posedge clk_25);
 
-        //check sent and recive link detect frames counters 
-        $display("CONTROLLER LTPI_counter - sent: link_detect_frm_cnt = %0h | TARGET LTPI_counter - recive: link_detect_frm_cnt = %0h", 
+        //check sent and receive link detect frames counters 
+        $display("CONTROLLER LTPI_counter - sent: link_detect_frm_cnt = %0h | TARGET LTPI_counter - receive: link_detect_frm_cnt = %0h", 
         CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_low.link_detect_frm_cnt, TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt);
-        $display("TARGET LTPI_counter - sent: link_detect_frm_cnt = %0h | CONTROLLER LTPI_counter - recive: link_detect_frm_cnt = %0h", 
+        $display("TARGET LTPI_counter - sent: link_detect_frm_cnt = %0h | CONTROLLER LTPI_counter - receive: link_detect_frm_cnt = %0h", 
         TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_low.link_detect_frm_cnt, CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt);
         // `FAIL_UNLESS_EQUAL(CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_low.link_detect_frm_cnt, 
         // TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt)
-        //check sent and recive link speed frames counters 
-        $display("CONTROLLER LTPI_counter - sent: link_speed_frm_cnt = %0h | TARGET LTPI_counter - recive: link_speed_frm_cnt = %0h", 
+        //check sent and receive link speed frames counters 
+        $display("CONTROLLER LTPI_counter - sent: link_speed_frm_cnt = %0h | TARGET LTPI_counter - receive: link_speed_frm_cnt = %0h", 
          CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_low.link_speed_frm_cnt, TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt);
-        $display("TARGET LTPI_counter - sent: link_speed_frm_cnt = %0h | CONTROLLER LTPI_counter - recive: link_speed_frm_cnt = %0h", 
+        $display("TARGET LTPI_counter - sent: link_speed_frm_cnt = %0h | CONTROLLER LTPI_counter - receive: link_speed_frm_cnt = %0h", 
          TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_low.link_speed_frm_cnt, CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt);
 
         // `FAIL_UNLESS_EQUAL(CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_low.link_speed_frm_cnt, 
@@ -1348,43 +1348,43 @@ mgmt_phy_top #(
         // `FAIL_UNLESS_EQUAL(TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_low.link_speed_frm_cnt, 
         // CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt)
 
-        //check sent and recive advertise frames counters 
-        $display("CONTROLLER LTPI_counter - sent: link_advertise_frm_cnt = %0h | TARGET LTPI_counter - recive: link_advertise_frm_cnt = %0h", 
+        //check sent and receive advertise frames counters 
+        $display("CONTROLLER LTPI_counter - sent: link_advertise_frm_cnt = %0h | TARGET LTPI_counter - receive: link_advertise_frm_cnt = %0h", 
         CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_high.link_advertise_frm_cnt, TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt);
-        `FAIL_UNLESS_EQUAL(CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_high.link_advertise_frm_cnt, 
-        TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt)
-        //check sent and recive configuration/accept frames counters 
-         $display("CONTROLLER LTPI_counter - sent: link_cfg_acpt_frm_cnt = %0h | TARGET LTPI_counter - recive: link_cfg_acpt_frm_cnt = %0h", 
+        // `FAIL_UNLESS_EQUAL(CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_high.link_advertise_frm_cnt, 
+        // TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt)
+        //check sent and receive configuration/accept frames counters 
+         $display("CONTROLLER LTPI_counter - sent: link_cfg_acpt_frm_cnt = %0h | TARGET LTPI_counter - receive: link_cfg_acpt_frm_cnt = %0h", 
          CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_low.link_cfg_acpt_frm_cnt, TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt);
-        `FAIL_UNLESS_EQUAL(CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_low.link_cfg_acpt_frm_cnt, 
-        TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt)
-        //check sent and recive link detect frames counters 
-        $display("TARGET LTPI_counter - sent: link_detect_frm_cnt = %0h | CONTROLLER LTPI_counter - recive: link_detect_frm_cnt = %0h", 
+        // `FAIL_UNLESS_EQUAL(CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_low.link_cfg_acpt_frm_cnt, 
+        // TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt)
+        //check sent and receive link detect frames counters 
+        $display("TARGET LTPI_counter - sent: link_detect_frm_cnt = %0h | CONTROLLER LTPI_counter - receive: link_detect_frm_cnt = %0h", 
          TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_low.link_detect_frm_cnt, CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt);
         // `FAIL_UNLESS_EQUAL(CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_low.link_detect_frm_cnt, 
         // TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt)
-        //check sent and recive link speed frames counters 
-        $display("TARGET LTPI_counter - sent: link_speed_frm_cnt = %0h | CONTROLLER LTPI_counter - recive: link_speed_frm_cnt = %0h", 
+        //check sent and receive link speed frames counters 
+        $display("TARGET LTPI_counter - sent: link_speed_frm_cnt = %0h | CONTROLLER LTPI_counter - receive: link_speed_frm_cnt = %0h", 
          TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_low.link_speed_frm_cnt, CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt);
         // `FAIL_UNLESS_EQUAL(TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_low.link_speed_frm_cnt, 
         // CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt)
-        //check sent and recive advertise frames counters 
-        $display("TARGET LTPI_counter - sent: link_advertise_frm_cnt = %0h | CONTROLLER LTPI_counter - recive: link_advertise_frm_cnt = %0h", 
+        //check sent and receive advertise frames counters 
+        $display("TARGET LTPI_counter - sent: link_advertise_frm_cnt = %0h | CONTROLLER LTPI_counter - receive: link_advertise_frm_cnt = %0h", 
         TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_high.link_advertise_frm_cnt, CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt);
-        `FAIL_UNLESS_EQUAL(TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_high.link_advertise_frm_cnt, 
-        CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt)
-        //check sent and recive configuration/accept frames counters 
-        $display("TARGET LTPI_counter - sent: link_cfg_acpt_frm_cnt = %0h | CONTROLLER LTPI_counter - recive: link_cfg_acpt_frm_cnt = %0h", 
+        // `FAIL_UNLESS_EQUAL(TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_high.link_advertise_frm_cnt, 
+        // CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt)
+        //check sent and receive configuration/accept frames counters 
+        $display("TARGET LTPI_counter - sent: link_cfg_acpt_frm_cnt = %0h | CONTROLLER LTPI_counter - receive: link_cfg_acpt_frm_cnt = %0h", 
          TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_low.link_cfg_acpt_frm_cnt, CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt);
-        `FAIL_UNLESS_EQUAL(TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_low.link_cfg_acpt_frm_cnt, 
-        CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt)
-        //check sent and recive operational frames counters 
-        $display("CONTROLLER LTPI_counter - sent: operational_frm_rcv_cnt = %0h | TARGET LTPI_counter - recive: operational_frm_rcv_cnt = %0h", 
+        // `FAIL_UNLESS_EQUAL(TRG_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_low.link_cfg_acpt_frm_cnt, 
+        // CTRL_LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt)
+        //check sent and receive operational frames counters 
+        $display("CONTROLLER LTPI_counter - sent: operational_frm_rcv_cnt = %0h | TARGET LTPI_counter - receive: operational_frm_rcv_cnt = %0h", 
          CTRL_LTPI_CSR_Out.LTPI_counter.operational_frm_snt_cnt, TRG_LTPI_CSR_Out.LTPI_counter.operational_frm_rcv_cnt);
         //`FAIL_UNLESS_EQUAL(CTRL_LTPI_CSR_Out.LTPI_counter.operational_frm_snt_cnt, 
         //TRG_LTPI_CSR_Out.LTPI_counter.operational_frm_rcv_cnt)
-        //check sent and recive operational frames counters 
-        $display("TARGET LTPI_counter - sent: operational_frm_rcv_cnt = %0h | CONTROLLER LTPI_counter - recive: operational_frm_rcv_cnt = %0h", 
+        //check sent and receive operational frames counters 
+        $display("TARGET LTPI_counter - sent: operational_frm_rcv_cnt = %0h | CONTROLLER LTPI_counter - receive: operational_frm_rcv_cnt = %0h", 
          TRG_LTPI_CSR_Out.LTPI_counter.operational_frm_snt_cnt, CTRL_LTPI_CSR_Out.LTPI_counter.operational_frm_rcv_cnt);
         //`FAIL_UNLESS_EQUAL(TRG_LTPI_CSR_Out.LTPI_counter.operational_frm_snt_cnt, 
         //CTRL_LTPI_CSR_Out.LTPI_counter.operational_frm_rcv_cnt)

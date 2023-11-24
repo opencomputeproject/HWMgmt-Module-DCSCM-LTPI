@@ -66,19 +66,25 @@ import ltpi_pkg::*;
 );
 
 rstate_t    rstate;
-
+rstate_t    rstate_ff;
 reg         timer_1ms_start;
 logic       timer_1ms_done;
 logic       local_software_reset ;
 
+reg         timer_100ms_start;
+logic       timer_100ms_done;
 
 assign local_software_reset  = LTPI_CSR_In.LTPI_Link_Ctrl.software_reset;
-assign LTPI_link_ST     = rstate;
+
+assign LTPI_link_ST     = rstate_ff;
+
+always @ (posedge clk) rstate_ff <= rstate;
 
 always @ (posedge clk or posedge reset) begin
     if(reset) begin
         rstate                                  <= ST_INIT;
         timer_1ms_start                         <= 1'b0;
+        timer_100ms_start                       <= 1'b0;
         pll_reconfig                            <= 1'b0;
     end
     else begin
@@ -86,6 +92,7 @@ always @ (posedge clk or posedge reset) begin
 
             ST_INIT: begin
                 timer_1ms_start                 <= 1'b0;
+                timer_100ms_start               <= 1'b0;
 
                 if(pll_configuration_done == 1'b1) begin
                     pll_reconfig                <= 1'b0;
@@ -98,8 +105,8 @@ always @ (posedge clk or posedge reset) begin
 
             ST_COMMA_HUNTING: begin
                 if(change_freq_st == 1'b1 )begin
-                    timer_1ms_start             <= 1'b1;
-                    if(timer_1ms_done) begin
+                    timer_100ms_start           <= 1'b1;
+                    if(timer_100ms_done) begin
                         rstate                  <= ST_LINK_LOST_ERR; //We are not able to aligne on operational FREQ
                     end
                 end
@@ -122,6 +129,7 @@ always @ (posedge clk or posedge reset) begin
                     end
                 end
             end
+
             ST_WAIT_LINK_SPEED_LOCKED: begin
                 if(link_speed_timeout_detect || crc_consec_loss || (unexpected_frame_error & !frame_crc_err)) begin 
                     rstate                      <= ST_LINK_LOST_ERR;
@@ -132,11 +140,14 @@ always @ (posedge clk or posedge reset) begin
                     end
                 end
             end
+
             ST_LINK_SPEED_CHANGE: begin
                 pll_reconfig                    <= 1'b1; 
             end
+
             ST_WAIT_LINK_ADVERTISE_LOCKED: begin //Advertise state
                 timer_1ms_start                 <= 1'b1;
+                timer_100ms_start               <= 1'b0;
 
                 if (crc_consec_loss || (unexpected_frame_error & !frame_crc_err))begin
                     rstate                      <= ST_LINK_LOST_ERR;
@@ -244,4 +255,26 @@ always @(posedge clk or posedge reset)begin
     end
 end
 
+logic [31:0] cnt100;
+
+always @(posedge clk or posedge reset)begin
+    if (reset) begin
+        timer_100ms_done      <= 1'b0;
+        cnt100                <= 32'd0;
+    end
+    else begin
+        if(!timer_100ms_start) begin 
+            timer_100ms_done  <= 1'b0;
+            cnt100            <= 32'd0;
+        end
+        else if ( cnt100 < (TIMER_1MS_60MHZ*100-1)) begin
+            timer_100ms_done  <= 1'b0;
+            cnt100            <= cnt100 + 1'b1;
+        end
+        else begin
+            timer_100ms_done  <= 1'b1;
+            cnt100            <= cnt100;
+        end
+    end
+end
 endmodule

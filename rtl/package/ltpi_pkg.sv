@@ -56,7 +56,7 @@ localparam TX_K28_5_SUB_0_CNT                   = 8'hFF;
 localparam TX_K28_5_SUB_1_CNT                   = 3'h7;
 localparam LINK_SPEED_TIMEOUT                   = 8'hFF;
 localparam LINK_CFG_TIMEOUT                     = 5'h1F; 
-localparam LINK_ACCEPT_TIMEOUT                  = 5'h15;
+localparam LINK_ACCEPT_TIMEOUT                  = 5'h0F;
 
 localparam LTPI_Version                         = 8'h01;
 localparam frame_length                         = 4'd15;

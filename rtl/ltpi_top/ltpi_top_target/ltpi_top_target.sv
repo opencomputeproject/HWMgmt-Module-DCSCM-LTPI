@@ -133,6 +133,7 @@ assign avmm_csr_byteen  = '0;
 logic clk_60MHZ;
 logic pll_locked;
 logic reset;
+wire  aligned_mgtm_ltpi;
 
 logic_avalon_mm_if #(
     .DATA_BYTES     (4),
@@ -200,7 +201,10 @@ LTPI_CSR_Out_t CSR_hw_out;
 logic clk_200m;
 logic clk_25HMZ;
 
-assign reset = !pll_locked;
+logic pll_locked_ff;
+
+always_ff @ (posedge clk_60MHZ) pll_locked_ff <= pll_locked; 
+always_ff @ (posedge clk_60MHZ) reset <= !pll_locked_ff; 
 
 pll_cpu pll_system_target (
     .areset                     (reset_in                   ),
@@ -211,6 +215,7 @@ pll_cpu pll_system_target (
     .locked                     (pll_locked                 )
     );
 
+assign aligned = aligned_mgtm_ltpi & CSR_hw_out.LTPI_Link_Status.local_link_state == operational_st;// it give only one pulse(normal give 2 pulses) for the align bit
 
 mgmt_ltpi_top #(
     .CONTROLLER                 (0                          ),  //Set Target side with value 0
@@ -231,7 +236,7 @@ mgmt_ltpi_top #(
 
     .LTPI_CSR_In                (CSR_hw_in                  ),
     .LTPI_CSR_Out               (CSR_hw_out                 ),
-    .aligned                    (aligned                    ),//Mark that LVDS link has locked
+    .aligned                    (aligned_mgtm_ltpi          ),//Mark that LVDS link has locked
     .NL_gpio_stable             (NL_gpio_stable             ),
     //LVDS output pins
     .lvds_tx_data               (lvds_tx_data               ),

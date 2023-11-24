@@ -606,7 +606,7 @@ always @ (posedge clk or posedge reset) begin
         speed                       <= base_freq_x1;
     end
     else begin
-        if(LTPI_link_ST == ST_INIT & change_freq_st != 1'b1)begin
+        if(LTPI_link_ST == ST_INIT & change_freq_st != 1'b1 || LTPI_link_ST == ST_LINK_LOST_ERR)begin
             speed                   <= base_freq_x1;
         end
         else if((LTPI_link_ST == ST_WAIT_LINK_DETECT_LOCKED)  //LTPI spec v 0_95 change

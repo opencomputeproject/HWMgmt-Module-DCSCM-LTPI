@@ -30,6 +30,9 @@
 
 module ltpi_phy_rx 
 import ltpi_pkg::*;
+#(
+    parameter CRC_REFLECTOR = 0
+)
 (
     input wire              clk,
     input wire              reset,
@@ -90,47 +93,29 @@ logic           sm_symbol_locked;
 
 logic           reset_phy;
 
-assign rx_frame_bdry_found      = !rx_symbol_locked ? 1'b0 : ((frame_rx_data_d != K28_5 && frame_rx_data == K28_5) || (frame_rx_data_d != K28_6 && frame_rx_data == K28_6)) ? 1'b1 : rx_frame_bdry_found;
-//assign crc_check_clr            = ((rx_frm_offset_d == 4'hf && rx_frm_offset == 4'hf) || !frame_crc_correct);
-assign crc_check_clr            = ((rx_frm_offset_d == 4'hf && rx_frm_offset == 4'hf));
+always @ (posedge clk or posedge reset) begin
+    if(reset) begin
+        rx_frame_bdry_found <= 0;
+    end
+    else begin
+        if(rx_symbol_locked ) begin
+            if((frame_rx_data_d != K28_5 && frame_rx_data == K28_5) || (frame_rx_data_d != K28_6 && frame_rx_data == K28_6)) begin
+                rx_frame_bdry_found <= 1;
+            end
+        end
+        else begin
+            rx_frame_bdry_found <= 0;
+        end
+    end
+end
+
+//assign crc_check_clr            = ((rx_frm_offset_d == 4'hf && rx_frm_offset == 4'hf));
+//assign crc_check_clr            = ((rx_frm_offset_d == 4'h0 && rx_frm_offset == 4'h0));
+assign crc_check_clr            = rx_frm_offset == 4'h0;
 assign crc_check_en             = rx_frame_bdry_found && data_rx_10b_dv;
 
 always_ff @(posedge clk) reset_phy <= reset;
 
-// typedef enum logic {
-//     clr_fsm_idle,
-//     clr_fsm_set
-// }clr_fsm_t;
-
-// clr_fsm_t clr_fsm;
-
-// always @ (posedge clk or posedge reset) begin
-//     if(reset) begin
-//         crc_check_clr<=0;
-//         clr_fsm <= clr_fsm_idle;
-//     end
-//     else begin
-//         case(clr_fsm)
-//             clr_fsm_idle: begin
-//                 crc_check_clr   <= 0;
-//                 if(rx_frm_offset == 4'hf & data_rx_10b_dv) begin
-//                     crc_check_clr <= 1;
-//                 end
-//                 else if(rx_frm_offset == 4'hf) begin
-//                     clr_fsm <= clr_fsm_set;
-//                     crc_check_clr <= 1;
-//                 end
-//             end
-//             clr_fsm_set: begin
-//                 crc_check_clr <= 1;
-//                 if(data_rx_10b_dv) begin
-//                     clr_fsm <= clr_fsm_idle;
-//                     crc_check_clr <= 0;
-//                 end
-//             end
-//         endcase
-//     end
-// end
 
 //rx_frm_offset on rx side, 
 //use to determine frame num in one payload package of each data received from link
@@ -303,14 +288,37 @@ always @ (posedge clk or posedge reset) begin
     end
 end
 
-crc8 crc8_check (
-    .iClk               (clk                    ), 
-    .iRst               (reset                  ),
-    .iClr               (crc_check_clr          ),   //Clear    CRC-8
-    .iEn                (crc_check_en           ),   //Clock    enable
-    .ivByte             (frame_rx_data[7:0]     ),   //Inbound  byte
-    .ovCrc8             (crc_check_result       )    //Outbound CRC-8 byte
-);
+generate 
+    if(CRC_REFLECTOR == 0) begin : gen_crc8_no_ref
+        crc8 crc8_check (
+            .iClk               (clk                    ), 
+            .iRst               (reset                  ),
+            .iClr               (crc_check_clr          ),   //Clear    CRC-8
+            .iEn                (crc_check_en           ),   //Clock    enable
+            .ivByte             (frame_rx_data[7:0]     ),   //Inbound  byte
+            .ovCrc8             (crc_check_result       )    //Outbound CRC-8 byte
+        );
+    end
+    else begin: gen_crc8_ref
+        logic [7:0] frame_rx_data_swap;
+        logic [7:0] crc_check_result_swap;
+
+        assign frame_rx_data_swap = {frame_rx_data[0], frame_rx_data[1], frame_rx_data[2],frame_rx_data[3],frame_rx_data[4],
+                    frame_rx_data[5],frame_rx_data[6],frame_rx_data[7]};
+
+        assign crc_check_result = {crc_check_result_swap[0], crc_check_result_swap[1], crc_check_result_swap[2],crc_check_result_swap[3],crc_check_result_swap[4],
+                    crc_check_result_swap[5],crc_check_result_swap[6],crc_check_result_swap[7]};
+
+        crc8 crc8_check (
+            .iClk               (clk                        ), 
+            .iRst               (reset                      ),
+            .iClr               (crc_check_clr              ),   //Clear    CRC-8
+            .iEn                (crc_check_en               ),   //Clock    enable
+            .ivByte             (frame_rx_data_swap[7:0]    ),   //Inbound  byte
+            .ovCrc8             (crc_check_result_swap      )    //Outbound CRC-8 byte
+        );
+    end
+endgenerate
 
 decoder_8b10b 
     #(
