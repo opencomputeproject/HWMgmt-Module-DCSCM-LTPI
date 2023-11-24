@@ -45,7 +45,7 @@ import ltpi_pkg::*;
     parameter GPIO_EN                   = 1,
     parameter NUM_OF_NL_GPIO            = 1024,
     parameter UART_EN                   = 1,
-    parameter NUM_OF_UART_DEV           = 1, // from 1 to 2 
+    parameter NUM_OF_UART_DEV           = 2, // from 1 to 2 
     parameter SMBUS_EN                  = 1,
     parameter NUM_OF_SMBUS_DEV          = 6, // from 1 to 6
     parameter DATA_CHANNEL_EN           = 1,
@@ -138,7 +138,13 @@ logic               clk_200m;
 logic               clk_25HMZ;
 
 logic               reset;
-assign reset = !pll_locked; 
+
+wire aligned_mgtm_ltpi;
+
+logic pll_locked_ff;
+
+always_ff @ (posedge clk_60MHZ) pll_locked_ff <= pll_locked; 
+always_ff @ (posedge clk_60MHZ) reset <= !pll_locked_ff; 
 
 logic_avalon_mm_if #(
     .DATA_BYTES     (4),
@@ -194,6 +200,7 @@ logic_avalon_mm_if #(
     .areset_n       (!reset)
 );
 
+
 assign u_avmm_cntrl.readdata      = '0;
 assign u_avmm_cntrl.waitrequest   = '0;
 assign u_avmm_cntrl.readdatavalid = '0;
@@ -226,6 +233,9 @@ pll_cpu pll_system_controller (
     );
 
 
+assign aligned = aligned_mgtm_ltpi & CSR_hw_out.LTPI_Link_Status.local_link_state == operational_st;// it give only one pulse(normal give 2 pulses) for the align bit
+
+    
 mgmt_ltpi_top #(
     .CONTROLLER                 (1                          ),  //Set Controller side with value 1
     .GPIO_EN                    (GPIO_EN                    ),
@@ -245,7 +255,7 @@ mgmt_ltpi_top #(
 
     .LTPI_CSR_In                (CSR_hw_in                  ),
     .LTPI_CSR_Out               (CSR_hw_out                 ),
-    .aligned                    (aligned                    ),//Mark that LVDS link has locked
+    .aligned                    (aligned_mgtm_ltpi          ),//Mark that LVDS link has locked
     .NL_gpio_stable             (NL_gpio_stable             ),
     //LVDS output pins
     .lvds_tx_data               (lvds_tx_data               ),

@@ -162,6 +162,11 @@ assign link_lost = (LTPI_link_ST == ST_LINK_LOST_ERR  || LTPI_link_ST == ST_INIT
 logic reset_phy_tx;
 assign reset_phy_tx = ~tx_pll_locked;
 
+logic frame_crc_err_mgmt;
+assign frame_crc_err_mgmt = frame_crc_err & aligned;
+logic  [3:0]tx_frm_offset_ff;
+always @ (posedge clk) tx_frm_offset_ff <= tx_frm_offset;
+
 ltpi_phy_tx ltpi_phy_tx_inst (
     .clk                (clk                                        ),
     .clk_link           (clk_phy                                    ),
@@ -187,7 +192,7 @@ mgmt_ltpi_frm_tx  #(
 
     .ltpi_frame_tx                      (ltpi_frame_tx                  ),
     .LTPI_link_ST                       (LTPI_link_ST                   ),
-    .tx_frm_offset                      (tx_frm_offset                  ),
+    .tx_frm_offset                      (tx_frm_offset_ff               ),
     .transmited_255_detect_frm          (transmited_255_detect_frm      ),
 
     .transmited_7_speed_frm             (transmited_7_speed_frm         ),
@@ -207,7 +212,8 @@ mgmt_ltpi_frm_tx  #(
     .LTPI_CSR_Out                       (LTPI_CSR_Out_frm_tx            )
 );
 logic reset_phy_rx;
-assign reset_phy_rx = ~tx_pll_locked || link_lost;
+assign reset_phy_rx = ~tx_pll_locked || link_lost || LTPI_link_ST == ST_LINK_SPEED_CHANGE;
+
 // LVDS PHY RX
 ltpi_phy_rx ltpi_phy_rx_inst (
     .clk                                (clk                            ),
@@ -232,7 +238,7 @@ mgmt_ltpi_frm_rx #(
     .reset                              (reset                          ),
     //input signals
     .ltpi_frame_rx                      (ltpi_frame_rx                  ),
-    .frame_crc_err                      (frame_crc_err                  ),
+    .frame_crc_err                      (frame_crc_err_mgmt             ),
     .LTPI_link_ST                       (LTPI_link_ST                   ),
     .change_freq_st                     (change_freq_st                 ),
     .rx_frm_offset                      (rx_frm_offset                  ),
@@ -298,6 +304,8 @@ generate begin: dynamic_pll
 end
 endgenerate
 
+
+
 // LTPI PHY Management - here is main FSM - diffrent for Controller and Target device
 generate begin: mgmt_phy
     if(CONTROLLER) begin: controller
@@ -308,7 +316,7 @@ generate begin: mgmt_phy
             .operational_speed          (operational_speed              ),
             .tx_frm_offset              (tx_frm_offset                  ),
             .aligned                    (aligned                        ),
-            .frame_crc_err              (frame_crc_err                  ),
+            .frame_crc_err              (frame_crc_err_mgmt             ),
 
             .link_detect_locked         (link_detect_locked             ),
             .crc_consec_loss            (crc_consec_loss                ),
@@ -342,7 +350,7 @@ generate begin: mgmt_phy
             .operational_speed          (operational_speed              ),
             .tx_frm_offset              (tx_frm_offset                  ),
             .aligned                    (aligned                        ),
-            .frame_crc_err              (frame_crc_err                  ),
+            .frame_crc_err              (frame_crc_err_mgmt             ),
             
             .link_detect_locked         (link_detect_locked             ),
             .crc_consec_loss            (crc_consec_loss                ),
@@ -383,7 +391,7 @@ always @ (posedge clk or posedge reset) begin
                 change_freq_st      <= 1'b1;
             end
         end
-        else if(change_freq_st && (LTPI_CSR_Out.LTPI_Link_Status.local_link_state == advertise_st)) begin
+        else if(change_freq_st && (LTPI_CSR_Out.LTPI_Link_Status.local_link_state == advertise_st) || LTPI_link_ST == ST_LINK_LOST_ERR) begin
             change_freq_st          <= 1'b0;
         end
     end

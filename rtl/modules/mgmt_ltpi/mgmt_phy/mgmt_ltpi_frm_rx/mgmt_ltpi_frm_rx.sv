@@ -195,7 +195,8 @@ always @ (posedge clk or posedge reset) begin
                 if(unexpected_frame_error_r_edge) begin
                     unexpected_frame_error      <= 1'b1;
                 end
-                else if(remote_link_state >= remote_link_state_d) begin
+                //else if(remote_link_state >= remote_link_state_d) begin
+                else if ((remote_link_state - remote_link_state_d) == 1 || (remote_link_state - remote_link_state_d) == 0) begin
                     unexpected_frame_error      <= 1'b0;
                     remote_software_reset       <= 1'b0;
                 end
@@ -570,7 +571,7 @@ always @ (posedge clk or posedge reset) begin
             operational_frm_rx.OEM_data         <= '0;
             operational_frm_rx.frame_counter    <= '0;
         end
-        else if(LTPI_link_ST == ST_OPERATIONAL || LTPI_link_ST == ST_OPERATIONAL_RESET) begin 
+        else if((LTPI_link_ST == ST_OPERATIONAL || LTPI_link_ST == ST_OPERATIONAL_RESET ) & remote_link_state == operational_st) begin 
             if(ltpi_frame_rx.frame_subtype == K28_7_SUB_0) begin
                 data_channel_rx_valid               <= 0;
                 data_channel_rx                     <= 0;
@@ -682,11 +683,12 @@ always @ (posedge clk or posedge reset) begin
     end
     else begin
 
-            if(rx_frm_offset == '0 && frame_crc_err) begin
+            //if(rx_frm_offset == '0 && frame_crc_err) begin
+            if(LTPI_link_ST != ST_LINK_SPEED_CHANGE && frame_crc_err) begin
                 crc_error_cnt                   <= crc_error_cnt + 32'd1;
             end
 
-            if(rx_frm_offset == '0 && unknown_comma_error) begin
+            if(LTPI_link_ST != ST_LINK_SPEED_CHANGE && rx_frm_offset == '0 && unknown_comma_error) begin
                 unknown_comma_err_cnt           <= unknown_comma_err_cnt + 32'd1; 
             
             end

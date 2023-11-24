@@ -30,6 +30,9 @@
 
 module ltpi_phy_tx
 import ltpi_pkg::*;
+#(
+    parameter CRC_REFLECTOR = 0
+)
 (
     input wire                  clk,
     input wire                  clk_link,
@@ -76,7 +79,8 @@ logic           reset_phy;
 
 assign enc_kin_ena      = ((tx_frm_offset_d2 == 4'd0) ? 1'b1 : 1'b0);
 assign enc_ein_ena      = wr_req_d2;
-assign crc_gen_Clr      = ((tx_frm_offset_d == 4'hf) ? 1'b1 : 1'b0); 
+//assign crc_gen_Clr      = ((tx_frm_offset_d == 4'hf) ? 1'b1 : 1'b0); 
+assign crc_gen_Clr      = ((tx_frm_offset_d == 4'h0) ? 1'b1 : 1'b0); 
 
 always @ (posedge clk) LVDS_DDR_ff      <= LVDS_DDR;
 always @ (posedge clk) link_speed_ff    <= link_speed;
@@ -263,15 +267,41 @@ encoder_8b10b (
     .eout_rdreg     (enc_rd                )
 );
 
-crc8 crc8_gen 
-(
-    .iClk           (clk                   ),
-    .iRst           (reset                 ),
-    .iClr           (crc_gen_Clr           ),   //Clear    CRC-8
-    .iEn            (wr_req_d2             ),   //Clock    enable
-    .ivByte         (frame_tx_data         ),   //Inbound  byte
-    .ovCrc8         (crc_data              )    //Outbound CRC-8 byte
-);
+generate 
+    if(CRC_REFLECTOR == 0) begin : gen_crc8_no_ref
+        crc8 crc8_gen 
+        (
+            .iClk           (clk                   ),
+            .iRst           (reset                 ),
+            .iClr           (crc_gen_Clr           ),   //Clear    CRC-8
+            .iEn            (wr_req_d2             ),   //Clock    enable
+            .ivByte         (frame_tx_data         ),   //Inbound  byte
+            .ovCrc8         (crc_data              )    //Outbound CRC-8 byte
+        );
+    end
+    else begin: gen_crc8_ref
+
+        logic [7:0] crc_data_swap;
+        logic [7:0] frame_tx_data_swap;
+        //logic [7:0] crc_result;
+
+        assign frame_tx_data_swap = {frame_tx_data[0], frame_tx_data[1], frame_tx_data[2],frame_tx_data[3],frame_tx_data[4],
+                    frame_tx_data[5],frame_tx_data[6], frame_tx_data[7]};
+
+        assign crc_data = {crc_data_swap[0], crc_data_swap[1], crc_data_swap[2],crc_data_swap[3],crc_data_swap[4],
+                    crc_data_swap[5],crc_data_swap[6],crc_data_swap[7]};
+
+        crc8 crc8_gen 
+        (
+            .iClk           (clk                   ),
+            .iRst           (reset                 ),
+            .iClr           (crc_gen_Clr           ),   //Clear    CRC-8
+            .iEn            (wr_req_d2             ),   //Clock    enable
+            .ivByte         (frame_tx_data_swap    ),   //Inbound  byte
+            .ovCrc8         (crc_data_swap         )    //Outbound CRC-8 byte
+        );
+    end
+endgenerate
 
 lvds_phy_tx #(
     .CYCLONE_V (0)
