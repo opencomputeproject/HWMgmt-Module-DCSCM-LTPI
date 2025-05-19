@@ -585,17 +585,36 @@ always @ (posedge clk or posedge reset) begin
                 else if (rx_frm_offset_ff == 4) begin
                     operational_frm_rx.ll_GPIO[1]       <= ltpi_frame_rx.data[2];
                 end
-
-                operational_frm_rx.nl_GPIO[0]       <= ltpi_frame_rx.data[3];
-                operational_frm_rx.nl_GPIO[1]       <= ltpi_frame_rx.data[4];
-                operational_frm_rx.uart_data        <= ltpi_frame_rx.data[5];
-                operational_frm_rx.i2c_data[0]      <= ltpi_frame_rx.data[6];
-                operational_frm_rx.i2c_data[1]      <= ltpi_frame_rx.data[7];
-                operational_frm_rx.i2c_data[2]      <= ltpi_frame_rx.data[8];
-                operational_frm_rx.OEM_data[0]      <= ltpi_frame_rx.data[9];
-                operational_frm_rx.OEM_data[1]      <= ltpi_frame_rx.data[10];
-                operational_frm_rx.OEM_data[2]      <= ltpi_frame_rx.data[11];
-                operational_frm_rx.OEM_data[3]      <= ltpi_frame_rx.data[12];
+                else if (rx_frm_offset_ff == 5) begin
+                    operational_frm_rx.nl_GPIO[0]       <= ltpi_frame_rx.data[3];
+                end
+                else if (rx_frm_offset_ff == 6) begin
+                    operational_frm_rx.nl_GPIO[1]       <= ltpi_frame_rx.data[4];
+                end
+                else if (rx_frm_offset_ff == 7) begin
+                    operational_frm_rx.uart_data        <= ltpi_frame_rx.data[5];
+                end
+                else if (rx_frm_offset_ff == 8) begin
+                    operational_frm_rx.i2c_data[0]      <= ltpi_frame_rx.data[6];
+                end
+                else if (rx_frm_offset_ff == 9) begin
+                    operational_frm_rx.i2c_data[1]      <= ltpi_frame_rx.data[7];
+                end
+                else if (rx_frm_offset_ff == 10) begin
+                    operational_frm_rx.i2c_data[2]      <= ltpi_frame_rx.data[8];
+                end
+                else if (rx_frm_offset_ff == 11) begin
+                    operational_frm_rx.OEM_data[0]      <= ltpi_frame_rx.data[9];
+                end
+                else if (rx_frm_offset_ff == 12) begin
+                    operational_frm_rx.OEM_data[1]      <= ltpi_frame_rx.data[10];
+                end
+                else if (rx_frm_offset_ff == 13) begin
+                    operational_frm_rx.OEM_data[2]      <= ltpi_frame_rx.data[11];
+                end
+                else if (rx_frm_offset_ff == 14) begin
+                    operational_frm_rx.OEM_data[3]      <= ltpi_frame_rx.data[12];
+                end
             end
             else if(ltpi_frame_rx.frame_subtype == K28_7_SUB_1) begin
                 operational_frm_rx.comma_symbol     <= ltpi_frame_rx.comma_symbol;

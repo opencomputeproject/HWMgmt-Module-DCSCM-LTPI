@@ -45,15 +45,35 @@ module ltpi_top_target_quartus
     input           UART_RX,
     input           UART_CTS,
 
+    //UART BMC
+    output reg      UART_BMC_TXD,
+    output reg      UART_BMC_RTS,
+    input           UART_BMC_RXD,
+    input           UART_BMC_CTS,
+
     //I2C over LVDS
     inout           I2C_SCL,
     inout           I2C_SDA, 
 
-    output          NL_GPIO_0,
-    output          LL_GPIO_0,
-    output          DUT_ALIGNED
+    //I2C over BMC
+    inout           BMC_SMB_SCL,
+    inout           BMC_SMB_SDA, 
 
+    //Beagle pin
+    inout           I2C_SCL_R,
+    inout           I2C_SDA_R,
+    //LED
+    output          USER_IO_0,
+    output          USER_IO_1,
+    output          USER_IO_2,
+    output          USER_IO_3,
+    output          USER_IO_4,
+    output          GPIO_0,
+    output          DUT_ALIGNED,
+    output          RESET_N,
+    output          PLL_LOCKED
 );
+
 
 wire                rst_n;
 wire                aligned;
@@ -72,15 +92,19 @@ wire        [ 1:0]  uart_cts;
 wire        [ 1:0]  uart_txd;
 wire        [ 1:0]  uart_rts;
 
+
+assign DUT_ALIGNED  = aligned;
 assign uart_rxd[0]  = UART_RX;
 assign UART_TX      = uart_txd[0];
 assign uart_cts     = 0;
 
-assign DUT_ALIGNED  = aligned;
-assign NL_GPIO_0    = nl_gpio_out[0];
-assign LL_GPIO_0    = ll_gpio_out[0];
+assign USER_IO_0    = nl_gpio_out[0];
+assign GPIO_0       = ll_gpio_out[0];//J3-2
 
-ltpi_top_target ltpi_top_target_inst(
+ltpi_top_target #(
+    .CSR_LIGHT_VER_EN           (1)
+)
+ltpi_top_target_inst(
     .CLK_25M_OSC_CPU_FPGA       (CLK_25M_OSC_CPU_FPGA           ),
     .reset_in                   (~PWRGD_P1V2_MAX10_AUX_CPU_PLD_R),
 

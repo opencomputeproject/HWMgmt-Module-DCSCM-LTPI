@@ -85,9 +85,19 @@ import ltpi_pkg::*;
     `LOGIC_MODPORT(logic_avalon_mm_if,  master)    avalon_mm_m, //AVMM Master interface tunneling through LVDS, Only exist on target side
     `LOGIC_MODPORT(logic_avalon_mm_if,  slave)     avalon_mm_s, //AVMM Slave interface tunneling through LVDS, //Only exist on controller side
     
+    output logic                                   data_channel_timeout, //timeout indecate that transmision through data channel was invalid - only exist on controller side
+
     input logic  [                     7 :0]       tag_in,
     output logic [                     7 :0]       tag_out
 );
+
+logic [5:0][31:0] smb_dbg_cntrl_controller_smbstate;
+logic [5:0][31:0] smb_dbg_cntrl_relay_state;
+logic [5:0][19:0] smb_dbg_cntrl_relay_event_ioc_frame_bus;
+
+logic [5:0][31:0] smb_dbg_trg_controller_smbstate;
+logic [5:0][31:0] smb_dbg_trg_relay_state;
+logic [5:0][19:0] smb_dbg_trg_relay_event_ioc_frame_bus;
 
 wire                    reset_interfaces;
 
@@ -178,6 +188,17 @@ assign config_capabilites                   = LTPI_CSR_Out.LTPI_Config_or_Accept
 assign soft_i2c_channel_rst                 = LTPI_CSR_In.LTPI_Link_Ctrl.I2C_channel_reset;
 assign CSR_data_channel_reset               = LTPI_CSR_In.LTPI_Link_Ctrl.data_channel_reset;
 
+//DEBUG
+logic [5:0][31:0] csr_smb_dbg_cntrl_controller_smbstate;
+logic [5:0][31:0] csr_smb_dbg_cntrl_relay_state;
+logic [5:0][19:0] csr_smb_dbg_cntrl_relay_event_ioc_frame_bus;
+
+logic [5:0][31:0] csr_smb_dbg_trg_controller_smbstate;
+logic [5:0][31:0] csr_smb_dbg_trg_relay_state;
+logic [5:0][19:0] csr_smb_dbg_trg_relay_event_ioc_frame_bus;
+logic [5:0][31:0] csr_smb_dbg_recovery_cnt;
+
+
 mgmt_phy_top #(
     .CONTROLLER (CONTROLLER)
 ) mgmt_phy_top_inst(
@@ -203,7 +224,16 @@ mgmt_phy_top #(
     .data_channel_rx_valid  (data_channel_rx_valid  ),
 
     .LTPI_CSR_In            (LTPI_CSR_In            ),
-    .LTPI_CSR_Out           (LTPI_CSR_Out           )
+    .LTPI_CSR_Out           (LTPI_CSR_Out           ),
+
+    .csr_smb_dbg_cntrl_controller_smbstate          (csr_smb_dbg_cntrl_controller_smbstate      ),
+    .csr_smb_dbg_cntrl_relay_state                  (csr_smb_dbg_cntrl_relay_state              ),
+    .csr_smb_dbg_cntrl_relay_event_ioc_frame_bus    (csr_smb_dbg_cntrl_relay_event_ioc_frame_bus),
+
+    .csr_smb_dbg_trg_controller_smbstate            (csr_smb_dbg_trg_controller_smbstate        ),
+    .csr_smb_dbg_trg_relay_state                    (csr_smb_dbg_trg_relay_state                ),
+    .csr_smb_dbg_trg_relay_event_ioc_frame_bus      (csr_smb_dbg_trg_relay_event_ioc_frame_bus  ),
+    .csr_smb_dbg_recovery_cnt                       (csr_smb_dbg_recovery_cnt                   )
 );
 
 generate begin:GPIO
@@ -302,7 +332,16 @@ generate begin: SMBUS
             .tx_frm_offset          (tx_frm_offset          ),
             .config_capabilites     (config_capabilites     ),
             .local_link_state       (local_link_state       ),
-            .remote_link_state      (remote_link_state      )
+            .remote_link_state      (remote_link_state      ),
+
+            .smb_dbg_cntrl_controller_smbstate          (csr_smb_dbg_cntrl_controller_smbstate      ),
+            .smb_dbg_cntrl_relay_state                  (csr_smb_dbg_cntrl_relay_state              ),
+            .smb_dbg_cntrl_relay_event_ioc_frame_bus    (csr_smb_dbg_cntrl_relay_event_ioc_frame_bus),
+
+            .smb_dbg_trg_controller_smbstate            (csr_smb_dbg_trg_controller_smbstate        ),
+            .smb_dbg_trg_relay_state                    (csr_smb_dbg_trg_relay_state                ),
+            .smb_dbg_trg_relay_event_ioc_frame_bus      (csr_smb_dbg_trg_relay_event_ioc_frame_bus  ),
+            .smb_dbg_recovery_cnt                       (csr_smb_dbg_recovery_cnt                   )
         );
     end
     else begin
@@ -344,6 +383,8 @@ generate begin: data_channel
                     .clk                    (clk                    ),
                     .reset                  (reset_data_channel     ),
                     .data_channel_rst       (CSR_data_channel_reset ),
+                    .data_channel_timeout   (data_channel_timeout   ),
+
                     .req_valid              (req_valid              ),
                     .req_ack                (req_ack                ),
                     .req                    (req                    ),

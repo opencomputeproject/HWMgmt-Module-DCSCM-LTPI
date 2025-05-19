@@ -9,6 +9,7 @@ module ltpi_csr_light (
         input wire s_cpuif_req_is_wr,
         input wire [7:0] s_cpuif_addr,
         input wire [31:0] s_cpuif_wr_data,
+        input wire [31:0] s_cpuif_wr_biten,
         output wire s_cpuif_req_stall_wr,
         output wire s_cpuif_req_stall_rd,
         output wire s_cpuif_rd_ack,
@@ -28,6 +29,7 @@ module ltpi_csr_light (
     logic cpuif_req_is_wr;
     logic [7:0] cpuif_addr;
     logic [31:0] cpuif_wr_data;
+    logic [31:0] cpuif_wr_biten;
     logic cpuif_req_stall_wr;
     logic cpuif_req_stall_rd;
 
@@ -42,6 +44,7 @@ module ltpi_csr_light (
     assign cpuif_req_is_wr = s_cpuif_req_is_wr;
     assign cpuif_addr = s_cpuif_addr;
     assign cpuif_wr_data = s_cpuif_wr_data;
+    assign cpuif_wr_biten = s_cpuif_wr_biten;
     assign s_cpuif_req_stall_wr = cpuif_req_stall_wr;
     assign s_cpuif_req_stall_rd = cpuif_req_stall_rd;
     assign s_cpuif_rd_ack = cpuif_rd_ack;
@@ -82,11 +85,18 @@ module ltpi_csr_light (
         logic LTPI_Config_Capab_LOW;
         logic LTPI_Config_Capab_HIGH;
         logic LTPI_Link_Ctrl;
+        logic smb_trg_dbg_cntrl_smbstate;
+        logic smb_trg_dbg_cntrl_relay_state;
+        logic smb_trg_dbg_relay_event_ioc_frame_bus;
+        logic smb_cntrl_dbg_cntrl_smbstate;
+        logic smb_cntrl_dbg_cntrl_relay_state;
+        logic smb_cntrl_dbg_relay_event_ioc_frame_bus;
     } decoded_reg_strb_t;
     decoded_reg_strb_t decoded_reg_strb;
     logic decoded_req;
     logic decoded_req_is_wr;
     logic [31:0] decoded_wr_data;
+    logic [31:0] decoded_wr_biten;
 
     always_comb begin
         decoded_reg_strb.LTPI_Link_Status = cpuif_req_masked & (cpuif_addr == 'h0);
@@ -100,12 +110,19 @@ module ltpi_csr_light (
         decoded_reg_strb.LTPI_Config_Capab_LOW = cpuif_req_masked & (cpuif_addr == 'h24);
         decoded_reg_strb.LTPI_Config_Capab_HIGH = cpuif_req_masked & (cpuif_addr == 'h28);
         decoded_reg_strb.LTPI_Link_Ctrl = cpuif_req_masked & (cpuif_addr == 'h80);
+        decoded_reg_strb.smb_trg_dbg_cntrl_smbstate = cpuif_req_masked & (cpuif_addr == 'h84);
+        decoded_reg_strb.smb_trg_dbg_cntrl_relay_state = cpuif_req_masked & (cpuif_addr == 'h88);
+        decoded_reg_strb.smb_trg_dbg_relay_event_ioc_frame_bus = cpuif_req_masked & (cpuif_addr == 'h8c);
+        decoded_reg_strb.smb_cntrl_dbg_cntrl_smbstate = cpuif_req_masked & (cpuif_addr == 'h90);
+        decoded_reg_strb.smb_cntrl_dbg_cntrl_relay_state = cpuif_req_masked & (cpuif_addr == 'h94);
+        decoded_reg_strb.smb_cntrl_dbg_relay_event_ioc_frame_bus = cpuif_req_masked & (cpuif_addr == 'h98);
     end
 
     // Pass down signals to next stage
     assign decoded_req = cpuif_req_masked;
     assign decoded_req_is_wr = cpuif_req_is_wr;
     assign decoded_wr_data = cpuif_wr_data;
+    assign decoded_wr_biten = cpuif_wr_biten;
 
     // Writes are always granted with no error response
     assign cpuif_wr_ack = decoded_req & decoded_req_is_wr;
@@ -267,6 +284,98 @@ module ltpi_csr_light (
                 logic load_next;
             } trigger_config_st;
         } LTPI_Link_Ctrl;
+        struct {
+            struct {
+                logic [31:0] next;
+                logic load_next;
+            } controller_smbstate;
+        } smb_trg_dbg_cntrl_smbstate;
+        struct {
+            struct {
+                logic [31:0] next;
+                logic load_next;
+            } relay_state;
+        } smb_trg_dbg_cntrl_relay_state;
+        struct {
+            struct {
+                logic next;
+                logic load_next;
+            } ia_controller_sda;
+            struct {
+                logic next;
+                logic load_next;
+            } ia_controller_scl;
+            struct {
+                logic next;
+                logic load_next;
+            } ia_controller_sda_oe;
+            struct {
+                logic next;
+                logic load_next;
+            } ia_controller_scl_oe;
+            struct {
+                logic [3:0] next;
+                logic load_next;
+            } ioc_frame_o;
+            struct {
+                logic [3:0] next;
+                logic load_next;
+            } ioc_frame_i;
+            struct {
+                logic [3:0] next;
+                logic load_next;
+            } i2c_event_o;
+            struct {
+                logic [3:0] next;
+                logic load_next;
+            } i2c_event_i;
+        } smb_trg_dbg_relay_event_ioc_frame_bus;
+        struct {
+            struct {
+                logic [31:0] next;
+                logic load_next;
+            } controller_smbstate;
+        } smb_cntrl_dbg_cntrl_smbstate;
+        struct {
+            struct {
+                logic [31:0] next;
+                logic load_next;
+            } relay_state;
+        } smb_cntrl_dbg_cntrl_relay_state;
+        struct {
+            struct {
+                logic next;
+                logic load_next;
+            } ia_controller_sda;
+            struct {
+                logic next;
+                logic load_next;
+            } ia_controller_scl;
+            struct {
+                logic next;
+                logic load_next;
+            } ia_controller_sda_oe;
+            struct {
+                logic next;
+                logic load_next;
+            } ia_controller_scl_oe;
+            struct {
+                logic [3:0] next;
+                logic load_next;
+            } ioc_frame_o;
+            struct {
+                logic [3:0] next;
+                logic load_next;
+            } ioc_frame_i;
+            struct {
+                logic [3:0] next;
+                logic load_next;
+            } i2c_event_o;
+            struct {
+                logic [3:0] next;
+                logic load_next;
+            } i2c_event_i;
+        } smb_cntrl_dbg_relay_event_ioc_frame_bus;
     } field_combo_t;
     field_combo_t field_combo;
 
@@ -389,6 +498,78 @@ module ltpi_csr_light (
                 logic value;
             } trigger_config_st;
         } LTPI_Link_Ctrl;
+        struct {
+            struct {
+                logic [31:0] value;
+            } controller_smbstate;
+        } smb_trg_dbg_cntrl_smbstate;
+        struct {
+            struct {
+                logic [31:0] value;
+            } relay_state;
+        } smb_trg_dbg_cntrl_relay_state;
+        struct {
+            struct {
+                logic value;
+            } ia_controller_sda;
+            struct {
+                logic value;
+            } ia_controller_scl;
+            struct {
+                logic value;
+            } ia_controller_sda_oe;
+            struct {
+                logic value;
+            } ia_controller_scl_oe;
+            struct {
+                logic [3:0] value;
+            } ioc_frame_o;
+            struct {
+                logic [3:0] value;
+            } ioc_frame_i;
+            struct {
+                logic [3:0] value;
+            } i2c_event_o;
+            struct {
+                logic [3:0] value;
+            } i2c_event_i;
+        } smb_trg_dbg_relay_event_ioc_frame_bus;
+        struct {
+            struct {
+                logic [31:0] value;
+            } controller_smbstate;
+        } smb_cntrl_dbg_cntrl_smbstate;
+        struct {
+            struct {
+                logic [31:0] value;
+            } relay_state;
+        } smb_cntrl_dbg_cntrl_relay_state;
+        struct {
+            struct {
+                logic value;
+            } ia_controller_sda;
+            struct {
+                logic value;
+            } ia_controller_scl;
+            struct {
+                logic value;
+            } ia_controller_sda_oe;
+            struct {
+                logic value;
+            } ia_controller_scl_oe;
+            struct {
+                logic [3:0] value;
+            } ioc_frame_o;
+            struct {
+                logic [3:0] value;
+            } ioc_frame_i;
+            struct {
+                logic [3:0] value;
+            } i2c_event_o;
+            struct {
+                logic [3:0] value;
+            } i2c_event_i;
+        } smb_cntrl_dbg_relay_event_ioc_frame_bus;
     } field_storage_t;
     field_storage_t field_storage;
 
@@ -416,7 +597,7 @@ module ltpi_csr_light (
         automatic logic [0:0] next_c = field_storage.LTPI_Link_Status.link_lost_error.value;
         automatic logic load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Status && decoded_req_is_wr) begin // SW write 1 clear
-            next_c = field_storage.LTPI_Link_Status.link_lost_error.value & ~decoded_wr_data[1:1];
+            next_c = field_storage.LTPI_Link_Status.link_lost_error.value & ~(decoded_wr_data[1:1] & decoded_wr_biten[1:1]);
             load_next_c = '1;
         end else if(1) begin // HW Write
             next_c = hwif_in.LTPI_Link_Status.link_lost_error.next;
@@ -438,7 +619,7 @@ module ltpi_csr_light (
         automatic logic [0:0] next_c = field_storage.LTPI_Link_Status.frm_CRC_error.value;
         automatic logic load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Status && decoded_req_is_wr) begin // SW write 1 clear
-            next_c = field_storage.LTPI_Link_Status.frm_CRC_error.value & ~decoded_wr_data[2:2];
+            next_c = field_storage.LTPI_Link_Status.frm_CRC_error.value & ~(decoded_wr_data[2:2] & decoded_wr_biten[2:2]);
             load_next_c = '1;
         end else if(1) begin // HW Write
             next_c = hwif_in.LTPI_Link_Status.frm_CRC_error.next;
@@ -460,7 +641,7 @@ module ltpi_csr_light (
         automatic logic [0:0] next_c = field_storage.LTPI_Link_Status.unknown_comma_error.value;
         automatic logic load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Status && decoded_req_is_wr) begin // SW write 1 clear
-            next_c = field_storage.LTPI_Link_Status.unknown_comma_error.value & ~decoded_wr_data[3:3];
+            next_c = field_storage.LTPI_Link_Status.unknown_comma_error.value & ~(decoded_wr_data[3:3] & decoded_wr_biten[3:3]);
             load_next_c = '1;
         end else if(1) begin // HW Write
             next_c = hwif_in.LTPI_Link_Status.unknown_comma_error.next;
@@ -482,7 +663,7 @@ module ltpi_csr_light (
         automatic logic [0:0] next_c = field_storage.LTPI_Link_Status.link_speed_timeout_error.value;
         automatic logic load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Status && decoded_req_is_wr) begin // SW write 1 clear
-            next_c = field_storage.LTPI_Link_Status.link_speed_timeout_error.value & ~decoded_wr_data[4:4];
+            next_c = field_storage.LTPI_Link_Status.link_speed_timeout_error.value & ~(decoded_wr_data[4:4] & decoded_wr_biten[4:4]);
             load_next_c = '1;
         end else if(1) begin // HW Write
             next_c = hwif_in.LTPI_Link_Status.link_speed_timeout_error.next;
@@ -504,7 +685,7 @@ module ltpi_csr_light (
         automatic logic [0:0] next_c = field_storage.LTPI_Link_Status.link_cfg_acpt_timeout_error.value;
         automatic logic load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Status && decoded_req_is_wr) begin // SW write 1 clear
-            next_c = field_storage.LTPI_Link_Status.link_cfg_acpt_timeout_error.value & ~decoded_wr_data[5:5];
+            next_c = field_storage.LTPI_Link_Status.link_cfg_acpt_timeout_error.value & ~(decoded_wr_data[5:5] & decoded_wr_biten[5:5]);
             load_next_c = '1;
         end else if(1) begin // HW Write
             next_c = hwif_in.LTPI_Link_Status.link_cfg_acpt_timeout_error.next;
@@ -604,7 +785,7 @@ module ltpi_csr_light (
         automatic logic [15:0] next_c = field_storage.LTPI_Detect_Capabilities_Local.link_Speed_capab.value;
         automatic logic load_next_c = '0;
         if(decoded_reg_strb.LTPI_Detect_Capabilities_Local && decoded_req_is_wr) begin // SW write
-            next_c = decoded_wr_data[23:8];
+            next_c = (field_storage.LTPI_Detect_Capabilities_Local.link_Speed_capab.value & ~decoded_wr_biten[23:8]) | (decoded_wr_data[23:8] & decoded_wr_biten[23:8]);
             load_next_c = '1;
         end
         field_combo.LTPI_Detect_Capabilities_Local.link_Speed_capab.next = next_c;
@@ -681,7 +862,7 @@ module ltpi_csr_light (
         automatic logic [4:0] next_c = field_storage.LTPI_Advertise_Capab_local_LOW.supported_channel.value;
         automatic logic load_next_c = '0;
         if(decoded_reg_strb.LTPI_Advertise_Capab_local_LOW && decoded_req_is_wr) begin // SW write
-            next_c = decoded_wr_data[4:0];
+            next_c = (field_storage.LTPI_Advertise_Capab_local_LOW.supported_channel.value & ~decoded_wr_biten[4:0]) | (decoded_wr_data[4:0] & decoded_wr_biten[4:0]);
             load_next_c = '1;
         end else if(1) begin // HW Write
             next_c = hwif_in.LTPI_Advertise_Capab_local_LOW.supported_channel.next;
@@ -703,7 +884,7 @@ module ltpi_csr_light (
         automatic logic [9:0] next_c = field_storage.LTPI_Advertise_Capab_local_LOW.NL_GPIO_nb.value;
         automatic logic load_next_c = '0;
         if(decoded_reg_strb.LTPI_Advertise_Capab_local_LOW && decoded_req_is_wr) begin // SW write
-            next_c = decoded_wr_data[17:8];
+            next_c = (field_storage.LTPI_Advertise_Capab_local_LOW.NL_GPIO_nb.value & ~decoded_wr_biten[17:8]) | (decoded_wr_data[17:8] & decoded_wr_biten[17:8]);
             load_next_c = '1;
         end else if(1) begin // HW Write
             next_c = hwif_in.LTPI_Advertise_Capab_local_LOW.NL_GPIO_nb.next;
@@ -725,7 +906,7 @@ module ltpi_csr_light (
         automatic logic [5:0] next_c = field_storage.LTPI_Advertise_Capab_local_LOW.I2C_channel_en.value;
         automatic logic load_next_c = '0;
         if(decoded_reg_strb.LTPI_Advertise_Capab_local_LOW && decoded_req_is_wr) begin // SW write
-            next_c = decoded_wr_data[29:24];
+            next_c = (field_storage.LTPI_Advertise_Capab_local_LOW.I2C_channel_en.value & ~decoded_wr_biten[29:24]) | (decoded_wr_data[29:24] & decoded_wr_biten[29:24]);
             load_next_c = '1;
         end else if(1) begin // HW Write
             next_c = hwif_in.LTPI_Advertise_Capab_local_LOW.I2C_channel_en.next;
@@ -747,7 +928,7 @@ module ltpi_csr_light (
         automatic logic [0:0] next_c = field_storage.LTPI_Advertise_Capab_local_LOW.I2C_channel_echo_support.value;
         automatic logic load_next_c = '0;
         if(decoded_reg_strb.LTPI_Advertise_Capab_local_LOW && decoded_req_is_wr) begin // SW write
-            next_c = decoded_wr_data[30:30];
+            next_c = (field_storage.LTPI_Advertise_Capab_local_LOW.I2C_channel_echo_support.value & ~decoded_wr_biten[30:30]) | (decoded_wr_data[30:30] & decoded_wr_biten[30:30]);
             load_next_c = '1;
         end else if(1) begin // HW Write
             next_c = hwif_in.LTPI_Advertise_Capab_local_LOW.I2C_channel_echo_support.next;
@@ -769,7 +950,7 @@ module ltpi_csr_light (
         automatic logic [5:0] next_c = field_storage.LTPI_Advertise_Capab_local_HIGH.I2C_channel_speed.value;
         automatic logic load_next_c = '0;
         if(decoded_reg_strb.LTPI_Advertise_Capab_local_HIGH && decoded_req_is_wr) begin // SW write
-            next_c = decoded_wr_data[5:0];
+            next_c = (field_storage.LTPI_Advertise_Capab_local_HIGH.I2C_channel_speed.value & ~decoded_wr_biten[5:0]) | (decoded_wr_data[5:0] & decoded_wr_biten[5:0]);
             load_next_c = '1;
         end else if(1) begin // HW Write
             next_c = hwif_in.LTPI_Advertise_Capab_local_HIGH.I2C_channel_speed.next;
@@ -791,7 +972,7 @@ module ltpi_csr_light (
         automatic logic [6:0] next_c = field_storage.LTPI_Advertise_Capab_local_HIGH.UART_channel_cpbl.value;
         automatic logic load_next_c = '0;
         if(decoded_reg_strb.LTPI_Advertise_Capab_local_HIGH && decoded_req_is_wr) begin // SW write
-            next_c = decoded_wr_data[14:8];
+            next_c = (field_storage.LTPI_Advertise_Capab_local_HIGH.UART_channel_cpbl.value & ~decoded_wr_biten[14:8]) | (decoded_wr_data[14:8] & decoded_wr_biten[14:8]);
             load_next_c = '1;
         end else if(1) begin // HW Write
             next_c = hwif_in.LTPI_Advertise_Capab_local_HIGH.UART_channel_cpbl.next;
@@ -813,7 +994,7 @@ module ltpi_csr_light (
         automatic logic [15:0] next_c = field_storage.LTPI_Advertise_Capab_local_HIGH.OEM_capab.value;
         automatic logic load_next_c = '0;
         if(decoded_reg_strb.LTPI_Advertise_Capab_local_HIGH && decoded_req_is_wr) begin // SW write
-            next_c = decoded_wr_data[31:16];
+            next_c = (field_storage.LTPI_Advertise_Capab_local_HIGH.OEM_capab.value & ~decoded_wr_biten[31:16]) | (decoded_wr_data[31:16] & decoded_wr_biten[31:16]);
             load_next_c = '1;
         end else if(1) begin // HW Write
             next_c = hwif_in.LTPI_Advertise_Capab_local_HIGH.OEM_capab.next;
@@ -975,7 +1156,7 @@ module ltpi_csr_light (
         automatic logic [0:0] next_c = field_storage.LTPI_Link_Ctrl.software_reset.value;
         automatic logic load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Ctrl && decoded_req_is_wr) begin // SW write
-            next_c = decoded_wr_data[0:0];
+            next_c = (field_storage.LTPI_Link_Ctrl.software_reset.value & ~decoded_wr_biten[0:0]) | (decoded_wr_data[0:0] & decoded_wr_biten[0:0]);
             load_next_c = '1;
         end
         field_combo.LTPI_Link_Ctrl.software_reset.next = next_c;
@@ -994,7 +1175,7 @@ module ltpi_csr_light (
         automatic logic [0:0] next_c = field_storage.LTPI_Link_Ctrl.retraining_req.value;
         automatic logic load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Ctrl && decoded_req_is_wr) begin // SW write
-            next_c = decoded_wr_data[1:1];
+            next_c = (field_storage.LTPI_Link_Ctrl.retraining_req.value & ~decoded_wr_biten[1:1]) | (decoded_wr_data[1:1] & decoded_wr_biten[1:1]);
             load_next_c = '1;
         end
         field_combo.LTPI_Link_Ctrl.retraining_req.next = next_c;
@@ -1013,7 +1194,7 @@ module ltpi_csr_light (
         automatic logic [6:0] next_c = field_storage.LTPI_Link_Ctrl.I2C_channel_reset.value;
         automatic logic load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Ctrl && decoded_req_is_wr) begin // SW write
-            next_c = decoded_wr_data[8:2];
+            next_c = (field_storage.LTPI_Link_Ctrl.I2C_channel_reset.value & ~decoded_wr_biten[8:2]) | (decoded_wr_data[8:2] & decoded_wr_biten[8:2]);
             load_next_c = '1;
         end
         field_combo.LTPI_Link_Ctrl.I2C_channel_reset.next = next_c;
@@ -1032,7 +1213,7 @@ module ltpi_csr_light (
         automatic logic [0:0] next_c = field_storage.LTPI_Link_Ctrl.data_channel_reset.value;
         automatic logic load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Ctrl && decoded_req_is_wr) begin // SW write
-            next_c = decoded_wr_data[9:9];
+            next_c = (field_storage.LTPI_Link_Ctrl.data_channel_reset.value & ~decoded_wr_biten[9:9]) | (decoded_wr_data[9:9] & decoded_wr_biten[9:9]);
             load_next_c = '1;
         end
         field_combo.LTPI_Link_Ctrl.data_channel_reset.next = next_c;
@@ -1051,7 +1232,7 @@ module ltpi_csr_light (
         automatic logic [0:0] next_c = field_storage.LTPI_Link_Ctrl.auto_move_config.value;
         automatic logic load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Ctrl && decoded_req_is_wr) begin // SW write
-            next_c = decoded_wr_data[10:10];
+            next_c = (field_storage.LTPI_Link_Ctrl.auto_move_config.value & ~decoded_wr_biten[10:10]) | (decoded_wr_data[10:10] & decoded_wr_biten[10:10]);
             load_next_c = '1;
         end
         field_combo.LTPI_Link_Ctrl.auto_move_config.next = next_c;
@@ -1070,7 +1251,7 @@ module ltpi_csr_light (
         automatic logic [0:0] next_c = field_storage.LTPI_Link_Ctrl.trigger_config_st.value;
         automatic logic load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Ctrl && decoded_req_is_wr) begin // SW write
-            next_c = decoded_wr_data[11:11];
+            next_c = (field_storage.LTPI_Link_Ctrl.trigger_config_st.value & ~decoded_wr_biten[11:11]) | (decoded_wr_data[11:11] & decoded_wr_biten[11:11]);
             load_next_c = '1;
         end
         field_combo.LTPI_Link_Ctrl.trigger_config_st.next = next_c;
@@ -1084,6 +1265,386 @@ module ltpi_csr_light (
         end
     end
     assign hwif_out.LTPI_Link_Ctrl.trigger_config_st.value = field_storage.LTPI_Link_Ctrl.trigger_config_st.value;
+    // Field: ltpi_csr_light.smb_trg_dbg_cntrl_smbstate.controller_smbstate
+    always_comb begin
+        automatic logic [31:0] next_c = field_storage.smb_trg_dbg_cntrl_smbstate.controller_smbstate.value;
+        automatic logic load_next_c = '0;
+        if(1) begin // HW Write
+            next_c = hwif_in.smb_trg_dbg_cntrl_smbstate.controller_smbstate.next;
+            load_next_c = '1;
+        end
+        field_combo.smb_trg_dbg_cntrl_smbstate.controller_smbstate.next = next_c;
+        field_combo.smb_trg_dbg_cntrl_smbstate.controller_smbstate.load_next = load_next_c;
+    end
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            field_storage.smb_trg_dbg_cntrl_smbstate.controller_smbstate.value <= 'h0;
+        end else if(field_combo.smb_trg_dbg_cntrl_smbstate.controller_smbstate.load_next) begin
+            field_storage.smb_trg_dbg_cntrl_smbstate.controller_smbstate.value <= field_combo.smb_trg_dbg_cntrl_smbstate.controller_smbstate.next;
+        end
+    end
+    assign hwif_out.smb_trg_dbg_cntrl_smbstate.controller_smbstate.value = field_storage.smb_trg_dbg_cntrl_smbstate.controller_smbstate.value;
+    // Field: ltpi_csr_light.smb_trg_dbg_cntrl_relay_state.relay_state
+    always_comb begin
+        automatic logic [31:0] next_c = field_storage.smb_trg_dbg_cntrl_relay_state.relay_state.value;
+        automatic logic load_next_c = '0;
+        if(1) begin // HW Write
+            next_c = hwif_in.smb_trg_dbg_cntrl_relay_state.relay_state.next;
+            load_next_c = '1;
+        end
+        field_combo.smb_trg_dbg_cntrl_relay_state.relay_state.next = next_c;
+        field_combo.smb_trg_dbg_cntrl_relay_state.relay_state.load_next = load_next_c;
+    end
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            field_storage.smb_trg_dbg_cntrl_relay_state.relay_state.value <= 'h0;
+        end else if(field_combo.smb_trg_dbg_cntrl_relay_state.relay_state.load_next) begin
+            field_storage.smb_trg_dbg_cntrl_relay_state.relay_state.value <= field_combo.smb_trg_dbg_cntrl_relay_state.relay_state.next;
+        end
+    end
+    assign hwif_out.smb_trg_dbg_cntrl_relay_state.relay_state.value = field_storage.smb_trg_dbg_cntrl_relay_state.relay_state.value;
+    // Field: ltpi_csr_light.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda
+    always_comb begin
+        automatic logic [0:0] next_c = field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda.value;
+        automatic logic load_next_c = '0;
+        if(1) begin // HW Write
+            next_c = hwif_in.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda.next;
+            load_next_c = '1;
+        end
+        field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda.next = next_c;
+        field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda.load_next = load_next_c;
+    end
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda.value <= 'h0;
+        end else if(field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda.load_next) begin
+            field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda.value <= field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda.next;
+        end
+    end
+    assign hwif_out.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda.value = field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda.value;
+    // Field: ltpi_csr_light.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl
+    always_comb begin
+        automatic logic [0:0] next_c = field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl.value;
+        automatic logic load_next_c = '0;
+        if(1) begin // HW Write
+            next_c = hwif_in.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl.next;
+            load_next_c = '1;
+        end
+        field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl.next = next_c;
+        field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl.load_next = load_next_c;
+    end
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl.value <= 'h0;
+        end else if(field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl.load_next) begin
+            field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl.value <= field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl.next;
+        end
+    end
+    assign hwif_out.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl.value = field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl.value;
+    // Field: ltpi_csr_light.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe
+    always_comb begin
+        automatic logic [0:0] next_c = field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.value;
+        automatic logic load_next_c = '0;
+        if(1) begin // HW Write
+            next_c = hwif_in.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.next;
+            load_next_c = '1;
+        end
+        field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.next = next_c;
+        field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.load_next = load_next_c;
+    end
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.value <= 'h0;
+        end else if(field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.load_next) begin
+            field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.value <= field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.next;
+        end
+    end
+    assign hwif_out.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.value = field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.value;
+    // Field: ltpi_csr_light.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe
+    always_comb begin
+        automatic logic [0:0] next_c = field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.value;
+        automatic logic load_next_c = '0;
+        if(1) begin // HW Write
+            next_c = hwif_in.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.next;
+            load_next_c = '1;
+        end
+        field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.next = next_c;
+        field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.load_next = load_next_c;
+    end
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.value <= 'h0;
+        end else if(field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.load_next) begin
+            field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.value <= field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.next;
+        end
+    end
+    assign hwif_out.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.value = field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.value;
+    // Field: ltpi_csr_light.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_o
+    always_comb begin
+        automatic logic [3:0] next_c = field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_o.value;
+        automatic logic load_next_c = '0;
+        if(1) begin // HW Write
+            next_c = hwif_in.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_o.next;
+            load_next_c = '1;
+        end
+        field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_o.next = next_c;
+        field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_o.load_next = load_next_c;
+    end
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_o.value <= 'h0;
+        end else if(field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_o.load_next) begin
+            field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_o.value <= field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_o.next;
+        end
+    end
+    assign hwif_out.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_o.value = field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_o.value;
+    // Field: ltpi_csr_light.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_i
+    always_comb begin
+        automatic logic [3:0] next_c = field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_i.value;
+        automatic logic load_next_c = '0;
+        if(1) begin // HW Write
+            next_c = hwif_in.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_i.next;
+            load_next_c = '1;
+        end
+        field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_i.next = next_c;
+        field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_i.load_next = load_next_c;
+    end
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_i.value <= 'h0;
+        end else if(field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_i.load_next) begin
+            field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_i.value <= field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_i.next;
+        end
+    end
+    assign hwif_out.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_i.value = field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_i.value;
+    // Field: ltpi_csr_light.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_o
+    always_comb begin
+        automatic logic [3:0] next_c = field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_o.value;
+        automatic logic load_next_c = '0;
+        if(1) begin // HW Write
+            next_c = hwif_in.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_o.next;
+            load_next_c = '1;
+        end
+        field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_o.next = next_c;
+        field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_o.load_next = load_next_c;
+    end
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_o.value <= 'h0;
+        end else if(field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_o.load_next) begin
+            field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_o.value <= field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_o.next;
+        end
+    end
+    assign hwif_out.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_o.value = field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_o.value;
+    // Field: ltpi_csr_light.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_i
+    always_comb begin
+        automatic logic [3:0] next_c = field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_i.value;
+        automatic logic load_next_c = '0;
+        if(1) begin // HW Write
+            next_c = hwif_in.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_i.next;
+            load_next_c = '1;
+        end
+        field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_i.next = next_c;
+        field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_i.load_next = load_next_c;
+    end
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_i.value <= 'h0;
+        end else if(field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_i.load_next) begin
+            field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_i.value <= field_combo.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_i.next;
+        end
+    end
+    assign hwif_out.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_i.value = field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_i.value;
+    // Field: ltpi_csr_light.smb_cntrl_dbg_cntrl_smbstate.controller_smbstate
+    always_comb begin
+        automatic logic [31:0] next_c = field_storage.smb_cntrl_dbg_cntrl_smbstate.controller_smbstate.value;
+        automatic logic load_next_c = '0;
+        if(1) begin // HW Write
+            next_c = hwif_in.smb_cntrl_dbg_cntrl_smbstate.controller_smbstate.next;
+            load_next_c = '1;
+        end
+        field_combo.smb_cntrl_dbg_cntrl_smbstate.controller_smbstate.next = next_c;
+        field_combo.smb_cntrl_dbg_cntrl_smbstate.controller_smbstate.load_next = load_next_c;
+    end
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            field_storage.smb_cntrl_dbg_cntrl_smbstate.controller_smbstate.value <= 'h0;
+        end else if(field_combo.smb_cntrl_dbg_cntrl_smbstate.controller_smbstate.load_next) begin
+            field_storage.smb_cntrl_dbg_cntrl_smbstate.controller_smbstate.value <= field_combo.smb_cntrl_dbg_cntrl_smbstate.controller_smbstate.next;
+        end
+    end
+    assign hwif_out.smb_cntrl_dbg_cntrl_smbstate.controller_smbstate.value = field_storage.smb_cntrl_dbg_cntrl_smbstate.controller_smbstate.value;
+    // Field: ltpi_csr_light.smb_cntrl_dbg_cntrl_relay_state.relay_state
+    always_comb begin
+        automatic logic [31:0] next_c = field_storage.smb_cntrl_dbg_cntrl_relay_state.relay_state.value;
+        automatic logic load_next_c = '0;
+        if(1) begin // HW Write
+            next_c = hwif_in.smb_cntrl_dbg_cntrl_relay_state.relay_state.next;
+            load_next_c = '1;
+        end
+        field_combo.smb_cntrl_dbg_cntrl_relay_state.relay_state.next = next_c;
+        field_combo.smb_cntrl_dbg_cntrl_relay_state.relay_state.load_next = load_next_c;
+    end
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            field_storage.smb_cntrl_dbg_cntrl_relay_state.relay_state.value <= 'h0;
+        end else if(field_combo.smb_cntrl_dbg_cntrl_relay_state.relay_state.load_next) begin
+            field_storage.smb_cntrl_dbg_cntrl_relay_state.relay_state.value <= field_combo.smb_cntrl_dbg_cntrl_relay_state.relay_state.next;
+        end
+    end
+    assign hwif_out.smb_cntrl_dbg_cntrl_relay_state.relay_state.value = field_storage.smb_cntrl_dbg_cntrl_relay_state.relay_state.value;
+    // Field: ltpi_csr_light.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda
+    always_comb begin
+        automatic logic [0:0] next_c = field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda.value;
+        automatic logic load_next_c = '0;
+        if(1) begin // HW Write
+            next_c = hwif_in.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda.next;
+            load_next_c = '1;
+        end
+        field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda.next = next_c;
+        field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda.load_next = load_next_c;
+    end
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda.value <= 'h0;
+        end else if(field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda.load_next) begin
+            field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda.value <= field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda.next;
+        end
+    end
+    assign hwif_out.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda.value = field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda.value;
+    // Field: ltpi_csr_light.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl
+    always_comb begin
+        automatic logic [0:0] next_c = field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl.value;
+        automatic logic load_next_c = '0;
+        if(1) begin // HW Write
+            next_c = hwif_in.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl.next;
+            load_next_c = '1;
+        end
+        field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl.next = next_c;
+        field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl.load_next = load_next_c;
+    end
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl.value <= 'h0;
+        end else if(field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl.load_next) begin
+            field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl.value <= field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl.next;
+        end
+    end
+    assign hwif_out.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl.value = field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl.value;
+    // Field: ltpi_csr_light.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe
+    always_comb begin
+        automatic logic [0:0] next_c = field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.value;
+        automatic logic load_next_c = '0;
+        if(1) begin // HW Write
+            next_c = hwif_in.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.next;
+            load_next_c = '1;
+        end
+        field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.next = next_c;
+        field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.load_next = load_next_c;
+    end
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.value <= 'h0;
+        end else if(field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.load_next) begin
+            field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.value <= field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.next;
+        end
+    end
+    assign hwif_out.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.value = field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.value;
+    // Field: ltpi_csr_light.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe
+    always_comb begin
+        automatic logic [0:0] next_c = field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.value;
+        automatic logic load_next_c = '0;
+        if(1) begin // HW Write
+            next_c = hwif_in.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.next;
+            load_next_c = '1;
+        end
+        field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.next = next_c;
+        field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.load_next = load_next_c;
+    end
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.value <= 'h0;
+        end else if(field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.load_next) begin
+            field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.value <= field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.next;
+        end
+    end
+    assign hwif_out.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.value = field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.value;
+    // Field: ltpi_csr_light.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_o
+    always_comb begin
+        automatic logic [3:0] next_c = field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_o.value;
+        automatic logic load_next_c = '0;
+        if(1) begin // HW Write
+            next_c = hwif_in.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_o.next;
+            load_next_c = '1;
+        end
+        field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_o.next = next_c;
+        field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_o.load_next = load_next_c;
+    end
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_o.value <= 'h0;
+        end else if(field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_o.load_next) begin
+            field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_o.value <= field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_o.next;
+        end
+    end
+    assign hwif_out.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_o.value = field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_o.value;
+    // Field: ltpi_csr_light.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_i
+    always_comb begin
+        automatic logic [3:0] next_c = field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_i.value;
+        automatic logic load_next_c = '0;
+        if(1) begin // HW Write
+            next_c = hwif_in.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_i.next;
+            load_next_c = '1;
+        end
+        field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_i.next = next_c;
+        field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_i.load_next = load_next_c;
+    end
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_i.value <= 'h0;
+        end else if(field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_i.load_next) begin
+            field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_i.value <= field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_i.next;
+        end
+    end
+    assign hwif_out.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_i.value = field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_i.value;
+    // Field: ltpi_csr_light.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_o
+    always_comb begin
+        automatic logic [3:0] next_c = field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_o.value;
+        automatic logic load_next_c = '0;
+        if(1) begin // HW Write
+            next_c = hwif_in.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_o.next;
+            load_next_c = '1;
+        end
+        field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_o.next = next_c;
+        field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_o.load_next = load_next_c;
+    end
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_o.value <= 'h0;
+        end else if(field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_o.load_next) begin
+            field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_o.value <= field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_o.next;
+        end
+    end
+    assign hwif_out.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_o.value = field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_o.value;
+    // Field: ltpi_csr_light.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_i
+    always_comb begin
+        automatic logic [3:0] next_c = field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_i.value;
+        automatic logic load_next_c = '0;
+        if(1) begin // HW Write
+            next_c = hwif_in.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_i.next;
+            load_next_c = '1;
+        end
+        field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_i.next = next_c;
+        field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_i.load_next = load_next_c;
+    end
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_i.value <= 'h0;
+        end else if(field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_i.load_next) begin
+            field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_i.value <= field_combo.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_i.next;
+        end
+    end
+    assign hwif_out.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_i.value = field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_i.value;
 
     //--------------------------------------------------------------------------
     // Readback
@@ -1093,7 +1654,7 @@ module ltpi_csr_light (
     logic [31:0] readback_data;
     
     // Assign readback values to a flattened array
-    logic [31:0] readback_array[11];
+    logic [31:0] readback_array[17];
     assign readback_array[0][0:0] = (decoded_reg_strb.LTPI_Link_Status && !decoded_req_is_wr) ? field_storage.LTPI_Link_Status.aligned.value : '0;
     assign readback_array[0][1:1] = (decoded_reg_strb.LTPI_Link_Status && !decoded_req_is_wr) ? field_storage.LTPI_Link_Status.link_lost_error.value : '0;
     assign readback_array[0][2:2] = (decoded_reg_strb.LTPI_Link_Status && !decoded_req_is_wr) ? field_storage.LTPI_Link_Status.frm_CRC_error.value : '0;
@@ -1159,6 +1720,28 @@ module ltpi_csr_light (
     assign readback_array[10][10:10] = (decoded_reg_strb.LTPI_Link_Ctrl && !decoded_req_is_wr) ? field_storage.LTPI_Link_Ctrl.auto_move_config.value : '0;
     assign readback_array[10][11:11] = (decoded_reg_strb.LTPI_Link_Ctrl && !decoded_req_is_wr) ? field_storage.LTPI_Link_Ctrl.trigger_config_st.value : '0;
     assign readback_array[10][31:12] = '0;
+    assign readback_array[11][31:0] = (decoded_reg_strb.smb_trg_dbg_cntrl_smbstate && !decoded_req_is_wr) ? field_storage.smb_trg_dbg_cntrl_smbstate.controller_smbstate.value : '0;
+    assign readback_array[12][31:0] = (decoded_reg_strb.smb_trg_dbg_cntrl_relay_state && !decoded_req_is_wr) ? field_storage.smb_trg_dbg_cntrl_relay_state.relay_state.value : '0;
+    assign readback_array[13][0:0] = (decoded_reg_strb.smb_trg_dbg_relay_event_ioc_frame_bus && !decoded_req_is_wr) ? field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda.value : '0;
+    assign readback_array[13][1:1] = (decoded_reg_strb.smb_trg_dbg_relay_event_ioc_frame_bus && !decoded_req_is_wr) ? field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl.value : '0;
+    assign readback_array[13][2:2] = (decoded_reg_strb.smb_trg_dbg_relay_event_ioc_frame_bus && !decoded_req_is_wr) ? field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.value : '0;
+    assign readback_array[13][3:3] = (decoded_reg_strb.smb_trg_dbg_relay_event_ioc_frame_bus && !decoded_req_is_wr) ? field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.value : '0;
+    assign readback_array[13][7:4] = (decoded_reg_strb.smb_trg_dbg_relay_event_ioc_frame_bus && !decoded_req_is_wr) ? field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_o.value : '0;
+    assign readback_array[13][11:8] = (decoded_reg_strb.smb_trg_dbg_relay_event_ioc_frame_bus && !decoded_req_is_wr) ? field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_i.value : '0;
+    assign readback_array[13][15:12] = (decoded_reg_strb.smb_trg_dbg_relay_event_ioc_frame_bus && !decoded_req_is_wr) ? field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_o.value : '0;
+    assign readback_array[13][19:16] = (decoded_reg_strb.smb_trg_dbg_relay_event_ioc_frame_bus && !decoded_req_is_wr) ? field_storage.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_i.value : '0;
+    assign readback_array[13][31:20] = '0;
+    assign readback_array[14][31:0] = (decoded_reg_strb.smb_cntrl_dbg_cntrl_smbstate && !decoded_req_is_wr) ? field_storage.smb_cntrl_dbg_cntrl_smbstate.controller_smbstate.value : '0;
+    assign readback_array[15][31:0] = (decoded_reg_strb.smb_cntrl_dbg_cntrl_relay_state && !decoded_req_is_wr) ? field_storage.smb_cntrl_dbg_cntrl_relay_state.relay_state.value : '0;
+    assign readback_array[16][0:0] = (decoded_reg_strb.smb_cntrl_dbg_relay_event_ioc_frame_bus && !decoded_req_is_wr) ? field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda.value : '0;
+    assign readback_array[16][1:1] = (decoded_reg_strb.smb_cntrl_dbg_relay_event_ioc_frame_bus && !decoded_req_is_wr) ? field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl.value : '0;
+    assign readback_array[16][2:2] = (decoded_reg_strb.smb_cntrl_dbg_relay_event_ioc_frame_bus && !decoded_req_is_wr) ? field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.value : '0;
+    assign readback_array[16][3:3] = (decoded_reg_strb.smb_cntrl_dbg_relay_event_ioc_frame_bus && !decoded_req_is_wr) ? field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.value : '0;
+    assign readback_array[16][7:4] = (decoded_reg_strb.smb_cntrl_dbg_relay_event_ioc_frame_bus && !decoded_req_is_wr) ? field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_o.value : '0;
+    assign readback_array[16][11:8] = (decoded_reg_strb.smb_cntrl_dbg_relay_event_ioc_frame_bus && !decoded_req_is_wr) ? field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_i.value : '0;
+    assign readback_array[16][15:12] = (decoded_reg_strb.smb_cntrl_dbg_relay_event_ioc_frame_bus && !decoded_req_is_wr) ? field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_o.value : '0;
+    assign readback_array[16][19:16] = (decoded_reg_strb.smb_cntrl_dbg_relay_event_ioc_frame_bus && !decoded_req_is_wr) ? field_storage.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_i.value : '0;
+    assign readback_array[16][31:20] = '0;
 
 
     // Reduce the array
@@ -1167,7 +1750,7 @@ module ltpi_csr_light (
         readback_done = decoded_req & ~decoded_req_is_wr;
         readback_err = '0;
         readback_data_var = '0;
-        for(int i=0; i<11; i++) readback_data_var |= readback_array[i];
+        for(int i=0; i<17; i++) readback_data_var |= readback_array[i];
         readback_data = readback_data_var;
     end
 

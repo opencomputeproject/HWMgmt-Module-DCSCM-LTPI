@@ -33,7 +33,7 @@
 
 
 `timescale 1 ns / 1 ps
-`default_nettype none
+//`default_nettype none
 
 // `define USE_LVDS
 // `define CRC_EN
@@ -55,9 +55,14 @@ module smbus_relay_controller import ltpi_pkg::*;
     output logic                            o_controller_sda_oe,    // when asserted, drive the SDA pin of the controller interface low
     
     output                                  stretch_timeout,
-    input logic [ 3:0]                      tx_frm_offset
+    input logic [ 3:0]                      tx_frm_offset,
+    output logic                            smbus_timeout,
 
+    //DEBUG
+    output logic [31:0]                     dbg_cntrl_controller_smbstate,
+    output logic [31:0]                     dbg_cntrl_relay_state
 );
+
 
 ///////////////////////////////////////
 // Calculate timing parameters
@@ -80,11 +85,13 @@ always@(posedge clock or negedge i_resetn) begin
     else begin
         if(bus_speed == 1'b0) begin 
             SCLK_HOLD_MIN_COUNT = ((5000000 + CLOCK_PERIOD_PS - 1) / CLOCK_PERIOD_PS) - 6;
-            SETUP_TIME_COUNT    = 8;
+            //SETUP_TIME_COUNT    = 8;
+            SETUP_TIME_COUNT    = (1000000)/CLOCK_PERIOD_PS - 1;   // from SMBUS spec: Data setup time min 0.25us
         end
         else if(bus_speed == 1'b1) begin
             SCLK_HOLD_MIN_COUNT = ((1300000 + CLOCK_PERIOD_PS - 1) / CLOCK_PERIOD_PS) - 6;
-            SETUP_TIME_COUNT    = 4;
+            //SETUP_TIME_COUNT    = 4;
+            SETUP_TIME_COUNT    = 100000/CLOCK_PERIOD_PS - 1; //from SMBUS spec: Data setup time min 0.1 us
         end
     end
 end
@@ -178,18 +185,18 @@ end
 ///////////////////////////////////////
 
 enum {
-    SMBCONTROLLER_STATE_IDLE                ,
-    SMBCONTROLLER_STATE_START               ,
-    SMBCONTROLLER_STATE_CONTROLLER_ADDR     ,
-    SMBCONTROLLER_STATE_TARGET_ADDR_ACK     ,
-    SMBCONTROLLER_STATE_CONTROLLER_CMD      ,
-    SMBCONTROLLER_STATE_TARGET_CMD_ACK      ,
-    SMBCONTROLLER_STATE_CONTROLLER_WRITE    ,
-    SMBCONTROLLER_STATE_TARGET_WRITE_ACK    ,
-    SMBCONTROLLER_STATE_TARGET_READ         ,
-    SMBCONTROLLER_STATE_CONTROLLER_READ_ACK ,
-    SMBCONTROLLER_STATE_STOP                ,
-    SMBCONTROLLER_STATE_STOP_THEN_START      
+    SMBCONTROLLER_STATE_IDLE                , //0
+    SMBCONTROLLER_STATE_START               ,//1
+    SMBCONTROLLER_STATE_CONTROLLER_ADDR     , // 2
+    SMBCONTROLLER_STATE_TARGET_ADDR_ACK     , //3
+    SMBCONTROLLER_STATE_CONTROLLER_CMD      , //4
+    SMBCONTROLLER_STATE_TARGET_CMD_ACK      , //5
+    SMBCONTROLLER_STATE_CONTROLLER_WRITE    , //6
+    SMBCONTROLLER_STATE_TARGET_WRITE_ACK    , //7
+    SMBCONTROLLER_STATE_TARGET_READ         , //8
+    SMBCONTROLLER_STATE_CONTROLLER_READ_ACK , // 9
+    SMBCONTROLLER_STATE_STOP                , //a
+    SMBCONTROLLER_STATE_STOP_THEN_START       //b
 }controller_smbstate;                // current state of the controller SMBus
 
 logic [ 3:0]                    controller_bit_count;               // number of bits received in the current byte (starts at 0, counts up to 8)
@@ -202,22 +209,22 @@ logic                           controller_triggered_start;         // used to i
 
 
 enum {
-    RELAY_STATE_IDLE                                    ,
-    RELAY_STATE_START_WAIT_TIMEOUT                      ,
-    RELAY_STATE_START_WAIT_SCL_LOW                      ,
-    RELAY_STATE_START_CTOT_WAIT_START_RCV               ,
-    RELAY_STATE_STOP_WAIT_TIMEOUT                       ,
-    RELAY_STATE_STOP                                    ,
-    RELAY_STATE_WAIT_STOP_RCV                           ,
+    RELAY_STATE_IDLE                                    , //0 
+    RELAY_STATE_START_WAIT_TIMEOUT                      , //1
+    RELAY_STATE_START_WAIT_SCL_LOW                      , // 2
+    RELAY_STATE_START_CTOT_WAIT_START_RCV               , //3
+    RELAY_STATE_STOP_WAIT_TIMEOUT                       , //4
+    RELAY_STATE_STOP                                    , //5
+    RELAY_STATE_WAIT_STOP_RCV                           ,//6
     // in all 'CTOT' (Controller to Target) states, the controller is driving the SDA signal to the target, so SDA must be relayed from the controller bus to the target bus (or sometimes a 'captured' version of SDA)
-    RELAY_STATE_CTOT_SCL_LOW_WAIT_TIMEOUT               ,
-    RELAY_STATE_CTOT_WAIT_SCL_HIGH                      ,
-    RELAY_STATE_CTOT_WAIT_BIT_RCV                       ,
-    RELAY_STATE_CTOT_WAIT_SCL_LOW                       ,
+    RELAY_STATE_CTOT_SCL_LOW_WAIT_TIMEOUT               , //7
+    RELAY_STATE_CTOT_WAIT_SCL_HIGH                      , //8
+    RELAY_STATE_CTOT_WAIT_BIT_RCV                       , // 9
+    RELAY_STATE_CTOT_WAIT_SCL_LOW                       , //a
     // in all 'TTOC' (Target to Controller) states, the target is driving the SDA signal to the controller, so SDA must be relayed from the target bus to the controller bus (or sometimes a 'captured' version of SDA)
-    RELAY_STATE_TTOC_WAIT_EVENT                         ,
-    RELAY_STATE_TTOC_SCL_LOW_WAIT_SETUP_TIMEOUT         ,
-    RELAY_STATE_TTOC_WAIT_SCL_HIGH                      ,
+    RELAY_STATE_TTOC_WAIT_EVENT                         , // b
+    RELAY_STATE_TTOC_SCL_LOW_WAIT_SETUP_TIMEOUT         , //c
+    RELAY_STATE_TTOC_WAIT_SCL_HIGH                      , //d
     RELAY_STATE_TTOC_WAIT_SCL_LOW
 } relay_state;                    // current state of the relay between the controller and target busses
 
@@ -225,11 +232,11 @@ logic [SCLK_HOLD_COUNTER_BIT_WIDTH-1:0]     target_scl_hold_count;           // 
 logic                                       target_scl_hold_count_restart;   // combinatorial signal, reset the target_scl_hold_count counter and start a new countdown
 logic                                       target_scl_hold_count_timeout;   // combinatorial signal (copy of msb of target_scl_hold_count), indicates the counter has reached it's timeout value and is not about to be restarted
 
-logic [19:0]                                event_waiting_count;
+logic [24:0]                                event_waiting_count;
 logic                                       event_waiting_count_restart;
 
 
-logic [ 4:0]                                setup_timeout;
+logic [ 9:0]                                setup_timeout;
 
 always_ff @(posedge clock or negedge i_resetn) begin
     if (!i_resetn) begin
@@ -242,8 +249,9 @@ always_ff @(posedge clock or negedge i_resetn) begin
         controller_read_nack_valid      <= '0;
         controller_triggered_start      <= '0;
         ioc_frame_local                 <= idle;
+        smbus_timeout                   <= 1'b0;
     end
-    else if(event_waiting_count == 20'b0) begin
+    else if(event_waiting_count == 25'b0) begin
         controller_smbstate             <= SMBCONTROLLER_STATE_IDLE;
         controller_bit_count            <= 4'h0;
         clear_controller_bit_count      <= '0;
@@ -253,12 +261,14 @@ always_ff @(posedge clock or negedge i_resetn) begin
         controller_read_nack_valid      <= '0;
         controller_triggered_start      <= '0;
         ioc_frame_local                 <= idle;
+        smbus_timeout                   <= 1'b1;
     end
     else begin
         case ( controller_smbstate )
             // IDLE state
             // This is the reset state.  Wait here until a valid START condition is detected on the controller smbus
             SMBCONTROLLER_STATE_IDLE: begin
+                smbus_timeout         <= 1'b0;
                 if (controller_start) begin                  // only way to leave the idle state is if we detect a 'start' condition
                     controller_smbstate <= SMBCONTROLLER_STATE_START;
                     ioc_frame_local <= start;
@@ -570,7 +580,7 @@ always_ff @(posedge clock or negedge i_resetn) begin
         o_controller_scl_oe                 <= '0;
         o_controller_sda_oe                 <= '0;
         target_scl_hold_count            <= {SCLK_HOLD_COUNTER_BIT_WIDTH{1'b0}};
-        setup_timeout                   <= 5'b0;
+        setup_timeout                   <= 10'b0;
         
     end else begin
     
@@ -615,7 +625,7 @@ always_ff @(posedge clock or negedge i_resetn) begin
             // While in this state, we hold the old value of o_target_sda_oe
             // Clockstretch the controller SCL (which is also low) during this state
             RELAY_STATE_START_CTOT_WAIT_START_RCV: begin
-                    if(event_waiting_count == 20'b0) begin //timeout
+                    if(event_waiting_count == 25'b0) begin //timeout
                     relay_state <= RELAY_STATE_IDLE;                                                            
                 end
                 else if(ioc_frame_remote == start_rcv && ~controller_scl) begin
@@ -653,7 +663,7 @@ always_ff @(posedge clock or negedge i_resetn) begin
             // Release target SCL and wait for it to go high
             // If controller SCL goes low again during this state, hold it there to prvent further progress on the controller bus until the target bus can 'catch up'
             RELAY_STATE_CTOT_WAIT_BIT_RCV: begin
-                if(event_waiting_count == 20'b0) begin //timeout
+                if(event_waiting_count == 25'b0) begin //timeout
                     relay_state <= RELAY_STATE_IDLE;                                                            
                 end    
                 else if (controller_smbstate == SMBCONTROLLER_STATE_START) begin
@@ -693,7 +703,7 @@ always_ff @(posedge clock or negedge i_resetn) begin
             // This state exists to provide some hold timing on target SDA after target SCL goes low
             // Clockstretch the controller SCL (which is also low) during this state
             RELAY_STATE_TTOC_WAIT_EVENT: begin
-                if(event_waiting_count == 20'b0) begin //timeout
+                if(event_waiting_count == 25'b0) begin //timeout
                     relay_state <= RELAY_STATE_IDLE;                                
                     o_controller_scl_oe <= '0;             // we know controller SCL is low here, we continue to hold it low
                     o_controller_sda_oe <= '0;              // drive sda from the target bus to the controller bus                            
@@ -719,11 +729,11 @@ always_ff @(posedge clock or negedge i_resetn) begin
             // Clockstretch the controller SCL (which is also low) during this state
             RELAY_STATE_TTOC_SCL_LOW_WAIT_SETUP_TIMEOUT: begin
                 if(setup_timeout == SETUP_TIME_COUNT) begin
-                    setup_timeout <= 5'b0;
+                    setup_timeout <= 10'b0;
                     relay_state <= RELAY_STATE_TTOC_WAIT_SCL_HIGH;
                 end
                 else begin
-                    setup_timeout <= setup_timeout + 5'd1;
+                    setup_timeout <= setup_timeout + 10'd1;
                 end
                 o_controller_scl_oe <= '1;             // we know controller SCL is low here, we continue to hold it low
                 o_controller_sda_oe <= o_controller_sda_oe;
@@ -776,7 +786,7 @@ always_ff @(posedge clock or negedge i_resetn) begin
                 o_controller_sda_oe <= '0;    
             end
             RELAY_STATE_WAIT_STOP_RCV: begin
-                if(event_waiting_count == 20'b0) begin //timeout
+                if(event_waiting_count == 25'b0) begin //timeout
                     relay_state <= RELAY_STATE_IDLE;
                 end
                 else if(ioc_frame_remote == stop_rcv) begin
@@ -805,10 +815,11 @@ always_ff @(posedge clock or negedge i_resetn) begin
         end
 
         if (!event_waiting_count_restart) begin 
-            event_waiting_count <= 20'd600000; 
+            //event_waiting_count <= 20'd600000; 
+            event_waiting_count <= 25'd1500000;
         end 
         else begin        // count down to -1 (first time msb goes high) and then stop
-            event_waiting_count <= event_waiting_count - 20'd1;
+            event_waiting_count <= event_waiting_count - 25'd1;
         end
     end
 end
@@ -833,5 +844,12 @@ assign event_waiting_count_restart = ( (relay_state == RELAY_STATE_START_CTOT_WA
                                         (relay_state == RELAY_STATE_CTOT_WAIT_BIT_RCV)                  ||
                                         (relay_state == RELAY_STATE_TTOC_WAIT_EVENT)
                                         ) ? '1 : '0;
+
+/////////////////DEBUG///////////
+
+assign dbg_cntrl_controller_smbstate           = controller_smbstate;
+assign dbg_cntrl_relay_state                   = relay_state;
+
+/////////////////////////////////
 
 endmodule
