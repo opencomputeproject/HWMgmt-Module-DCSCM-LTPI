@@ -113,6 +113,7 @@ generate begin: CSR
             .s_cpuif_req_is_wr      (rdl_base_wr_en),
             .s_cpuif_addr           (rdl_base_addr),
             .s_cpuif_wr_data        (rdl_base_wr_data),
+            //.s_cpuif_wr_biten       ('1), //unncomment with "old" version of peakRDL
             .s_cpuif_req_stall_wr   (),
             .s_cpuif_req_stall_rd   (),
             .s_cpuif_rd_ack         (rdl_base_rd_ack),
@@ -171,6 +172,33 @@ generate begin: CSR
 
         assign rdl_base_hwin.operational_frm_rcv_cnt.frm_cnt.next                           = CSR_hw_out.LTPI_counter.operational_frm_rcv_cnt;
         assign rdl_base_hwin.operational_frm_snt_cnt.frm_cnt.next                           = CSR_hw_out.LTPI_counter.operational_frm_snt_cnt;
+
+
+        ////////////////////////////////////////////DEBUG////////////////////////////////
+        assign  rdl_base_hwin.smb_trg_dbg_cntrl_smbstate.controller_smbstate.next              = CSR_hw_out.LTPI_SMB_DBG_TRG.smb_trg_dbg_cntrl_smbstate.controller_smbstate         ;
+        assign  rdl_base_hwin.smb_trg_dbg_cntrl_relay_state.relay_state.next                   = CSR_hw_out.LTPI_SMB_DBG_TRG.smb_trg_dbg_cntrl_relay_state.relay_state              ;
+        assign  rdl_base_hwin.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_i.next           = CSR_hw_out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_i      ;
+        assign  rdl_base_hwin.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_o.next           = CSR_hw_out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_o      ;
+        assign  rdl_base_hwin.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_i.next           = CSR_hw_out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_i      ;
+        assign  rdl_base_hwin.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_o.next           = CSR_hw_out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_o      ;
+        assign  rdl_base_hwin.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.next  = CSR_hw_out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.SCL_OE           ;
+        assign  rdl_base_hwin.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.next  = CSR_hw_out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.SDA_OE           ;
+        assign  rdl_base_hwin.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl.next     = CSR_hw_out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl;
+        assign  rdl_base_hwin.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda.next     = CSR_hw_out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda;
+        
+        assign  rdl_base_hwin.smb_cntrl_dbg_cntrl_smbstate.controller_smbstate.next             = CSR_hw_out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_cntrl_smbstate.controller_smbstate         ;
+        assign  rdl_base_hwin.smb_cntrl_dbg_cntrl_relay_state.relay_state.next                  = CSR_hw_out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_cntrl_relay_state.relay_state              ;
+        assign  rdl_base_hwin.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_i.next          = CSR_hw_out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_i      ;
+        assign  rdl_base_hwin.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_o.next          = CSR_hw_out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_o      ;
+        assign  rdl_base_hwin.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_i.next          = CSR_hw_out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_i      ;
+        assign  rdl_base_hwin.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_o.next          = CSR_hw_out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_o      ;
+        assign  rdl_base_hwin.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.next = CSR_hw_out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.SCL_OE           ;
+        assign  rdl_base_hwin.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.next = CSR_hw_out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.SDA_OE           ;
+        assign  rdl_base_hwin.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl.next    = CSR_hw_out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl;
+        assign  rdl_base_hwin.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda.next    = CSR_hw_out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda;
+        assign  rdl_base_hwin.pmbus2_relay_recovery_cntr.recovery_cnt.next                      = CSR_hw_out.LTPI_pmbus2_recovery_cnt;
+        /////////////////////////////////////////////////////////////////////////////////
+
 
         assign CSR_hw_in.LTPI_Detect_Capab_local.Link_Speed_capab                           = rdl_base_hwout.LTPI_Detect_Capabilities_Local.link_Speed_capab.value;
         assign CSR_hw_in.LTPI_Detect_Capab_local.LTPI_Version[7:4]                          = rdl_base_hwout.LTPI_Detect_Capabilities_Local.local_Major_Version.value;
@@ -309,6 +337,7 @@ generate begin: CSR
             .s_cpuif_req_is_wr      (rdl_base_wr_en),
             .s_cpuif_addr           (rdl_base_addr),
             .s_cpuif_wr_data        (rdl_base_wr_data),
+            //.s_cpuif_wr_biten       ('1), //unncomment with "old" version of peakRDL
             .s_cpuif_req_stall_wr   (),
             .s_cpuif_req_stall_rd   (),
             .s_cpuif_rd_ack         (rdl_base_rd_ack),
@@ -367,6 +396,30 @@ generate begin: CSR
 
         // assign rdl_base_hwin.operational_frm_rcv_cnt.frm_cnt.next                           = CSR_hw_out.LTPI_counter.operational_frm_rcv_cnt;
         // assign rdl_base_hwin.operational_frm_snt_cnt.frm_cnt.next                           = CSR_hw_out.LTPI_counter.operational_frm_snt_cnt;
+
+        ////////////////////////////////////////////DEBUG////////////////////////////////
+        assign  light_rdl_base_hwin.smb_trg_dbg_cntrl_smbstate.controller_smbstate.next              = CSR_hw_out.LTPI_SMB_DBG_TRG.smb_trg_dbg_cntrl_smbstate.controller_smbstate         ;
+        assign  light_rdl_base_hwin.smb_trg_dbg_cntrl_relay_state.relay_state.next                   = CSR_hw_out.LTPI_SMB_DBG_TRG.smb_trg_dbg_cntrl_relay_state.relay_state              ;
+        assign  light_rdl_base_hwin.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_i.next           = CSR_hw_out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_i      ;
+        assign  light_rdl_base_hwin.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_o.next           = CSR_hw_out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_o      ;
+        assign  light_rdl_base_hwin.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_i.next           = CSR_hw_out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_i      ;
+        assign  light_rdl_base_hwin.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_o.next           = CSR_hw_out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_o      ;
+        assign  light_rdl_base_hwin.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.next  = CSR_hw_out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.SCL_OE           ;
+        assign  light_rdl_base_hwin.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.next  = CSR_hw_out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.SDA_OE           ;
+        assign  light_rdl_base_hwin.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl.next     = CSR_hw_out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl;
+        assign  light_rdl_base_hwin.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda.next     = CSR_hw_out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda;
+        
+        assign  light_rdl_base_hwin.smb_cntrl_dbg_cntrl_smbstate.controller_smbstate.next             = CSR_hw_out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_cntrl_smbstate.controller_smbstate         ;
+        assign  light_rdl_base_hwin.smb_cntrl_dbg_cntrl_relay_state.relay_state.next                  = CSR_hw_out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_cntrl_relay_state.relay_state              ;
+        assign  light_rdl_base_hwin.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_i.next          = CSR_hw_out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_i      ;
+        assign  light_rdl_base_hwin.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_o.next          = CSR_hw_out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_o      ;
+        assign  light_rdl_base_hwin.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_i.next          = CSR_hw_out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_i      ;
+        assign  light_rdl_base_hwin.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_o.next          = CSR_hw_out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_o      ;
+        assign  light_rdl_base_hwin.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl_oe.next = CSR_hw_out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.SCL_OE           ;
+        assign  light_rdl_base_hwin.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda_oe.next = CSR_hw_out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.SDA_OE           ;
+        assign  light_rdl_base_hwin.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl.next    = CSR_hw_out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl;
+        assign  light_rdl_base_hwin.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda.next    = CSR_hw_out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda;
+        /////////////////////////////////////////////////////////////////////////////////
 
         assign CSR_hw_in.LTPI_Detect_Capab_local.Link_Speed_capab                           = light_rdl_base_hwout.LTPI_Detect_Capabilities_Local.link_Speed_capab.value;
         assign CSR_hw_in.LTPI_Detect_Capab_local.LTPI_Version[7:4]                          = light_rdl_base_hwout.LTPI_Detect_Capabilities_Local.local_Major_Version.value;

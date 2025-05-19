@@ -53,8 +53,9 @@ import ltpi_pkg::*;
 // ----- Parameters for defining base addresses of register space sections ------------------------------------------------- //
 // ------------------------------------------------------------------------------------------------------------------------- //
 localparam logic [31:0] DATA_CHNL_REGISTERS_BASE_ADDRESS       = 32'h0000_0000;
-localparam int          DATA_CHNL_REGISTERS_SIZE               = 16 * 4;
-localparam logic [31:0] DATA_CHNL_REGISTERS_END_ADDRESS        = DATA_CHNL_REGISTERS_BASE_ADDRESS + DATA_CHNL_REGISTERS_SIZE - 1;
+//localparam int          DATA_CHNL_REGISTERS_SIZE               = 16 * 4;
+//localparam logic [31:0] DATA_CHNL_REGISTERS_END_ADDRESS        = DATA_CHNL_REGISTERS_BASE_ADDRESS + DATA_CHNL_REGISTERS_SIZE - 1;
+localparam logic [31:0] DATA_CHNL_REGISTERS_END_ADDRESS         = 32'h0000_FFFF;
 
 typedef enum logic [2:0] {
     AVMM_FSM_IDLE,
@@ -64,9 +65,9 @@ typedef enum logic [2:0] {
     AVMM_FSM_REQ_ACK
 } avmm_fsm_t;
 
-avmm_fsm_t          avmm_fsm;
-logic timer_1ms_done;
-logic timer_1ms_start;
+avmm_fsm_t              avmm_fsm;
+logic                   timer_10ms_done;
+logic                   timer_10ms_start;
 
 logic                   req_valid;
 Data_channel_payload_t  req;
@@ -74,6 +75,11 @@ logic                   req_ack;
 
 assign req = payload_i;
 assign req_valid = payload_i_valid;
+
+logic avalon_mm_m_waitrequest_ff;
+logic avalon_mm_m_waitrequest_f_edge;
+always_ff @(posedge clk) avalon_mm_m_waitrequest_ff <= avalon_mm_m.waitrequest;
+assign avalon_mm_m_waitrequest_f_edge = avalon_mm_m_waitrequest_ff & ~avalon_mm_m.waitrequest;
 
 // ------------------------------------------------------------------------------------------------------------------------- //
 // ----- AVMM FSM  --------------------------------------------------------------------------------------------------------- //
@@ -93,7 +99,7 @@ always_ff @ (posedge clk or posedge reset or posedge data_channel_rst) begin
         resp.data                       <= 0;
         resp.byte_en                    <= 0;
         avmm_fsm                        <= AVMM_FSM_IDLE;
-        timer_1ms_start                 <= 0;
+        timer_10ms_start                <= 0;
         req_ack                         <= 0;
         resp                            <= 0;
     end
@@ -132,7 +138,7 @@ always_ff @ (posedge clk or posedge reset or posedge data_channel_rst) begin
                     end
                     else begin
                         req_ack                         <= 0;
-                        timer_1ms_start                 <= 0;
+                        timer_10ms_start                <= 0;
                         resp_valid                      <= 0;
                         avalon_mm_m.chipselect          <= 0;
                         avalon_mm_m.read                <= 0;
@@ -144,8 +150,9 @@ always_ff @ (posedge clk or posedge reset or posedge data_channel_rst) begin
                 end
                 AVMM_FSM_WRITE: begin
                     //if(!avalon_mm_m.waitrequest) begin
-                    timer_1ms_start <= 1; 
-                    if(avalon_mm_m.writeresponsevalid) begin
+                    timer_10ms_start <= 1; 
+                    //if(avalon_mm_m.writeresponsevalid) begin
+                    if(!avalon_mm_m.waitrequest) begin
                         if (avalon_mm_m.address >= DATA_CHNL_REGISTERS_BASE_ADDRESS && avalon_mm_m.address <= DATA_CHNL_REGISTERS_END_ADDRESS) begin
                             resp.command                <= WRITE_COMP;
                             resp.tag                    <= req.tag;
@@ -153,6 +160,7 @@ always_ff @ (posedge clk or posedge reset or posedge data_channel_rst) begin
                             resp.byte_en                <= avalon_mm_m.byteenable;
                             resp.operation_status       <= 0;
                             resp.data <= avalon_mm_m.writedata;
+                            avalon_mm_m.write           <= 0;
                         end
                         else begin
                             resp.command                <= WRITE_COMP;
@@ -161,6 +169,7 @@ always_ff @ (posedge clk or posedge reset or posedge data_channel_rst) begin
                             resp.byte_en                <= avalon_mm_m.byteenable;
                             resp.operation_status       <= 1;
                             resp.data                   <= avalon_mm_m.writedata;
+                            avalon_mm_m.write           <= 0;
                         end
 
                         resp_valid                      <= 1;
@@ -168,7 +177,7 @@ always_ff @ (posedge clk or posedge reset or posedge data_channel_rst) begin
                         req_ack                         <= 1; 
                     end
 
-                    if (timer_1ms_done) begin
+                    if (timer_10ms_done) begin
                         resp.command                    <= WRITE_COMP;
                         resp.tag                        <= req.tag;
                         resp.address                    <= avalon_mm_m.address;
@@ -183,9 +192,17 @@ always_ff @ (posedge clk or posedge reset or posedge data_channel_rst) begin
                     
                 end
                 AVMM_FSM_READ: begin
-                    timer_1ms_start <= 1; 
+                    timer_10ms_start <= 1; 
                     if (avalon_mm_m.address >= DATA_CHNL_REGISTERS_BASE_ADDRESS && avalon_mm_m.address <= DATA_CHNL_REGISTERS_END_ADDRESS) begin
-                        if(avalon_mm_m.readdatavalid) begin
+                        if(avalon_mm_m.waitrequest) begin
+                            avalon_mm_m.read            <= 1;
+                        end
+                        else begin
+                            avalon_mm_m.read            <= 0;
+                        end
+
+                        if(avalon_mm_m.readdatavalid || avalon_mm_m_waitrequest_f_edge) begin
+                            avalon_mm_m.read            <= 0;
                             resp.command                <= READ_COMP;
                             resp.tag                    <= req.tag;
                             resp.address                <= avalon_mm_m.address;
@@ -220,7 +237,7 @@ always_ff @ (posedge clk or posedge reset or posedge data_channel_rst) begin
 
                     end
 
-                    if (timer_1ms_done) begin
+                    if (timer_10ms_done) begin
                         resp.command                    <= READ_COMP;
                         resp.tag                        <= req.tag;
                         resp.address                    <= avalon_mm_m.address;
@@ -261,24 +278,25 @@ always_ff @ (posedge clk or posedge reset or posedge data_channel_rst) begin
 end
 
 
-logic [15:0] cnt;
+logic [31:0] cnt;
+
 
 always @(posedge clk or posedge reset or posedge data_channel_rst)begin
     if (reset || data_channel_rst) begin
-        timer_1ms_done      <= 1'b0;
-        cnt                 <= 16'd0;
+        timer_10ms_done      <= 1'b0;
+        cnt                 <= 32'd0;
     end
     else begin
-        if(!timer_1ms_start) begin 
-            timer_1ms_done  <= 1'b0;
-            cnt             <= 16'd0;
+        if(!timer_10ms_start | timer_10ms_done) begin 
+            timer_10ms_done  <= 1'b0;
+            cnt             <= 32'd0;
         end
-        else if ( cnt < (TIMER_1MS_60MHZ-1)) begin
-            timer_1ms_done  <= 1'b0;
+        else if ( cnt < (10*TIMER_1MS_60MHZ-1)) begin
+            timer_10ms_done  <= 1'b0;
             cnt             <= cnt + 1'b1;
         end
         else begin
-            timer_1ms_done  <= 1'b1;
+            timer_10ms_done  <= 1'b1;
             cnt             <= cnt;
         end
     end

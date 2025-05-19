@@ -156,12 +156,136 @@ package ltpi_csr_light_pkg;
     } ltpi_csr_light__LTPI_Advertise_Capab_remote_HIGH__in_t;
 
     typedef struct {
+        logic [31:0] next;
+    } ltpi_csr_light__smb_trg_dbg_cntrl_smbstate__controller_smbstate__in_t;
+
+    typedef struct {
+        ltpi_csr_light__smb_trg_dbg_cntrl_smbstate__controller_smbstate__in_t controller_smbstate;
+    } ltpi_csr_light__smb_trg_dbg_cntrl_smbstate__in_t;
+
+    typedef struct {
+        logic [31:0] next;
+    } ltpi_csr_light__smb_trg_dbg_cntrl_relay_state__relay_state__in_t;
+
+    typedef struct {
+        ltpi_csr_light__smb_trg_dbg_cntrl_relay_state__relay_state__in_t relay_state;
+    } ltpi_csr_light__smb_trg_dbg_cntrl_relay_state__in_t;
+
+    typedef struct {
+        logic next;
+    } ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ia_controller_sda__in_t;
+
+    typedef struct {
+        logic next;
+    } ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ia_controller_scl__in_t;
+
+    typedef struct {
+        logic next;
+    } ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ia_controller_sda_oe__in_t;
+
+    typedef struct {
+        logic next;
+    } ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ia_controller_scl_oe__in_t;
+
+    typedef struct {
+        logic [3:0] next;
+    } ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ioc_frame_o__in_t;
+
+    typedef struct {
+        logic [3:0] next;
+    } ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ioc_frame_i__in_t;
+
+    typedef struct {
+        logic [3:0] next;
+    } ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__i2c_event_o__in_t;
+
+    typedef struct {
+        logic [3:0] next;
+    } ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__i2c_event_i__in_t;
+
+    typedef struct {
+        ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ia_controller_sda__in_t ia_controller_sda;
+        ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ia_controller_scl__in_t ia_controller_scl;
+        ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ia_controller_sda_oe__in_t ia_controller_sda_oe;
+        ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ia_controller_scl_oe__in_t ia_controller_scl_oe;
+        ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ioc_frame_o__in_t ioc_frame_o;
+        ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ioc_frame_i__in_t ioc_frame_i;
+        ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__i2c_event_o__in_t i2c_event_o;
+        ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__i2c_event_i__in_t i2c_event_i;
+    } ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__in_t;
+
+    typedef struct {
+        logic [31:0] next;
+    } ltpi_csr_light__smb_cntrl_dbg_cntrl_smbstate__controller_smbstate__in_t;
+
+    typedef struct {
+        ltpi_csr_light__smb_cntrl_dbg_cntrl_smbstate__controller_smbstate__in_t controller_smbstate;
+    } ltpi_csr_light__smb_cntrl_dbg_cntrl_smbstate__in_t;
+
+    typedef struct {
+        logic [31:0] next;
+    } ltpi_csr_light__smb_cntrl_dbg_cntrl_relay_state__relay_state__in_t;
+
+    typedef struct {
+        ltpi_csr_light__smb_cntrl_dbg_cntrl_relay_state__relay_state__in_t relay_state;
+    } ltpi_csr_light__smb_cntrl_dbg_cntrl_relay_state__in_t;
+
+    typedef struct {
+        logic next;
+    } ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ia_controller_sda__in_t;
+
+    typedef struct {
+        logic next;
+    } ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ia_controller_scl__in_t;
+
+    typedef struct {
+        logic next;
+    } ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ia_controller_sda_oe__in_t;
+
+    typedef struct {
+        logic next;
+    } ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ia_controller_scl_oe__in_t;
+
+    typedef struct {
+        logic [3:0] next;
+    } ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ioc_frame_o__in_t;
+
+    typedef struct {
+        logic [3:0] next;
+    } ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ioc_frame_i__in_t;
+
+    typedef struct {
+        logic [3:0] next;
+    } ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__i2c_event_o__in_t;
+
+    typedef struct {
+        logic [3:0] next;
+    } ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__i2c_event_i__in_t;
+
+    typedef struct {
+        ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ia_controller_sda__in_t ia_controller_sda;
+        ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ia_controller_scl__in_t ia_controller_scl;
+        ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ia_controller_sda_oe__in_t ia_controller_sda_oe;
+        ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ia_controller_scl_oe__in_t ia_controller_scl_oe;
+        ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ioc_frame_o__in_t ioc_frame_o;
+        ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ioc_frame_i__in_t ioc_frame_i;
+        ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__i2c_event_o__in_t i2c_event_o;
+        ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__i2c_event_i__in_t i2c_event_i;
+    } ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__in_t;
+
+    typedef struct {
         ltpi_csr_light__LTPI_Link_Status__in_t LTPI_Link_Status;
         ltpi_csr_light__LTPI_Detect_Capabilities_Remote__in_t LTPI_Detect_Capabilities_Remote;
         ltpi_csr_light__LTPI_Advertise_Capab_local_LOW__in_t LTPI_Advertise_Capab_local_LOW;
         ltpi_csr_light__LTPI_Advertise_Capab_local_HIGH__in_t LTPI_Advertise_Capab_local_HIGH;
         ltpi_csr_light__LTPI_Advertise_Capab_remote_LOW__in_t LTPI_Advertise_Capab_remote_LOW;
         ltpi_csr_light__LTPI_Advertise_Capab_remote_HIGH__in_t LTPI_Advertise_Capab_remote_HIGH;
+        ltpi_csr_light__smb_trg_dbg_cntrl_smbstate__in_t smb_trg_dbg_cntrl_smbstate;
+        ltpi_csr_light__smb_trg_dbg_cntrl_relay_state__in_t smb_trg_dbg_cntrl_relay_state;
+        ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__in_t smb_trg_dbg_relay_event_ioc_frame_bus;
+        ltpi_csr_light__smb_cntrl_dbg_cntrl_smbstate__in_t smb_cntrl_dbg_cntrl_smbstate;
+        ltpi_csr_light__smb_cntrl_dbg_cntrl_relay_state__in_t smb_cntrl_dbg_cntrl_relay_state;
+        ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__in_t smb_cntrl_dbg_relay_event_ioc_frame_bus;
     } ltpi_csr_light__in_t;
 
     typedef struct {
@@ -418,6 +542,124 @@ package ltpi_csr_light_pkg;
     } ltpi_csr_light__LTPI_Link_Ctrl__out_t;
 
     typedef struct {
+        logic [31:0] value;
+    } ltpi_csr_light__smb_trg_dbg_cntrl_smbstate__controller_smbstate__out_t;
+
+    typedef struct {
+        ltpi_csr_light__smb_trg_dbg_cntrl_smbstate__controller_smbstate__out_t controller_smbstate;
+    } ltpi_csr_light__smb_trg_dbg_cntrl_smbstate__out_t;
+
+    typedef struct {
+        logic [31:0] value;
+    } ltpi_csr_light__smb_trg_dbg_cntrl_relay_state__relay_state__out_t;
+
+    typedef struct {
+        ltpi_csr_light__smb_trg_dbg_cntrl_relay_state__relay_state__out_t relay_state;
+    } ltpi_csr_light__smb_trg_dbg_cntrl_relay_state__out_t;
+
+    typedef struct {
+        logic value;
+    } ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ia_controller_sda__out_t;
+
+    typedef struct {
+        logic value;
+    } ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ia_controller_scl__out_t;
+
+    typedef struct {
+        logic value;
+    } ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ia_controller_sda_oe__out_t;
+
+    typedef struct {
+        logic value;
+    } ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ia_controller_scl_oe__out_t;
+
+    typedef struct {
+        logic [3:0] value;
+    } ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ioc_frame_o__out_t;
+
+    typedef struct {
+        logic [3:0] value;
+    } ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ioc_frame_i__out_t;
+
+    typedef struct {
+        logic [3:0] value;
+    } ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__i2c_event_o__out_t;
+
+    typedef struct {
+        logic [3:0] value;
+    } ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__i2c_event_i__out_t;
+
+    typedef struct {
+        ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ia_controller_sda__out_t ia_controller_sda;
+        ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ia_controller_scl__out_t ia_controller_scl;
+        ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ia_controller_sda_oe__out_t ia_controller_sda_oe;
+        ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ia_controller_scl_oe__out_t ia_controller_scl_oe;
+        ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ioc_frame_o__out_t ioc_frame_o;
+        ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__ioc_frame_i__out_t ioc_frame_i;
+        ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__i2c_event_o__out_t i2c_event_o;
+        ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__i2c_event_i__out_t i2c_event_i;
+    } ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__out_t;
+
+    typedef struct {
+        logic [31:0] value;
+    } ltpi_csr_light__smb_cntrl_dbg_cntrl_smbstate__controller_smbstate__out_t;
+
+    typedef struct {
+        ltpi_csr_light__smb_cntrl_dbg_cntrl_smbstate__controller_smbstate__out_t controller_smbstate;
+    } ltpi_csr_light__smb_cntrl_dbg_cntrl_smbstate__out_t;
+
+    typedef struct {
+        logic [31:0] value;
+    } ltpi_csr_light__smb_cntrl_dbg_cntrl_relay_state__relay_state__out_t;
+
+    typedef struct {
+        ltpi_csr_light__smb_cntrl_dbg_cntrl_relay_state__relay_state__out_t relay_state;
+    } ltpi_csr_light__smb_cntrl_dbg_cntrl_relay_state__out_t;
+
+    typedef struct {
+        logic value;
+    } ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ia_controller_sda__out_t;
+
+    typedef struct {
+        logic value;
+    } ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ia_controller_scl__out_t;
+
+    typedef struct {
+        logic value;
+    } ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ia_controller_sda_oe__out_t;
+
+    typedef struct {
+        logic value;
+    } ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ia_controller_scl_oe__out_t;
+
+    typedef struct {
+        logic [3:0] value;
+    } ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ioc_frame_o__out_t;
+
+    typedef struct {
+        logic [3:0] value;
+    } ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ioc_frame_i__out_t;
+
+    typedef struct {
+        logic [3:0] value;
+    } ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__i2c_event_o__out_t;
+
+    typedef struct {
+        logic [3:0] value;
+    } ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__i2c_event_i__out_t;
+
+    typedef struct {
+        ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ia_controller_sda__out_t ia_controller_sda;
+        ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ia_controller_scl__out_t ia_controller_scl;
+        ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ia_controller_sda_oe__out_t ia_controller_sda_oe;
+        ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ia_controller_scl_oe__out_t ia_controller_scl_oe;
+        ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ioc_frame_o__out_t ioc_frame_o;
+        ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__ioc_frame_i__out_t ioc_frame_i;
+        ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__i2c_event_o__out_t i2c_event_o;
+        ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__i2c_event_i__out_t i2c_event_i;
+    } ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__out_t;
+
+    typedef struct {
         ltpi_csr_light__LTPI_Link_Status__out_t LTPI_Link_Status;
         ltpi_csr_light__LTPI_Detect_Capabilities_Local__out_t LTPI_Detect_Capabilities_Local;
         ltpi_csr_light__LTPI_Detect_Capabilities_Remote__out_t LTPI_Detect_Capabilities_Remote;
@@ -429,5 +671,11 @@ package ltpi_csr_light_pkg;
         ltpi_csr_light__LTPI_Config_Capab_LOW__out_t LTPI_Config_Capab_LOW;
         ltpi_csr_light__LTPI_Config_Capab_HIGH__out_t LTPI_Config_Capab_HIGH;
         ltpi_csr_light__LTPI_Link_Ctrl__out_t LTPI_Link_Ctrl;
+        ltpi_csr_light__smb_trg_dbg_cntrl_smbstate__out_t smb_trg_dbg_cntrl_smbstate;
+        ltpi_csr_light__smb_trg_dbg_cntrl_relay_state__out_t smb_trg_dbg_cntrl_relay_state;
+        ltpi_csr_light__smb_trg_dbg_relay_event_ioc_frame_bus__out_t smb_trg_dbg_relay_event_ioc_frame_bus;
+        ltpi_csr_light__smb_cntrl_dbg_cntrl_smbstate__out_t smb_cntrl_dbg_cntrl_smbstate;
+        ltpi_csr_light__smb_cntrl_dbg_cntrl_relay_state__out_t smb_cntrl_dbg_cntrl_relay_state;
+        ltpi_csr_light__smb_cntrl_dbg_relay_event_ioc_frame_bus__out_t smb_cntrl_dbg_relay_event_ioc_frame_bus;
     } ltpi_csr_light__out_t;
 endpackage

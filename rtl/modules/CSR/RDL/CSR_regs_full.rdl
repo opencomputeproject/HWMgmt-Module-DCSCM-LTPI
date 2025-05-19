@@ -261,7 +261,7 @@ addrmap ltpi_csr {
             desc = "I2C Channels speed";
             sw = r;
             hw = rw;
-        } I2C_channel_speed [5:0] = 0;
+        } I2C_channel_speed [5:0] = 0x0;
     } LTPI_Advertise_Capab_remote_HIGH @ 0x20;
 
     reg {
@@ -308,7 +308,7 @@ addrmap ltpi_csr {
             desc = "I2C Channels speed";
             sw = r;
             hw = r;
-        } I2C_channel_speed [5:0] = 0; 
+        } I2C_channel_speed [5:0] = 0x0; 
     } LTPI_Config_Capab_HIGH @ 0x28;
 
     reg {
@@ -510,5 +510,161 @@ addrmap ltpi_csr {
             hw = r;
         } software_reset [0:0] = 0;
     } LTPI_Link_Ctrl @ 0x80;
+
+    reg {
+        name = "SMBUS Target Debug controller_smbstate";
+
+        field {
+            desc = "Target Debug controller_smbstate";
+            sw = r;
+            hw = rw;
+        } controller_smbstate [31:0] = 0;
+    } smb_trg_dbg_cntrl_smbstate @ 0x84;
+
+    reg {
+        name = "SMBUS Target Debug relay_state";
+
+        field {
+            desc = "Target Debug relay_state";
+            sw = r;
+            hw = rw;
+        } relay_state [31:0] = 0;
+    } smb_trg_dbg_cntrl_relay_state @ 0x88;
+
+    reg {
+        name = "SMBUS Target Debug Event Ioc Frame Bus";
+
+        field {
+            desc = "Target Debug i2c_event_i";
+            sw = r;
+            hw = rw;
+        } i2c_event_i [19:16] = 0; 
+
+        field {
+            desc = "Target Debug i2c_event_o";
+            sw = r;
+            hw = rw;
+        } i2c_event_o [15:12] = 0;
+        
+        field {
+            desc = "Target Debug ioc_frame_i";
+            sw = r;
+            hw = rw;
+        } ioc_frame_i [11:8] = 0;
+
+        field {
+            desc = "Target Debug ioc_frame_o";
+            sw = r;
+            hw = rw;
+        } ioc_frame_o [7:4] = 0;
+
+        field {
+            desc = "Target Debug SCL_OE";
+            sw = r;
+            hw = rw;
+        } ia_controller_scl_oe [3:3] = 0;
+        
+        field {
+            desc = "Target Debug SDA_OE";
+            sw = r;
+            hw = rw;
+        } ia_controller_sda_oe [2:2] = 0;
+
+        field {
+            desc = "Target Debug SCL";
+            sw = r;
+            hw = rw;
+        } ia_controller_scl [1:1] = 0;
+
+        field {
+            desc = "Target Debug SDA";
+            sw = r;
+            hw = rw;
+        } ia_controller_sda [0:0] = 0;
+
+    } smb_trg_dbg_relay_event_ioc_frame_bus @ 0x8C;
+
+    reg {
+        name = "SMBUS Controller Debug controller_smbstate";
+
+        field {
+            desc = "Controller Debug controller_smbstate";
+            sw = r;
+            hw = rw;
+        } controller_smbstate [31:0] = 0;
+    } smb_cntrl_dbg_cntrl_smbstate @ 0x90;
+
+    reg {
+        name = "SMBUS Controller Debug relay_state";
+
+        field {
+            desc = "Controller Debug relay_state";
+            sw = r;
+            hw = rw;
+        } relay_state [31:0] = 0;
+    } smb_cntrl_dbg_cntrl_relay_state @ 0x94;
+
+    reg {
+        name = "SMBUS Controller Debug Event Ioc Frame Bus";
+
+        field {
+            desc = "Controller Debug i2c_event_i";
+            sw = r;
+            hw = rw;
+        } i2c_event_i [19:16] = 0;
+
+        field {
+            desc = "Controller Debug i2c_event_o";
+            sw = r;
+            hw = rw;
+        } i2c_event_o [15:12] = 0;
+        
+        field {
+            desc = "Controller Debug ioc_frame_i";
+            sw = r;
+            hw = rw;
+        } ioc_frame_i [11:8] = 0;
+
+        field {
+            desc = "Controller Debug ioc_frame_o";
+            sw = r;
+            hw = rw;
+        } ioc_frame_o [7:4] = 0;
+
+        field {
+            desc = "Controller Debug SCL_OE";
+            sw = r;
+            hw = rw;
+        } ia_controller_scl_oe [3:3] = 0;
+        
+        field {
+            desc = "Controller Debug SDA_OE";
+            sw = r;
+            hw = rw;
+        } ia_controller_sda_oe [2:2] = 0;
+
+        field {
+            desc = "Controller Debug SCL";
+            sw = r;
+            hw = rw;
+        } ia_controller_scl [1:1] = 0;
+
+        field {
+            desc = "Controller Debug SDA";
+            sw = r;
+            hw = rw;
+        } ia_controller_sda [0:0] = 0;
+
+    } smb_cntrl_dbg_relay_event_ioc_frame_bus @ 0x98;
+
+    reg {
+        name = "PMBUS 2 Debug relay recovery counter";
+
+        field {
+            desc = "PMBUS 2 relay recovery ";
+            sw = r;
+            hw = rw;
+        } recovery_cnt [31:0] = 0;
+    } pmbus2_relay_recovery_cntr @ 0x9C;
 
 };

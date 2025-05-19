@@ -47,7 +47,8 @@ import ltpi_pkg::*;
     `LOGIC_MODPORT(logic_avalon_mm_if,  slave)  avalon_mm_s,
     input logic [7:0]                           tag,
 
-    input logic        data_channel_rst
+    output logic                    data_channel_timeout,
+    input logic                     data_channel_rst
 
 );
 
@@ -57,7 +58,8 @@ typedef enum logic [2:0] {
     AVMM_FSM_WRITE_COMPL,
     AVMM_FSM_READ,
     AVMM_FSM_READ_COMPL,
-    AVMM_FSM_RESP
+    AVMM_FSM_RESP,
+    AVMM_FSM_TIMEOUT
 } avmm_fsm_t;
 
 avmm_fsm_t          avmm_fsm;
@@ -66,9 +68,30 @@ logic [31:0]        avmm_address;
 logic [3:0]         avmm_byte_enable;
 logic [31:0]        avmm_data;
 logic [1:0]         avmm_response;
+logic               avmm_waitrq;
 
-logic timer_1ms_done;
-logic timer_1ms_start;
+logic timer_10ms_done;
+logic timer_10ms_done_ff;
+logic timer_10ms_start;
+always_ff @ (posedge clk) data_channel_timeout  <= timer_10ms_done_ff;
+always_ff @ (posedge clk) timer_10ms_done_ff    <= timer_10ms_done;
+//assign data_channel_timeout = timer_10ms_done;
+
+always@(*) begin
+
+    if( avalon_mm_s.readdatavalid || avalon_mm_s.writeresponsevalid || timer_10ms_done || avmm_fsm == AVMM_FSM_TIMEOUT)begin
+        avalon_mm_s.waitrequest <= 0;
+    end
+    else if (!avmm_waitrq & avalon_mm_s.chipselect & (avalon_mm_s.write || avalon_mm_s.read)) begin
+        avalon_mm_s.waitrequest <= 1;
+    end
+    else if(avmm_fsm != AVMM_FSM_IDLE ) begin
+        avalon_mm_s.waitrequest <= 1;
+    end
+    else begin
+        avalon_mm_s.waitrequest <= 0;
+    end
+end
 
 // ------------------------------------------------------------------------------------------------------------------------- //
 // ----- AVMM FSM  --------------------------------------------------------------------------------------------------------- //
@@ -79,7 +102,7 @@ always_ff @ (posedge clk or posedge reset or posedge data_channel_rst) begin
         avalon_mm_s.readdatavalid       <= 0;
         avalon_mm_s.response            <= 0;
         avalon_mm_s.writeresponsevalid  <= 0; 
-        avalon_mm_s.waitrequest         <= 0;
+        avmm_waitrq                     <= 0;
 
         avmm_fsm                        <= AVMM_FSM_IDLE;
         avmm_rnw                        <= 0;
@@ -95,13 +118,14 @@ always_ff @ (posedge clk or posedge reset or posedge data_channel_rst) begin
         req.data                        <= 0;
         req.byte_en                     <= 0;
         req.operation_status            <=0;
-        timer_1ms_start                 <= 0;
+        timer_10ms_start                <= 0;
 
     end
     else begin
         case (avmm_fsm)
             AVMM_FSM_IDLE: begin
-                if (!avalon_mm_s.waitrequest) begin
+                timer_10ms_start                 <= 0;
+                if (!avmm_waitrq) begin
                     if (avalon_mm_s.chipselect) begin
                         if (avalon_mm_s.write) begin
                             avmm_rnw                <= 0;
@@ -115,22 +139,22 @@ always_ff @ (posedge clk or posedge reset or posedge data_channel_rst) begin
                                 end
                             end
                             avmm_byte_enable        <= avalon_mm_s.byteenable;
-                            avalon_mm_s.waitrequest <= 1;
+                            avmm_waitrq             <= 1;
                             avmm_fsm                <= AVMM_FSM_WRITE;
                         end
                         else if (avalon_mm_s.read) begin
                             avmm_rnw                <= 1;
                             avmm_address            <= avalon_mm_s.address[15:0];
                             avmm_byte_enable        <= avalon_mm_s.byteenable;
-                            avalon_mm_s.waitrequest <= 1;
+                            avmm_waitrq <= 1;
                             avmm_fsm                <= AVMM_FSM_READ;
                         end
                     end
                 end
                 else begin
-                    timer_1ms_start                 <= 0;
+                    //timer_10ms_start                 <= 0;
                     req_valid                       <= 0;
-                    avalon_mm_s.waitrequest         <= 0;
+                    avmm_waitrq                     <= 0;
                     avalon_mm_s.response            <= 0;
                     avalon_mm_s.writeresponsevalid  <= 0;
                     avalon_mm_s.readdata            <= { 8'b0, 8'b0, 8'b0, 8'b0 };
@@ -157,19 +181,21 @@ always_ff @ (posedge clk or posedge reset or posedge data_channel_rst) begin
                 end
             end
             AVMM_FSM_WRITE_COMPL: begin
-                timer_1ms_start                     <= 1;
+                timer_10ms_start                    <= 1;
                 req_valid                           <= 0;
                 if(resp_valid == 1) begin
                     if(resp.command == WRITE_COMP) begin
                         avmm_fsm                    <= AVMM_FSM_RESP;
                     end
                     else if (resp.command == CRC_ERROR) begin
-                        avalon_mm_s.waitrequest     <= 0;
+                        avmm_waitrq                 <= 0;
                         avmm_fsm                    <= AVMM_FSM_IDLE;
                     end
                 end
-                else if(timer_1ms_done) begin
-                    avmm_fsm                        <= AVMM_FSM_IDLE;
+                else if(timer_10ms_done) begin
+                    avmm_waitrq                     <= 0;
+                    timer_10ms_start                <= 0;
+                    avmm_fsm                        <= AVMM_FSM_TIMEOUT;
                 end
             end
             AVMM_FSM_READ: begin
@@ -185,7 +211,7 @@ always_ff @ (posedge clk or posedge reset or posedge data_channel_rst) begin
                 end
             end
             AVMM_FSM_READ_COMPL: begin
-                timer_1ms_start                     <= 1;
+                timer_10ms_start                    <= 1;
                 req_valid                           <= 0;
                 if(resp_valid == 1) begin
                     if(resp.command == READ_COMP) begin
@@ -193,17 +219,18 @@ always_ff @ (posedge clk or posedge reset or posedge data_channel_rst) begin
                         avmm_fsm                    <= AVMM_FSM_RESP;
                     end
                     else if (resp.command == CRC_ERROR) begin
-                        avalon_mm_s.waitrequest     <= 0;
+                        avmm_waitrq                 <= 0;
                         avmm_fsm                    <= AVMM_FSM_IDLE;
                     end
                 end
-                else if(timer_1ms_done) begin
-                    avalon_mm_s.waitrequest     <= 0;
-                    avmm_fsm                        <= AVMM_FSM_IDLE;
+                else if(timer_10ms_done) begin
+                    timer_10ms_start                <= 0;
+                    avmm_waitrq                     <= 0;
+                    avmm_fsm                        <= AVMM_FSM_TIMEOUT;
                 end
             end
             AVMM_FSM_RESP: begin
-                timer_1ms_start                     <= 0;
+                timer_10ms_start                    <= 0;
                 if (avalon_mm_s.chipselect) begin
                     if (avmm_rnw) begin  // R
                         for (int b = 0; b < 4; b++) begin
@@ -224,29 +251,32 @@ always_ff @ (posedge clk or posedge reset or posedge data_channel_rst) begin
                     avmm_fsm                        <= AVMM_FSM_IDLE;
                 end
             end
+            AVMM_FSM_TIMEOUT: begin 
+                avmm_fsm                        <= AVMM_FSM_IDLE;
+            end
         endcase
     end
 end
 
-logic [15:0] cnt;
+logic [31:0] cnt;
 
 
 always @(posedge clk or posedge reset or posedge data_channel_rst)begin
     if (reset || data_channel_rst) begin
-        timer_1ms_done      <= 1'b0;
-        cnt                 <= 16'd0;
+        timer_10ms_done     <= 1'b0;
+        cnt                 <= 32'd0;
     end
     else begin
-        if(!timer_1ms_start) begin 
-            timer_1ms_done  <= 1'b0;
-            cnt             <= 16'd0;
+        if(!timer_10ms_start | timer_10ms_done) begin 
+            timer_10ms_done <= 1'b0;
+            cnt             <= 32'd0;
         end
-        else if ( cnt < (TIMER_1MS_60MHZ-1)) begin
-            timer_1ms_done  <= 1'b0;
+        else if ( cnt < (10*TIMER_1MS_60MHZ-1)) begin // Changed for 10ms
+            timer_10ms_done <= 1'b0;
             cnt             <= cnt + 1'b1;
         end
         else begin
-            timer_1ms_done  <= 1'b1;
+            timer_10ms_done <= 1'b1;
             cnt             <= cnt;
         end
     end

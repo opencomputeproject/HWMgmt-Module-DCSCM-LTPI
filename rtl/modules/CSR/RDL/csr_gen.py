@@ -38,8 +38,8 @@ class My_AXI4Lite(AXI4Lite_Cpuif):
 
 
 input_files = [
-    #"CSR_regs_full.rdl"
-    "CSR_regs_light.rdl"
+    "CSR_regs_full.rdl"
+    #"CSR_regs_light.rdl"
 ]
 
 # Create an instance of the compiler

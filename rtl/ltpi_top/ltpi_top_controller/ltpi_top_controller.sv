@@ -101,23 +101,45 @@ import ltpi_pkg::*;
     
     inout                                       BMC_smb_scl,        //I2C interfaces to BMC
     inout                                       BMC_smb_sda,
+// avmm_______________
 
+    input       [                    15:0]      avmm_slv_addr,  //AVMM
+    input                                       avmm_slv_read,  //Only
+    input                                       avmm_slv_write,
+    input       [                    31:0]      avmm_slv_wdata,
+    input       [                     3:0]      avmm_slv_byteen,
+    output      [                    31:0]      avmm_slv_rdata,
+    output                                      avmm_slv_rdvalid,
+    output                                      avmm_slv_waitrq,
+
+    input       [                    15:0]      avmm_csr_addr,
+    input                                       avmm_csr_read,
+    input                                       avmm_csr_write,
+    input       [                    31:0]      avmm_csr_wdata,
+    input       [                     3:0]      avmm_csr_byteen,
+    output      [                    31:0]      avmm_csr_rdata,
+    output                                      avmm_csr_rdvalid,
+    output                                      avmm_csr_waitrq,
+
+    output logic                                data_channel_timeout, //timeout indecate that transmision through data channel was invalid - only exist on controller side
+
+//____________
     output wire                                 aligned,            //Mark that LVDS link has locked
     output wire                                 NL_gpio_stable,
 
     inout        [(NUM_OF_SMBUS_DEV - 1):0]     smb_scl,            //I2C interfaces tunneling through LVDS 
     inout        [(NUM_OF_SMBUS_DEV - 1):0]     smb_sda,
 
-    input  logic [  15:0]                       ll_gpio_in,
-    output logic [  15:0]                       ll_gpio_out,
+    input  logic [                    15:0]     ll_gpio_in,
+    output logic [                    15:0]     ll_gpio_out,
 
-    input  logic [(NUM_OF_NL_GPIO - 1):0]       nl_gpio_in,        //GPIO input tunneling through LVDS
-    output logic [(NUM_OF_NL_GPIO - 1):0]       nl_gpio_out,       //GPIO output tunneling through LVDS
+    input  logic [  (NUM_OF_NL_GPIO - 1):0]     nl_gpio_in,        //GPIO input tunneling through LVDS
+    output logic [  (NUM_OF_NL_GPIO - 1):0]     nl_gpio_out,       //GPIO output tunneling through LVDS
     
-    input        [(NUM_OF_UART_DEV - 1):0]      uart_rxd,          //UART interfaces tunneling through LVDS
-    input        [(NUM_OF_UART_DEV - 1):0]      uart_cts,          //Clear To Send
-    output reg   [(NUM_OF_UART_DEV - 1):0]      uart_txd,
-    output reg   [(NUM_OF_UART_DEV - 1):0]      uart_rts           //Request To Send
+    input        [ (NUM_OF_UART_DEV - 1):0]     uart_rxd,          //UART interfaces tunneling through LVDS
+    input        [ (NUM_OF_UART_DEV - 1):0]     uart_cts,          //Clear To Send
+    output reg   [ (NUM_OF_UART_DEV - 1):0]     uart_txd,
+    output reg   [ (NUM_OF_UART_DEV - 1):0]     uart_rts           //Request To Send
 );
 
 
@@ -201,25 +223,47 @@ logic_avalon_mm_if #(
 );
 
 
+
+assign u_avmm_mm.address       = avmm_slv_addr;
+assign u_avmm_mm.read          = avmm_slv_read;
+assign u_avmm_mm.write         = avmm_slv_write;
+assign u_avmm_mm.writedata[0]  = avmm_slv_wdata[ 7: 0];
+assign u_avmm_mm.writedata[1]  = avmm_slv_wdata[15: 8];
+assign u_avmm_mm.writedata[2]  = avmm_slv_wdata[23:16];
+assign u_avmm_mm.writedata[3]  = avmm_slv_wdata[31:24];
+assign u_avmm_mm.byteenable    = avmm_slv_byteen;
+assign avmm_slv_rdata[ 7: 0]    = u_avmm_mm.readdata[0];
+assign avmm_slv_rdata[15: 8]    = u_avmm_mm.readdata[1];
+assign avmm_slv_rdata[23:16]    = u_avmm_mm.readdata[2];
+assign avmm_slv_rdata[31:24]    = u_avmm_mm.readdata[3];
+assign avmm_slv_rdvalid         = u_avmm_mm.readdatavalid;
+assign avmm_slv_waitrq          = u_avmm_mm.waitrequest;
+assign u_avmm_mm.chipselect    = 1;
+
+assign u_avmm_CSR.address       = avmm_csr_addr;
+assign u_avmm_CSR.read          = avmm_csr_read;
+assign u_avmm_CSR.write         = avmm_csr_write;
+assign u_avmm_CSR.writedata[0]  = avmm_csr_wdata[ 7: 0];
+assign u_avmm_CSR.writedata[1]  = avmm_csr_wdata[15: 8];
+assign u_avmm_CSR.writedata[2]  = avmm_csr_wdata[23:16];
+assign u_avmm_CSR.writedata[3]  = avmm_csr_wdata[31:24];
+assign u_avmm_CSR.byteenable    = avmm_csr_byteen;
+assign avmm_csr_rdata[ 7: 0]    = u_avmm_CSR.readdata[0];
+assign avmm_csr_rdata[15: 8]    = u_avmm_CSR.readdata[1];
+assign avmm_csr_rdata[23:16]    = u_avmm_CSR.readdata[2];
+assign avmm_csr_rdata[31:24]    = u_avmm_CSR.readdata[3];
+assign avmm_csr_rdvalid         = u_avmm_CSR.readdatavalid;
+assign avmm_csr_waitrq          = u_avmm_CSR.waitrequest;
+assign u_avmm_CSR.chipselect=1;
+
+
+
+
+
+
 assign u_avmm_cntrl.readdata      = '0;
 assign u_avmm_cntrl.waitrequest   = '0;
 assign u_avmm_cntrl.readdatavalid = '0;
-
-assign u_avmm_bmc.address       = avmm_bmc_addr;
-assign u_avmm_bmc.read          = avmm_bmc_read;
-assign u_avmm_bmc.write         = avmm_bmc_write;
-assign u_avmm_bmc.writedata[0]  = avmm_bmc_wdata[ 7: 0];
-assign u_avmm_bmc.writedata[1]  = avmm_bmc_wdata[15: 8];
-assign u_avmm_bmc.writedata[2]  = avmm_bmc_wdata[23:16];
-assign u_avmm_bmc.writedata[3]  = avmm_bmc_wdata[31:24];
-assign u_avmm_bmc.byteenable    = avmm_bmc_byteen;
-assign avmm_bmc_rdata[ 7: 0]    = u_avmm_bmc.readdata[0];
-assign avmm_bmc_rdata[15: 8]    = u_avmm_bmc.readdata[1];
-assign avmm_bmc_rdata[23:16]    = u_avmm_bmc.readdata[2];
-assign avmm_bmc_rdata[31:24]    = u_avmm_bmc.readdata[3];
-assign avmm_bmc_rdvalid         = u_avmm_bmc.readdatavalid;
-assign avmm_bmc_waitrq          = u_avmm_bmc.waitrequest;
-assign u_avmm_bmc.chipselect    = 1;
 
 assign tag                      = 0;
 
@@ -281,54 +325,10 @@ mgmt_ltpi_top #(
         
     .avalon_mm_m                (u_avmm_cntrl               ),//AVMM Controller interface tunneling through LVDS, Dose not exist on controller side
     .avalon_mm_s                (u_avmm_mm                  ),//AVMM Target interface tunneling through LVDS, Only exist on controller side
+    .data_channel_timeout       (data_channel_timeout       ),
     .tag_in                     (tag                        ) //Tag field only exist while DATA_CHANNEL_MAILBOX_EN = 0
 );
 
-//I2C to BMC
-logic             i2c_target_data_in;
-logic             i2c_target_clk_in;
-logic             i2c_target_data_oe;
-logic             i2c_target_clk_oe;
-
-assign i2c_target_clk_in = BMC_smb_scl;
-assign BMC_smb_scl = i2c_target_clk_oe ? 1'b0 : 1'bz;
-
-assign i2c_target_data_in = BMC_smb_sda;
-assign BMC_smb_sda = i2c_target_data_oe ? 1'b0 : 1'bz;
-
-i2c_target_avmm_bridge i2c_target_avmm_bridge_inst (
-
-    .clk                        (clk_60MHZ                  ),
-    //AVMM interface
-    .waitrequest                (avmm_bmc_waitrq            ),
-    .readdatavalid              (avmm_bmc_rdvalid           ),
-    .readdata                   (avmm_bmc_rdata             ),
-
-    .address                    (avmm_bmc_addr              ),
-    .write                      (avmm_bmc_write             ),
-    .writedata                  (avmm_bmc_wdata             ),
-    .read                       (avmm_bmc_read              ),
-    .byteenable                 (avmm_bmc_byteen            ),
-
-    .i2c_data_in                (i2c_target_data_in         ),
-    .i2c_clk_in                 (i2c_target_clk_in          ),
-    .i2c_data_oe                (i2c_target_data_oe         ),
-    .i2c_clk_oe                 (i2c_target_clk_oe          ),
-    .rst_n                      (!reset                     ) 
-);
-
-avmm_mux  #(
-    .ADDR_WIDTH (32),
-    .DATA_WIDTH (32)
-)avmm_mux_inst(
-    .clk                        (clk_60MHZ                  ),
-    .rstn                       (!reset                     ),
-    .avmm_s                     (u_avmm_bmc                 ),
-    .avmm_m_0                   (u_avmm_FPGA_inf            ),
-    .avmm_m_1                   (u_avmm_CSR                 ),
-    .avmm_m_2                   (u_avmm_s                   ),
-    .avmm_m_3                   (u_avmm_mm                  )
-);
 
 ltpi_csr_avmm  #(
     .CSR_LIGHT_VER_EN(CSR_LIGHT_VER_EN)

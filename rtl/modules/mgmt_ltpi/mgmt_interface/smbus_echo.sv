@@ -175,6 +175,11 @@ always @ (posedge clk or posedge reset) begin
                     smbus_event_echo        <= idle;
                     i2c_event_i_echo_array  <= i2c_event_i_array;
                 end
+                idle: begin
+                    echo_send_req           <= 1'b1;
+                    smbus_event_echo        <= idle;
+                    i2c_event_i_echo_array  <= i2c_event_i_array;
+                end
                 default: begin
                     echo_send_req           <= 1'b0;
                 end
@@ -241,10 +246,10 @@ always @ (posedge clk or posedge reset) begin
                     state                   <= ST_FRAME_EVENT;
                     i2c_event_o_echo_array  <= i2c_event_o_next;
                 end
-                else if(i2c_event_o_echo_array == stop_rcv) begin
-                    state                   <= ST_FRAME_EVENT;
-                    i2c_event_o_echo_array  <= idle;
-                end
+                // else if(i2c_event_o_echo_array == stop_rcv) begin
+                //     state                   <= ST_FRAME_EVENT;
+                //     i2c_event_o_echo_array  <= idle;
+                // end
                 else begin
                     state                   <= ST_INIT;
                 end

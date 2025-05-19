@@ -350,6 +350,64 @@ typedef struct packed{
     link_state_t CRC_error_link_state;
 }CRC_error_test_t;
 
+///////////////////////DEBUG///////////////////////////////////
+//TRG
+typedef struct packed{
+    logic [31:0]               controller_smbstate;
+}smb_trg_dbg_cntrl_smbstate_t;
+
+typedef struct packed{
+    logic [31:0]               relay_state;
+}smb_trg_dbg_cntrl_relay_state_t;
+
+typedef struct packed{
+    logic [3:0]                i2c_event_i;
+    logic [3:0]                i2c_event_o;
+    logic [3:0]                ioc_frame_i;
+    logic [3:0]                ioc_frame_o;
+    logic [0:0]                SCL_OE;
+    logic [0:0]                SDA_OE;
+    logic [0:0]                ia_controller_scl;
+    logic [0:0]                ia_controller_sda;
+}smb_trg_dbg_relay_event_ioc_frame_bus_t;
+
+typedef struct packed {
+    smb_trg_dbg_cntrl_smbstate_t            smb_trg_dbg_cntrl_smbstate;
+    smb_trg_dbg_cntrl_relay_state_t         smb_trg_dbg_cntrl_relay_state;
+    smb_trg_dbg_relay_event_ioc_frame_bus_t smb_trg_dbg_relay_event_ioc_frame_bus;
+} LTPI_SMB_DBG_TRG_t;
+
+
+//CNTRL
+
+typedef struct packed{
+    logic [31:0]               controller_smbstate;
+}smb_cntrl_dbg_cntrl_smbstate_t;
+
+typedef struct packed{
+    logic [31:0]               relay_state;
+}smb_cntrl_dbg_cntrl_relay_state_t;
+
+typedef struct packed{
+    logic [3:0]                i2c_event_i;
+    logic [3:0]                i2c_event_o;
+    logic [3:0]                ioc_frame_i;
+    logic [3:0]                ioc_frame_o;
+    logic [0:0]                SCL_OE;
+    logic [0:0]                SDA_OE;
+    logic [0:0]                ia_controller_scl;
+    logic [0:0]                ia_controller_sda;
+}smb_cntrl_dbg_relay_event_ioc_frame_bus_t;
+
+
+typedef struct packed {
+    smb_cntrl_dbg_cntrl_smbstate_t            smb_cntrl_dbg_cntrl_smbstate;
+    smb_cntrl_dbg_cntrl_relay_state_t         smb_cntrl_dbg_cntrl_relay_state;
+    smb_cntrl_dbg_relay_event_ioc_frame_bus_t smb_cntrl_dbg_relay_event_ioc_frame_bus;
+} LTPI_SMB_DBG_CNTRL_t;
+///////////////////////////////////////////////////////////////
+
+
 //output data from ltpi_top
 typedef struct packed{
     LTPI_Link_Status_t          LTPI_Link_Status;
@@ -359,6 +417,10 @@ typedef struct packed{
     LTPI_Capabilites_t          LTPI_Config_Capab_remote;
     LTPI_Capabilites_t          LTPI_Config_or_Accept_Capab;
     LTPI_Counter_t              LTPI_counter;
+    //debug
+    LTPI_SMB_DBG_TRG_t          LTPI_SMB_DBG_TRG;
+    LTPI_SMB_DBG_CNTRL_t        LTPI_SMB_DBG_CNTRL;
+    logic [31:0]                LTPI_pmbus2_recovery_cnt;
 } LTPI_CSR_Out_t;//RO
 
 //input data to ltpi_top
@@ -375,6 +437,8 @@ typedef struct packed{
     LTPI_Detect_Capab_CSR_t     LTPI_Detect_Capab_remote;
     logic                       clear_reg;
 } LTPI_CSR_In_t;//RW
+
+
 
 typedef enum logic [3:0] {
     idle,//0

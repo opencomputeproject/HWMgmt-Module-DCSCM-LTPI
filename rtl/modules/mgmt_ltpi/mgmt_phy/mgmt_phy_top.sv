@@ -58,8 +58,17 @@ import ltpi_pkg::*;
     output logic                data_channel_rx_valid,
     
     input LTPI_CSR_In_t         LTPI_CSR_In,
-    output LTPI_CSR_Out_t       LTPI_CSR_Out
+    output LTPI_CSR_Out_t       LTPI_CSR_Out,
 
+    //DEBUG
+    input logic [5:0][31:0] csr_smb_dbg_cntrl_controller_smbstate,
+    input logic [5:0][31:0] csr_smb_dbg_cntrl_relay_state,
+    input logic [5:0][19:0] csr_smb_dbg_cntrl_relay_event_ioc_frame_bus,
+
+    input logic [5:0][31:0] csr_smb_dbg_trg_controller_smbstate,
+    input logic [5:0][31:0] csr_smb_dbg_trg_relay_state,
+    input logic [5:0][19:0] csr_smb_dbg_trg_relay_event_ioc_frame_bus,
+    input logic [5:0][31:0] csr_smb_dbg_recovery_cnt
 );
 
 wire                clk_phy;
@@ -155,6 +164,31 @@ assign LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_low.link_cfg_acpt_f
 assign LTPI_CSR_Out.LTPI_counter.operational_frm_snt_cnt                                    = LTPI_CSR_Out_frm_tx.LTPI_counter.operational_frm_snt_cnt;
 
 
+////////////////////////////////////////////////////DEBUG//////////////////////////////////////////////////
+assign LTPI_CSR_Out.LTPI_SMB_DBG_TRG.smb_trg_dbg_cntrl_smbstate.controller_smbstate              = csr_smb_dbg_trg_controller_smbstate      [1];
+assign LTPI_CSR_Out.LTPI_SMB_DBG_TRG.smb_trg_dbg_cntrl_relay_state.relay_state                   = csr_smb_dbg_trg_relay_state              [1];
+assign LTPI_CSR_Out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_i           = csr_smb_dbg_trg_relay_event_ioc_frame_bus[1][19:16];
+assign LTPI_CSR_Out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.i2c_event_o           = csr_smb_dbg_trg_relay_event_ioc_frame_bus[1][15:12];
+assign LTPI_CSR_Out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_i           = csr_smb_dbg_trg_relay_event_ioc_frame_bus[1][11:8];
+assign LTPI_CSR_Out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.ioc_frame_o           = csr_smb_dbg_trg_relay_event_ioc_frame_bus[1][7:4];
+assign LTPI_CSR_Out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.SCL_OE                = csr_smb_dbg_trg_relay_event_ioc_frame_bus[1][3:3];
+assign LTPI_CSR_Out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.SDA_OE                = csr_smb_dbg_trg_relay_event_ioc_frame_bus[1][2:2];
+assign LTPI_CSR_Out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_scl     = csr_smb_dbg_trg_relay_event_ioc_frame_bus[1][1:1];
+assign LTPI_CSR_Out.LTPI_SMB_DBG_TRG.smb_trg_dbg_relay_event_ioc_frame_bus.ia_controller_sda     = csr_smb_dbg_trg_relay_event_ioc_frame_bus[1][0:0];
+
+assign LTPI_CSR_Out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_cntrl_smbstate.controller_smbstate          = csr_smb_dbg_cntrl_controller_smbstate      [1];
+assign LTPI_CSR_Out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_cntrl_relay_state.relay_state               = csr_smb_dbg_cntrl_relay_state              [1];
+assign LTPI_CSR_Out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_i       = csr_smb_dbg_cntrl_relay_event_ioc_frame_bus[1][19:16];
+assign LTPI_CSR_Out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.i2c_event_o       = csr_smb_dbg_cntrl_relay_event_ioc_frame_bus[1][15:12];
+assign LTPI_CSR_Out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_i       = csr_smb_dbg_cntrl_relay_event_ioc_frame_bus[1][11:8];
+assign LTPI_CSR_Out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.ioc_frame_o       = csr_smb_dbg_cntrl_relay_event_ioc_frame_bus[1][7:4];
+assign LTPI_CSR_Out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.SCL_OE            = csr_smb_dbg_cntrl_relay_event_ioc_frame_bus[1][3:3];
+assign LTPI_CSR_Out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.SDA_OE            = csr_smb_dbg_cntrl_relay_event_ioc_frame_bus[1][2:2];
+assign LTPI_CSR_Out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_scl = csr_smb_dbg_cntrl_relay_event_ioc_frame_bus[1][1:1];
+assign LTPI_CSR_Out.LTPI_SMB_DBG_CNTRL.smb_cntrl_dbg_relay_event_ioc_frame_bus.ia_controller_sda = csr_smb_dbg_cntrl_relay_event_ioc_frame_bus[1][0:0];
+
+assign LTPI_CSR_Out.LTPI_pmbus2_recovery_cnt                                                    = csr_smb_dbg_recovery_cnt[1];
+
 assign remote_link_state = LTPI_CSR_Out_frm_rx.LTPI_Link_Status.remote_link_state;
 assign link_lost = (LTPI_link_ST == ST_LINK_LOST_ERR  || LTPI_link_ST == ST_INIT); 
 //assign link_lost = 1'b0;
@@ -212,7 +246,22 @@ mgmt_ltpi_frm_tx  #(
     .LTPI_CSR_Out                       (LTPI_CSR_Out_frm_tx            )
 );
 logic reset_phy_rx;
-assign reset_phy_rx = ~tx_pll_locked || link_lost || LTPI_link_ST == ST_LINK_SPEED_CHANGE;
+//assign reset_phy_rx = ~tx_pll_locked || link_lost || LTPI_link_ST == ST_LINK_SPEED_CHANGE;
+
+always @ (posedge clk or posedge reset) begin
+   if(reset) begin
+       reset_phy_rx <= 1'b1;
+    end
+    else begin
+        if(~tx_pll_locked  || LTPI_link_ST == ST_LINK_LOST_ERR  || LTPI_link_ST == ST_INIT || LTPI_link_ST == ST_LINK_SPEED_CHANGE) begin
+            reset_phy_rx <= 1'b1;
+        end
+        else begin
+            reset_phy_rx <= 1'b0;
+        end
+    end
+end
+
 
 // LVDS PHY RX
 ltpi_phy_rx ltpi_phy_rx_inst (

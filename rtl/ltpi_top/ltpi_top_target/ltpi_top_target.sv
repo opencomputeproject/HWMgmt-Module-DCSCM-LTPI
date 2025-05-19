@@ -44,7 +44,7 @@ import ltpi_pkg::*;
     parameter GPIO_EN                   = 1,
     parameter NUM_OF_NL_GPIO            = 1024,
     parameter UART_EN                   = 1,
-    parameter NUM_OF_UART_DEV           = 1, // from 1 to 2 
+    parameter NUM_OF_UART_DEV           = 2, // from 1 to 2 
     parameter SMBUS_EN                  = 1,
     parameter NUM_OF_SMBUS_DEV          = 6, // from 1 to 6
     parameter DATA_CHANNEL_EN           = 1,
@@ -87,6 +87,30 @@ import ltpi_pkg::*;
 
     input wire                                  CLK_25M_OSC_CPU_FPGA,
     input wire                                  reset_in,
+    //    
+    output     [31:0]           avmm_mst_addr,  //AVMM Master interface tunneling through LVDS
+    output                      avmm_mst_read,  //Only exist on ioc_slave side
+    output                      avmm_mst_write,
+    output     [31:0]           avmm_mst_wdata,
+    output     [ 3:0]           avmm_mst_byteen,
+    input      [31:0]           avmm_mst_rdata,
+    input                       avmm_mst_rdvalid,
+    input                       avmm_mst_waitrq,
+       
+    input      [31:0]           avmm_csr_addr,  //Standard AVMM interface for reading CSRs in LTPI IP
+    input                       avmm_csr_read,
+    input                       avmm_csr_write,
+    input      [31:0]           avmm_csr_wdata,
+    input      [ 3:0]           avmm_csr_byteen,
+    output     [31:0]           avmm_csr_rdata,
+    output                      avmm_csr_rdvalid,
+    output                      avmm_csr_waitrq,
+
+    output wire               clk_60MHZ,          
+    output logic              pll_locked,
+
+
+
 
     //LVDS output pins
     output wire                                 lvds_tx_data,
@@ -115,25 +139,12 @@ import ltpi_pkg::*;
 
 );
 
-wire      [31:0]    avmm_csr_addr;  //Standard AVMM interface for reading CSRs in IOC IP
-wire                avmm_csr_read;
-wire                avmm_csr_write;
-wire      [31:0]    avmm_csr_wdata;
-wire      [ 3:0]    avmm_csr_byteen;
-wire      [31:0]    avmm_csr_rdata;
-wire                avmm_csr_rdvalid;
-wire                avmm_csr_waitrq;
 
-assign avmm_csr_addr    = '0;
-assign avmm_csr_read    = '0;
-assign avmm_csr_write   = '0;
-assign avmm_csr_wdata   = '0;
-assign avmm_csr_byteen  = '0;
 
-logic clk_60MHZ;
-logic pll_locked;
-logic reset;
-wire  aligned_mgtm_ltpi;
+wire   aligned_mgtm_ltpi;
+logic  reset;
+logic       [ 7:0 ] tag;
+
 
 logic_avalon_mm_if #(
     .DATA_BYTES     (4),
@@ -195,6 +206,39 @@ assign u_avmm_trg.write       = '0;
 assign u_avmm_trg.writedata   = '0;
 assign u_avmm_trg.byteenable  = '0;
 
+
+assign avmm_mst_addr                =    u_avmm_mm.address ;                                                
+assign avmm_mst_read                =    u_avmm_mm.read;                                                   
+assign avmm_mst_write               =    u_avmm_mm.write;                                                   
+assign avmm_mst_wdata[ 7: 0]        =    u_avmm_mm.writedata[0];                                                   
+assign avmm_mst_wdata[15: 8]        =    u_avmm_mm.writedata[1];                                                   
+assign avmm_mst_wdata[23:16]        =    u_avmm_mm.writedata[2];                                                   
+assign avmm_mst_wdata[31:24]        =    u_avmm_mm.writedata[3];                                                   
+assign avmm_mst_byteen              =    u_avmm_mm.byteenable;                                               
+assign u_avmm_mm.readdata[0]        =    avmm_mst_rdata[ 7: 0];                                                      
+assign u_avmm_mm.readdata[1]        =    avmm_mst_rdata[15: 8];                                                      
+assign u_avmm_mm.readdata[2]        =    avmm_mst_rdata[23:16];                                                      
+assign u_avmm_mm.readdata[3]        =    avmm_mst_rdata[31:24];                                                      
+assign u_avmm_mm.readdatavalid      =    avmm_mst_rdvalid;                                                             
+assign u_avmm_mm.waitrequest        =    avmm_mst_waitrq;  
+//assign u_avmm_mm.chipselect = 1;
+
+assign u_avmm_CSR.address       = avmm_csr_addr;
+assign u_avmm_CSR.read          = avmm_csr_read;
+assign u_avmm_CSR.write         = avmm_csr_write;
+assign u_avmm_CSR.writedata[0]  = avmm_csr_wdata[ 7: 0];
+assign u_avmm_CSR.writedata[1]  = avmm_csr_wdata[15: 8];
+assign u_avmm_CSR.writedata[2]  = avmm_csr_wdata[23:16];
+assign u_avmm_CSR.writedata[3]  = avmm_csr_wdata[31:24];
+assign u_avmm_CSR.byteenable    = avmm_csr_byteen;
+assign avmm_csr_rdata[ 7: 0]    = u_avmm_CSR.readdata[0];
+assign avmm_csr_rdata[15: 8]    = u_avmm_CSR.readdata[1];
+assign avmm_csr_rdata[23:16]    = u_avmm_CSR.readdata[2];
+assign avmm_csr_rdata[31:24]    = u_avmm_CSR.readdata[3];
+assign avmm_csr_rdvalid         = u_avmm_CSR.readdatavalid;
+assign avmm_csr_waitrq          = u_avmm_CSR.waitrequest;
+assign u_avmm_CSR.chipselect = 1;
+
 LTPI_CSR_In_t CSR_hw_in;
 LTPI_CSR_Out_t CSR_hw_out;
 
@@ -214,6 +258,7 @@ pll_cpu pll_system_target (
     .c2                         (clk_200m                   ),
     .locked                     (pll_locked                 )
     );
+    
 
 assign aligned = aligned_mgtm_ltpi & CSR_hw_out.LTPI_Link_Status.local_link_state == operational_st;// it give only one pulse(normal give 2 pulses) for the align bit
 
@@ -236,7 +281,7 @@ mgmt_ltpi_top #(
 
     .LTPI_CSR_In                (CSR_hw_in                  ),
     .LTPI_CSR_Out               (CSR_hw_out                 ),
-    .aligned                    (aligned_mgtm_ltpi          ),//Mark that LVDS link has locked
+    .aligned                    (aligned_mgtm_ltpi                    ),//Mark that LVDS link has locked
     .NL_gpio_stable             (NL_gpio_stable             ),
     //LVDS output pins
     .lvds_tx_data               (lvds_tx_data               ),
@@ -260,23 +305,14 @@ mgmt_ltpi_top #(
     .uart_txd                   (uart_txd                   ),
     .uart_rts                   (uart_rts                   ),//Request To Send
         
-    .avalon_mm_m                (u_avmm_cntrl                ),//AVMM Controller interface tunneling through LVDS, Dose not exist on controller side
-    .avalon_mm_s                (u_avmm_trg                  )//AVMM Target interface tunneling through LVDS, Only exist on controller side
-    
+    .avalon_mm_m                (u_avmm_mm                   ),//AVMM Controller interface tunneling through LVDS, Dose not exist on controller side
+    .avalon_mm_s                (u_avmm_cntrl                ),//AVMM Target interface tunneling through LVDS, Only exist on controller side
+    .tag_in                     (tag                         ) //Tag field only exist while DATA_CHANNEL_MAILBOX_EN = 0
+
 );
 
-avmm_mux  #(
-    .ADDR_WIDTH (32),
-    .DATA_WIDTH (32)
-)avmm_mux_inst(
-    .clk                    (clk_60MHZ              ),
-    .rstn                   (!reset                 ),
-    .avmm_s                 (u_avmm_cntrl             ),
-    .avmm_m_0               (u_avmm_FPGA_inf        ),
-    .avmm_m_1               (u_avmm_CSR             ),
-    .avmm_m_2               (u_avmm_s               ),
-    .avmm_m_3               (u_avmm_mm              )
-);
+assign tag                      = 0;
+
 
 ltpi_csr_avmm #(
     .CSR_LIGHT_VER_EN(CSR_LIGHT_VER_EN)
@@ -289,20 +325,5 @@ ltpi_csr_avmm_inst  (
     .CSR_hw_in              (CSR_hw_in              )
 );
 
-avmm_target_model avmm_target_model_inst
-(
-    .clk            (clk_60MHZ                      ),
-    .rst_n          (!reset                         ),
-    //AVMM Intf
-    .avmm_addr      ({{24'h0}, u_avmm_mm.address[7:0]}),
-    .avmm_read      (u_avmm_mm.read                 ),
-    .avmm_write     (u_avmm_mm.write                ),
-    .avmm_wdata     (u_avmm_mm.writedata            ),
-    .avmm_byteen    (u_avmm_mm.byteenable           ),
-    .avmm_rdvalid   (u_avmm_mm.readdatavalid        ),
-    .avmm_waitrq    (u_avmm_mm.waitrequest          ),
-    .avmm_wrvalid   (u_avmm_mm.writeresponsevalid   ),
-    .avmm_response  (u_avmm_mm.response             ),
-    .avmm_rdata     (u_avmm_mm.readdata             )
-);
+
 endmodule
