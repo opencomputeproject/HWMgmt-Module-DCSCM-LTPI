@@ -16,16 +16,13 @@ The list of unit tests implemented for LTPI IP is located [docs/LTPI_test_plan.x
 Unless otherwise identified in the header file, all source code in ths repository is under MIT license and all documentation is under Creative Commons Attribution 4.0 International License available at http://creativecommons.org/licenses/by/4.0/
 
 # Versions
-1.0	    22 August, 2023     Initial public relese, LTPI 1.0
-1.05	24 November, 2023   OCP 2023 LTPI Interoperability Demo version:
-                                - Added clarification regarding CRC algorithm (no inversion/reflection)
-                                - Added clarification regarding Total Number on NL GPIOs
-                                - Increased the LTPI Advertise Frame Alignment timeout to 100ms
-1.09	16 May, 2025        - Exposed to the top LTPI modules data channel and CSR access signals
-                            - Increased data channel timeout to 10ms
-                            - Synchronize lvds phy reset signals  
-                            - Changed SMBUSs timing parameters
-                            - Added gpio ltpi top module and ltpi top module parameterized unit test
+
+| Version       | Date                  | Description |
+| -----------   | -----------           | ----------- |
+| 1.0           | 22 August, 2023       | Initial public relese, LTPI 1.0     |
+| 1.05          | 24 November, 2023     |  OCP 2023 LTPI Interoperability Demo version:<br>  - Added clarification regarding CRC algorithm (no inversion/reflection) <br>  - Added clarification regarding Total Number on NL GPIOs <br>  - Increased the LTPI Advertise Frame Alignment timeout to 100ms|
+| 1.09          | 19 May, 2025          |- Exposed to the top LTPI modules data channel and CSR access signals <br>  - Increased data channel timeout to 10ms <br>  - Synchronize lvds phy reset signals   <br>  - Changed SMBUSs timing parameters <br>  - Added gpio ltpi top module and ltpi top module parameterized unit test |
+
 
 
 
