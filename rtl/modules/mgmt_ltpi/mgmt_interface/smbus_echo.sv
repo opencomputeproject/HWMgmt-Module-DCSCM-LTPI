@@ -46,7 +46,7 @@ import ltpi_pkg::*;
 
 );
 
-logic    [1:0]  FRM_TO_SENT;;
+logic    [1:0]  FRM_TO_SENT;
 smbus_event_t   smbus_event_echo;
 
 logic   [ 3:0]  i2c_event_i_array_ff;
