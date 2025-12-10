@@ -116,16 +116,16 @@ addrmap ltpi_csr_light {
 
         field {
             
-            desc = "Local LTPI Major Version";
+            desc = "Local LTPI Major Revision";
             sw = r;
             hw = r;
-        } local_Major_Version [7:4] = 0x1;
+        } local_Major_Revision [7:4] = 0x1;
 
         field {
-            desc = "Local LTPI Minor Version";
+            desc = "Local LTPI Minor Revision";
             sw = r;
             hw = r;
-        } local_Minor_Version [3:0] = 0x1; 
+        } local_Minor_Revision [3:0] = 0x2; 
     } LTPI_Detect_Capabilities_Local @ 0x4;
 
     reg {
@@ -138,16 +138,16 @@ addrmap ltpi_csr_light {
         } link_Speed_capab [23:8] = 0;
 
         field {
-            desc = "Remote LTPI Major Version";
+            desc = "Remote LTPI Major Revision";
             sw = r;
             hw = rw;
-        } remote_Major_Version [7:4] = 0;
+        } remote_Major_Revision [7:4] = 0;
 
         field {
-            desc = "Remote LTPI Minor Version";
+            desc = "Remote LTPI Minor Revision";
             sw = r;
             hw = rw;
-        } remote_Minor_Version [3:0] = 0;
+        } remote_Minor_Revision [3:0] = 0;
     } LTPI_Detect_Capabilities_Remote @ 0x8;
 
     reg {

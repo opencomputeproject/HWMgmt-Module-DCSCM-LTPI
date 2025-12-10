@@ -71,7 +71,7 @@ reg  [31:0] mem_reg [`MAX_ADDR:0];      //local register
 reg  [31:0] illegal_write;
 
 
-assign avmm_waitrq = (avmm_write || avmm_wrvalid) || (avmm_read || avmm_rdvalid);
+assign avmm_waitrq = (avmm_write & !avmm_wrvalid) || (avmm_read || avmm_rdvalid);
 assign addr_local       = avmm_addr[15:0];    //Only 16 bits out of 32 bits avmm_addr supported
 
 //read registers

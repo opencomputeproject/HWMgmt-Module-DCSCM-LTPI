@@ -24,6 +24,7 @@ from systemrdl import RDLCompiler, RDLCompileError
 from peakrdl_regblock import RegblockExporter
 from peakrdl_regblock.cpuif.passthrough import PassthroughCpuif
 from peakrdl_regblock.cpuif.axi4lite import AXI4Lite_Cpuif
+from peakrdl_regblock.udps import ALL_UDPS
 import sys
 
 class My_AXI4Lite(AXI4Lite_Cpuif):
@@ -44,6 +45,11 @@ input_files = [
 
 # Create an instance of the compiler
 rdlc = RDLCompiler()
+
+# Register all UDPs that 'regblock' requires
+for udp in ALL_UDPS:
+    rdlc.register_udp(udp)
+
 try:
     # Compile your RDL files
     for input_file in input_files:

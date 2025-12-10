@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2022 Intel Corporation
+// Copyright (c) 2025 Intel Corporation
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -22,7 +22,7 @@
 
 // -------------------------------------------------------------------
 // -- Author        : Katarzyna Krzewska
-// -- Date          : July 2022
+// -- Date          : October 2025
 // -- Project Name  : LTPI
 // -- Description   :
 // -- PHY Management - Controller device  
@@ -49,7 +49,6 @@ import ltpi_pkg::*;
     input link_state_t  remote_link_state,
     input wire          transmited_255_detect_frm,
     input wire          transmited_7_speed_frm,
-    input wire          link_speed_timeout_detect,
 
     input wire          advertise_locked,
 
@@ -76,10 +75,12 @@ logic       retraining_request;
 
 reg         timer_100ms_start;
 logic       timer_100ms_done;
+logic       link_lost_error;
 
 assign local_software_reset = LTPI_CSR_In.LTPI_Link_Ctrl.software_reset;
 assign retraining_request   = LTPI_CSR_In.LTPI_Link_Ctrl.retraining_request;
 assign LTPI_link_ST         = rstate_ff;
+assign link_lost_error      = crc_consec_loss || (unexpected_frame_error & !frame_crc_err);
 
 always @ (posedge clk) rstate_ff <= rstate;
 
@@ -122,7 +123,7 @@ always @ (posedge clk or posedge reset) begin
             end
 
             ST_WAIT_LINK_DETECT_LOCKED: begin
-                if(crc_consec_loss || (unexpected_frame_error & !frame_crc_err)) begin
+                if(link_lost_error) begin
                    rstate               <= ST_LINK_LOST_ERR;
                 end
                 else if(link_detect_locked && transmited_255_detect_frm || remote_link_state == link_speed_st) begin
@@ -133,10 +134,10 @@ always @ (posedge clk or posedge reset) begin
             end
 
             ST_WAIT_LINK_SPEED_LOCKED: begin
-                if (link_speed_timeout_detect || crc_consec_loss  || (unexpected_frame_error & !frame_crc_err)) begin
-                    rstate              <= ST_LINK_LOST_ERR;
+                if (link_lost_error) begin
+                    rstate              <= ST_LINK_LOST_ERR; //LTPI spec 1.2 change
                 end
-                else if(transmited_7_speed_frm) begin //LTPI spec 0.95 change
+                else if(transmited_7_speed_frm && remote_link_state == link_speed_st) begin //LTPI spec 1.2 change
                     if(tx_frm_offset == frame_length) begin // make sure hole frame was sent
                         rstate          <= ST_LINK_SPEED_CHANGE;
                     end
@@ -151,7 +152,7 @@ always @ (posedge clk or posedge reset) begin
                 timer_1ms_start         <= 1'b1;
                 timer_100ms_start       <= 1'b0;
 
-                if (crc_consec_loss || (unexpected_frame_error & !frame_crc_err))begin
+                if (link_lost_error) begin
                     rstate              <= ST_LINK_LOST_ERR;
                 end
                 else if(timer_1ms_done && advertise_locked) begin
@@ -171,7 +172,7 @@ always @ (posedge clk or posedge reset) begin
 
             ST_WAIT_IN_ADVERTISE: begin //Advertise state
                 timer_1ms_start <= 1'b0;
-                if (crc_consec_loss || (unexpected_frame_error & !frame_crc_err))begin
+                if (link_lost_error) begin
                     rstate              <= ST_LINK_LOST_ERR;
                 end
                 else if(LTPI_CSR_In.LTPI_Link_Ctrl.trigger_config_st)begin
@@ -183,7 +184,7 @@ always @ (posedge clk or posedge reset) begin
 
             ST_CONFIGURATION_OR_ACCEPT: begin //Configuration state
                 timer_1ms_start <= 1'b0;
-                if (crc_consec_loss || (unexpected_frame_error & !frame_crc_err)) begin
+                if (link_lost_error) begin
                     rstate              <= ST_LINK_LOST_ERR;
                 end
                 else if (link_cfg_timeout_detect) begin
@@ -199,7 +200,7 @@ always @ (posedge clk or posedge reset) begin
             end//end ST_CONFIGURATION
 
              ST_OPERATIONAL: begin // Operational state
-                if(crc_consec_loss || (unexpected_frame_error && !frame_crc_err)) begin
+                if(link_lost_error) begin
                     rstate              <= ST_LINK_LOST_ERR;
                 end
                 else if(local_software_reset || remote_software_reset) begin

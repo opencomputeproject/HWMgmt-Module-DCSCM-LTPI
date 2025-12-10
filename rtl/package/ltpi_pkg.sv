@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2022 Intel Corporation
+// Copyright (c) 2025 Intel Corporation
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -22,7 +22,7 @@
 
 // -------------------------------------------------------------------
 // -- Author        : Katarzyna Krzewska
-// -- Date          : 3 december 2021
+// -- Date          : October 2025
 // -- Project Name  : LTPI
 // -- Description   : ltpi_pkg.sv
 // --
@@ -51,6 +51,7 @@ localparam CONSECUTIVE_K28_6_ADVERTISE_LOCK     = 3; //Define how many K28.6 fra
 localparam CONSECUTIVE_K28_1_Loss               = 3; //Define how many K28.1 comma are consecutive detected loss
 localparam CONSECUTIVE_CRC_Loss                 = 3; //Define how many CRC check are consecutive detected wrong
 localparam MAX_OPERATIONAL_LOST_FRM             = 7; //Define max operational frames which can be lost
+localparam MAX_UNEXPECTED_FRAME_ERROR           = 3; //Define max unexpected frames received 
 
 localparam TX_K28_5_SUB_0_CNT                   = 8'hFF;
 localparam TX_K28_5_SUB_1_CNT                   = 3'h7;
@@ -159,7 +160,8 @@ typedef enum logic [3:0]{
     ST_CONFIGURATION_OR_ACCEPT              = 4'd7,
     ST_OPERATIONAL                          = 4'd8,
     ST_OPERATIONAL_RESET                    = 4'd9,
-    ST_LINK_LOST_ERR                        = 4'd10
+    ST_LINK_LOST_ERR                        = 4'd10,
+    ST_RETRAINING                           = 4'd11
 } rstate_t;
 
 //*********     Timer 1ms       ******//
@@ -258,7 +260,10 @@ typedef enum logic[3:0]{
     link_speed_st               = 4'd1,
     advertise_st                = 4'd2,
     configuration_accept_st     = 4'd3,
-    operational_st              = 4'd4
+    operational_st              = 4'd4,
+    invalid_st                  = 4'hE,
+    reset_st                    = 4'hF
+
 }link_state_t;
 
 typedef enum logic[3:0]{

@@ -231,8 +231,8 @@ endtask
     repeat(test_number) begin
         avmm_read(BASE_ADDR + addr_offset, detect_capab_local);
         `FAIL_UNLESS_EQUAL(detect_capab_local[23:8], dut.rdl_base_hwout.LTPI_Detect_Capabilities_Local.link_Speed_capab.value)
-        `FAIL_UNLESS_EQUAL(detect_capab_local[ 7:4], dut.rdl_base_hwout.LTPI_Detect_Capabilities_Local.local_Major_Version.value);
-        `FAIL_UNLESS_EQUAL(detect_capab_local[ 3:0], dut.rdl_base_hwout.LTPI_Detect_Capabilities_Local.local_Minor_Version.value);
+        `FAIL_UNLESS_EQUAL(detect_capab_local[ 7:4], dut.rdl_base_hwout.LTPI_Detect_Capabilities_Local.local_Major_Revision.value);
+        `FAIL_UNLESS_EQUAL(detect_capab_local[ 3:0], dut.rdl_base_hwout.LTPI_Detect_Capabilities_Local.local_Minor_Revision.value);
     end
 `SVTEST_END
 
