@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2022 Intel Corporation
+// Copyright (c) 2025 Intel Corporation
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -22,7 +22,7 @@
 
 // -------------------------------------------------------------------
 // -- Author        : Katarzyna Krzewska
-// -- Date          : July 2022
+// -- Date          : October 2025
 // -- Project Name  : LTPI
 // -- Description   :
 // -- PHY Management - Target device  
@@ -73,10 +73,13 @@ logic       local_software_reset ;
 
 reg         timer_100ms_start;
 logic       timer_100ms_done;
+logic       link_lost_error;
+logic       received_255_detect_frm;
 
-assign local_software_reset  = LTPI_CSR_In.LTPI_Link_Ctrl.software_reset;
-
-assign LTPI_link_ST     = rstate_ff;
+assign local_software_reset     = LTPI_CSR_In.LTPI_Link_Ctrl.software_reset;
+assign received_255_detect_frm  = LTPI_CSR_In.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt >= LINK_SPEED_TIMEOUT ? 1'b1 : 1'b0;
+assign LTPI_link_ST             = rstate_ff;
+assign link_lost_error          = crc_consec_loss || (unexpected_frame_error & !frame_crc_err);
 
 always @ (posedge clk) rstate_ff <= rstate;
 
@@ -120,7 +123,7 @@ always @ (posedge clk or posedge reset) begin
             end
 
             ST_WAIT_LINK_DETECT_LOCKED: begin
-                if(crc_consec_loss || (unexpected_frame_error & !frame_crc_err)) begin
+                if(link_lost_error) begin
                    rstate                       <= ST_LINK_LOST_ERR;   //CRC error
                 end
                 else if(link_detect_locked && transmited_255_detect_frm || remote_link_state == link_speed_st) begin
@@ -131,7 +134,7 @@ always @ (posedge clk or posedge reset) begin
             end
 
             ST_WAIT_LINK_SPEED_LOCKED: begin
-                if(link_speed_timeout_detect || crc_consec_loss || (unexpected_frame_error & !frame_crc_err)) begin 
+                if(link_speed_timeout_detect || link_lost_error) begin 
                     rstate                      <= ST_LINK_LOST_ERR;
                 end
                 else if(link_speed_locked) begin
@@ -149,7 +152,7 @@ always @ (posedge clk or posedge reset) begin
                 timer_1ms_start                 <= 1'b1;
                 timer_100ms_start               <= 1'b0;
 
-                if (crc_consec_loss || (unexpected_frame_error & !frame_crc_err))begin
+                if (link_lost_error) begin
                     rstate                      <= ST_LINK_LOST_ERR;
                 end
                 else if(timer_1ms_done && advertise_locked) begin
@@ -174,7 +177,7 @@ always @ (posedge clk or posedge reset) begin
 
             ST_WAIT_IN_ADVERTISE: begin //Advertise state
                 timer_1ms_start <= 1'b0;
-                if(crc_consec_loss || (unexpected_frame_error & !frame_crc_err))begin
+                if(link_lost_error) begin
                     rstate                      <= ST_LINK_LOST_ERR;
                 end
                 else if(LTPI_CSR_In.LTPI_Link_Ctrl.trigger_config_st && configure_frm_recv)begin
@@ -187,7 +190,7 @@ always @ (posedge clk or posedge reset) begin
             ST_CONFIGURATION_OR_ACCEPT: begin // Accept state
                 timer_1ms_start <= 1'b0;
 
-                if(crc_consec_loss || (unexpected_frame_error & !frame_crc_err))begin
+                if(link_lost_error) begin
                     rstate                      <= ST_LINK_LOST_ERR;
                 end
                 else if (link_accept_timeout_detect) begin
@@ -203,7 +206,7 @@ always @ (posedge clk or posedge reset) begin
             end//end ST_ACCEPT_CONFIGURATION
 
             ST_OPERATIONAL: begin // Operational state
-                if(crc_consec_loss || (unexpected_frame_error & !frame_crc_err)) begin
+                if(link_lost_error) begin
                     rstate                      <= ST_LINK_LOST_ERR;
                 end
                 else if(local_software_reset || remote_software_reset) begin

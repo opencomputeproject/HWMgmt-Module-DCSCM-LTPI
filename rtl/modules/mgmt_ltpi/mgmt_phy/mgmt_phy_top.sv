@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2022 Intel Corporation
+// Copyright (c) 2025 Intel Corporation
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -22,7 +22,7 @@
 
 // -------------------------------------------------------------------
 // -- Author        : Katarzyna Krzewska
-// -- Date          : July 2022
+// -- Date          : October 2025
 // -- Project Name  : LTPI
 // -- Description   :
 // -- LTPI PHY Management top
@@ -132,12 +132,11 @@ assign LTPI_CSR_Out.LTPI_Link_Status.link_lost_error                = LTPI_CSR_O
 assign LTPI_CSR_Out.LTPI_Link_Status.DDR_mode                       = LTPI_CSR_Out_frm_tx.LTPI_Link_Status.DDR_mode;
 assign LTPI_CSR_Out.LTPI_Link_Status.link_cfg_acpt_timeout_error    = LTPI_CSR_Out_frm_tx.LTPI_Link_Status.link_cfg_acpt_timeout_error;
 assign LTPI_CSR_Out.LTPI_Link_Status.link_speed                     = LTPI_CSR_Out_frm_tx.LTPI_Link_Status.link_speed;
-assign LTPI_CSR_Out.LTPI_Link_Status.link_speed_timeout_error       = LTPI_CSR_Out_frm_tx.LTPI_Link_Status.link_speed_timeout_error;
+assign LTPI_CSR_Out.LTPI_Link_Status.link_speed_timeout_error       = LTPI_CSR_Out_frm_rx.LTPI_Link_Status.link_speed_timeout_error;
 
 assign LTPI_CSR_Out.LTPI_counter.link_lost_err_cnt                  = LTPI_CSR_Out_frm_tx.LTPI_counter.link_lost_err_cnt;
 assign LTPI_CSR_Out.LTPI_counter.link_aligment_err_cnt              = LTPI_CSR_Out_frm_tx.LTPI_counter.link_aligment_err_cnt;
 assign LTPI_CSR_Out.LTPI_counter.link_cfg_acpt_timeout_err_cnt      = LTPI_CSR_Out_frm_tx.LTPI_counter.link_cfg_acpt_timeout_err_cnt;
-assign LTPI_CSR_Out.LTPI_counter.link_speed_timeout_err_cnt         = LTPI_CSR_Out_frm_tx.LTPI_counter.link_speed_timeout_err_cnt;
 
 assign LTPI_CSR_Out.LTPI_Detect_Capab_remote.Link_Speed_capab       = LTPI_CSR_Out_frm_rx.LTPI_Detect_Capab_remote.Link_Speed_capab;
 assign LTPI_CSR_Out.LTPI_Detect_Capab_remote.LTPI_Version           = LTPI_CSR_Out_frm_rx.LTPI_Detect_Capab_remote.LTPI_Version;
@@ -150,6 +149,7 @@ assign LTPI_CSR_Out.LTPI_platform_ID_remote                         = LTPI_CSR_O
 assign LTPI_CSR_Out.LTPI_counter.unknown_comma_err_cnt              = LTPI_CSR_Out_frm_rx.LTPI_counter.unknown_comma_err_cnt;
 assign LTPI_CSR_Out.LTPI_counter.unknown_subtype_err_cnt            = LTPI_CSR_Out_frm_rx.LTPI_counter.unknown_subtype_err_cnt;
 assign LTPI_CSR_Out.LTPI_counter.link_crc_err_cnt                   = LTPI_CSR_Out_frm_rx.LTPI_counter.link_crc_err_cnt;
+assign LTPI_CSR_Out.LTPI_counter.link_speed_timeout_err_cnt         = LTPI_CSR_Out_frm_rx.LTPI_counter.link_speed_timeout_err_cnt;
 
 assign LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt        = LTPI_CSR_Out_frm_rx.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt;
 assign LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt         = LTPI_CSR_Out_frm_rx.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt;
@@ -230,7 +230,6 @@ mgmt_ltpi_frm_tx  #(
     .transmited_255_detect_frm          (transmited_255_detect_frm      ),
 
     .transmited_7_speed_frm             (transmited_7_speed_frm         ),
-    .link_speed_timeout_detect          (link_speed_timeout_detect      ),
 
     .link_accept_timeout_detect         (link_accept_timeout_detect     ),
     .link_cfg_timeout_detect            (link_cfg_timeout_detect        ),
@@ -305,6 +304,7 @@ mgmt_ltpi_frm_rx #(
     .data_channel_rx                    (data_channel_rx                ),
     .data_channel_rx_valid              (data_channel_rx_valid          ),
 
+    .link_speed_timeout_detect          (link_speed_timeout_detect      ),
     .crc_consec_loss                    (crc_consec_loss                ),
     .operational_frm_lost_error         (operational_frm_lost_error     ),
     .unexpected_frame_error             (unexpected_frame_error         ),
@@ -376,7 +376,6 @@ generate begin: mgmt_phy
             
             .transmited_255_detect_frm  (transmited_255_detect_frm      ),
             .transmited_7_speed_frm     (transmited_7_speed_frm         ),
-            .link_speed_timeout_detect  (link_speed_timeout_detect      ),
 
             .advertise_locked           (advertise_locked               ),
 

@@ -523,9 +523,9 @@ mgmt_ltpi_top #(
                 CTRL_nl_gpio_in[j*8+:8] <= $urandom_range(0, 8'hFF);
             end
             repeat(20) @(posedge clk_25); 
-            wait(mgmt_ltpi_top_controller.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 3)
+            wait(mgmt_ltpi_top_controller.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 6)
             TRG_add_crc_err <= 0;
-            wait( mgmt_ltpi_top_controller.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 4)
+            wait( mgmt_ltpi_top_controller.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 7)
             TRG_add_crc_err <= 1;
 
             repeat(1500) @(posedge clk_25); 
@@ -541,10 +541,10 @@ mgmt_ltpi_top #(
             end
 
             repeat(20) @(posedge clk_25); 
-            wait(mgmt_ltpi_top_target.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 3)
+            wait(mgmt_ltpi_top_target.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 6)
             CTRL_add_crc_err <= 0;
 
-            wait(mgmt_ltpi_top_target.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 4)
+            wait(mgmt_ltpi_top_target.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 7)
             CTRL_add_crc_err <= 1;
 
             repeat(1500) @(posedge clk_25); 
@@ -574,9 +574,9 @@ mgmt_ltpi_top #(
             CTRL_ll_gpio_in <= $urandom_range(0, 16'hFFFF);
 
             repeat(20) @(posedge clk_25); 
-            wait(mgmt_ltpi_top_controller.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 3)
+            wait(mgmt_ltpi_top_controller.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 6)
             TRG_add_crc_err <= 0;
-            wait( mgmt_ltpi_top_controller.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 4)
+            wait( mgmt_ltpi_top_controller.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 7)
             TRG_add_crc_err <= 1;
 
             repeat(1500) @(posedge clk_25); 
@@ -590,11 +590,11 @@ mgmt_ltpi_top #(
             TRG_ll_gpio_in <= $urandom_range(0, 16'hFFFF);
 
             repeat(20) @(posedge clk_25); 
-            wait(mgmt_ltpi_top_target.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 3)
+            wait(mgmt_ltpi_top_target.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 6)
             CTRL_add_crc_err <= 0;
 
             
-            wait(mgmt_ltpi_top_target.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 4)
+            wait(mgmt_ltpi_top_target.mgmt_phy_top_inst.mgmt_ltpi_frm_tx_inst.tx_frm_offset == 7)
             CTRL_add_crc_err <= 1;
 
             repeat(1500) @(posedge clk_25); 

@@ -136,8 +136,8 @@ generate begin: CSR
         assign rdl_base_hwin.LTPI_Link_Status.remote_link_state.next                        = CSR_hw_out.LTPI_Link_Status.remote_link_state;
         assign rdl_base_hwin.LTPI_Link_Status.local_link_state.next                         = CSR_hw_out.LTPI_Link_Status.local_link_state;
 
-        assign rdl_base_hwin.LTPI_Detect_Capabilities_Remote.remote_Minor_Version.next      = CSR_hw_out.LTPI_Detect_Capab_remote.LTPI_Version[3:0]; 
-        assign rdl_base_hwin.LTPI_Detect_Capabilities_Remote.remote_Major_Version.next      = CSR_hw_out.LTPI_Detect_Capab_remote.LTPI_Version[7:4];
+        assign rdl_base_hwin.LTPI_Detect_Capabilities_Remote.remote_Minor_Revision.next      = CSR_hw_out.LTPI_Detect_Capab_remote.LTPI_Version[3:0]; 
+        assign rdl_base_hwin.LTPI_Detect_Capabilities_Remote.remote_Major_Revision.next      = CSR_hw_out.LTPI_Detect_Capab_remote.LTPI_Version[7:4];
         assign rdl_base_hwin.LTPI_Detect_Capabilities_Remote.link_Speed_capab.next          = CSR_hw_out.LTPI_Detect_Capab_remote.Link_Speed_capab;
 
         assign rdl_base_hwin.LTPI_platform_ID_remote.platform_ID_remote.next                = CSR_hw_out.LTPI_platform_ID_remote.ID;
@@ -201,8 +201,8 @@ generate begin: CSR
 
 
         assign CSR_hw_in.LTPI_Detect_Capab_local.Link_Speed_capab                           = rdl_base_hwout.LTPI_Detect_Capabilities_Local.link_Speed_capab.value;
-        assign CSR_hw_in.LTPI_Detect_Capab_local.LTPI_Version[7:4]                          = rdl_base_hwout.LTPI_Detect_Capabilities_Local.local_Major_Version.value;
-        assign CSR_hw_in.LTPI_Detect_Capab_local.LTPI_Version[3:0]                          = rdl_base_hwout.LTPI_Detect_Capabilities_Local.local_Minor_Version.value;
+        assign CSR_hw_in.LTPI_Detect_Capab_local.LTPI_Version[7:4]                          = rdl_base_hwout.LTPI_Detect_Capabilities_Local.local_Major_Revision.value;
+        assign CSR_hw_in.LTPI_Detect_Capab_local.LTPI_Version[3:0]                          = rdl_base_hwout.LTPI_Detect_Capabilities_Local.local_Minor_Revision.value;
 
         assign CSR_hw_in.LTPI_platform_ID_local.ID                                          = rdl_base_hwout.LTPI_platform_ID_local.platform_ID_local.value;
 
@@ -236,8 +236,8 @@ generate begin: CSR
         assign CSR_hw_in.LTPI_Link_Ctrl.trigger_config_st                                   = rdl_base_hwout.LTPI_Link_Ctrl.trigger_config_st.value;        
 
         assign CSR_hw_in.LTPI_Detect_Capab_remote.Link_Speed_capab                          = rdl_base_hwout.LTPI_Detect_Capabilities_Remote.link_Speed_capab.value;
-        assign CSR_hw_in.LTPI_Detect_Capab_remote.LTPI_Version[7:4]                         = rdl_base_hwout.LTPI_Detect_Capabilities_Remote.remote_Major_Version.value;
-        assign CSR_hw_in.LTPI_Detect_Capab_remote.LTPI_Version[3:0]                         = rdl_base_hwout.LTPI_Detect_Capabilities_Remote.remote_Minor_Version.value;
+        assign CSR_hw_in.LTPI_Detect_Capab_remote.LTPI_Version[7:4]                         = rdl_base_hwout.LTPI_Detect_Capabilities_Remote.remote_Major_Revision.value;
+        assign CSR_hw_in.LTPI_Detect_Capab_remote.LTPI_Version[3:0]                         = rdl_base_hwout.LTPI_Detect_Capabilities_Remote.remote_Minor_Revision.value;
 
         always_ff @ (posedge clk or negedge reset_n) begin
             if (!reset_n) begin
@@ -360,8 +360,8 @@ generate begin: CSR
         assign light_rdl_base_hwin.LTPI_Link_Status.remote_link_state.next                        = CSR_hw_out.LTPI_Link_Status.remote_link_state;
         assign light_rdl_base_hwin.LTPI_Link_Status.local_link_state.next                         = CSR_hw_out.LTPI_Link_Status.local_link_state;
 
-        assign light_rdl_base_hwin.LTPI_Detect_Capabilities_Remote.remote_Minor_Version.next      = CSR_hw_out.LTPI_Detect_Capab_remote.LTPI_Version[3:0]; 
-        assign light_rdl_base_hwin.LTPI_Detect_Capabilities_Remote.remote_Major_Version.next      = CSR_hw_out.LTPI_Detect_Capab_remote.LTPI_Version[7:4];
+        assign light_rdl_base_hwin.LTPI_Detect_Capabilities_Remote.remote_Minor_Revision.next      = CSR_hw_out.LTPI_Detect_Capab_remote.LTPI_Version[3:0]; 
+        assign light_rdl_base_hwin.LTPI_Detect_Capabilities_Remote.remote_Major_Revision.next      = CSR_hw_out.LTPI_Detect_Capab_remote.LTPI_Version[7:4];
         assign light_rdl_base_hwin.LTPI_Detect_Capabilities_Remote.link_Speed_capab.next          = CSR_hw_out.LTPI_Detect_Capab_remote.Link_Speed_capab;
 
         // assign rdl_base_hwin.LTPI_platform_ID_remote.platform_ID_remote.next                = CSR_hw_out.LTPI_platform_ID_remote.ID;
@@ -422,8 +422,8 @@ generate begin: CSR
         /////////////////////////////////////////////////////////////////////////////////
 
         assign CSR_hw_in.LTPI_Detect_Capab_local.Link_Speed_capab                           = light_rdl_base_hwout.LTPI_Detect_Capabilities_Local.link_Speed_capab.value;
-        assign CSR_hw_in.LTPI_Detect_Capab_local.LTPI_Version[7:4]                          = light_rdl_base_hwout.LTPI_Detect_Capabilities_Local.local_Major_Version.value;
-        assign CSR_hw_in.LTPI_Detect_Capab_local.LTPI_Version[3:0]                          = light_rdl_base_hwout.LTPI_Detect_Capabilities_Local.local_Minor_Version.value;
+        assign CSR_hw_in.LTPI_Detect_Capab_local.LTPI_Version[7:4]                          = light_rdl_base_hwout.LTPI_Detect_Capabilities_Local.local_Major_Revision.value;
+        assign CSR_hw_in.LTPI_Detect_Capab_local.LTPI_Version[3:0]                          = light_rdl_base_hwout.LTPI_Detect_Capabilities_Local.local_Minor_Revision.value;
 
         assign CSR_hw_in.LTPI_platform_ID_local.ID                                          = light_rdl_base_hwout.LTPI_platform_ID_local.platform_ID_local.value;
 
@@ -457,8 +457,8 @@ generate begin: CSR
         assign CSR_hw_in.LTPI_Link_Ctrl.trigger_config_st                                   = light_rdl_base_hwout.LTPI_Link_Ctrl.trigger_config_st.value;        
 
         assign CSR_hw_in.LTPI_Detect_Capab_remote.Link_Speed_capab                          = light_rdl_base_hwout.LTPI_Detect_Capabilities_Remote.link_Speed_capab.value;
-        assign CSR_hw_in.LTPI_Detect_Capab_remote.LTPI_Version[7:4]                         = light_rdl_base_hwout.LTPI_Detect_Capabilities_Remote.remote_Major_Version.value;
-        assign CSR_hw_in.LTPI_Detect_Capab_remote.LTPI_Version[3:0]                         = light_rdl_base_hwout.LTPI_Detect_Capabilities_Remote.remote_Minor_Version.value;
+        assign CSR_hw_in.LTPI_Detect_Capab_remote.LTPI_Version[7:4]                         = light_rdl_base_hwout.LTPI_Detect_Capabilities_Remote.remote_Major_Revision.value;
+        assign CSR_hw_in.LTPI_Detect_Capab_remote.LTPI_Version[3:0]                         = light_rdl_base_hwout.LTPI_Detect_Capabilities_Remote.remote_Minor_Revision.value;
         
         
         always_ff @ (posedge clk or negedge reset_n) begin

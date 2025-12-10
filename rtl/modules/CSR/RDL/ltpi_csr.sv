@@ -52,20 +52,12 @@ module ltpi_csr (
 
     logic cpuif_req_masked;
 
-    // Read latency > write latency. May need to delay next write that follows a read
-    logic [0:0] cpuif_req_stall_sr;
-    always_ff @(posedge clk) begin
-        if(rst) begin
-            cpuif_req_stall_sr <= '0;
-        end else if(cpuif_req && !cpuif_req_is_wr) begin
-            cpuif_req_stall_sr <= '1;
-        end else begin
-            cpuif_req_stall_sr <= (cpuif_req_stall_sr >> 'd1);
-        end
-    end
+    // Read & write latencies are balanced. Stalls not required
     assign cpuif_req_stall_rd = '0;
-    assign cpuif_req_stall_wr = cpuif_req_stall_sr[0];
-    assign cpuif_req_masked = cpuif_req & !(cpuif_req_is_wr & cpuif_req_stall_wr);
+    assign cpuif_req_stall_wr = '0;
+    assign cpuif_req_masked = cpuif_req
+                            & !(!cpuif_req_is_wr & cpuif_req_stall_rd)
+                            & !(cpuif_req_is_wr & cpuif_req_stall_wr);
 
     //--------------------------------------------------------------------------
     // Address Decode
@@ -109,47 +101,36 @@ module ltpi_csr (
     logic [31:0] decoded_wr_data;
 
     always_comb begin
-        decoded_reg_strb.LTPI_Link_Status = cpuif_req_masked & (cpuif_addr == 'h0);
-        decoded_reg_strb.LTPI_Detect_Capabilities_Local = cpuif_req_masked & (cpuif_addr == 'h4);
-        decoded_reg_strb.LTPI_Detect_Capabilities_Remote = cpuif_req_masked & (cpuif_addr == 'h8);
-        decoded_reg_strb.LTPI_platform_ID_local = cpuif_req_masked & (cpuif_addr == 'hc);
-        decoded_reg_strb.LTPI_platform_ID_remote = cpuif_req_masked & (cpuif_addr == 'h10);
-        decoded_reg_strb.LTPI_Advertise_Capab_local_LOW = cpuif_req_masked & (cpuif_addr == 'h14);
-        decoded_reg_strb.LTPI_Advertise_Capab_local_HIGH = cpuif_req_masked & (cpuif_addr == 'h18);
-        decoded_reg_strb.LTPI_Advertise_Capab_remote_LOW = cpuif_req_masked & (cpuif_addr == 'h1c);
-        decoded_reg_strb.LTPI_Advertise_Capab_remote_HIGH = cpuif_req_masked & (cpuif_addr == 'h20);
-        decoded_reg_strb.LTPI_Config_Capab_LOW = cpuif_req_masked & (cpuif_addr == 'h24);
-        decoded_reg_strb.LTPI_Config_Capab_HIGH = cpuif_req_masked & (cpuif_addr == 'h28);
-        decoded_reg_strb.link_aligment_err_cnt = cpuif_req_masked & (cpuif_addr == 'h2c);
-        decoded_reg_strb.link_lost_err_cnt = cpuif_req_masked & (cpuif_addr == 'h30);
-        decoded_reg_strb.link_crc_err_cnt = cpuif_req_masked & (cpuif_addr == 'h34);
-        decoded_reg_strb.unknown_comma_err_cnt = cpuif_req_masked & (cpuif_addr == 'h38);
-        decoded_reg_strb.link_speed_timeout_err_cnt = cpuif_req_masked & (cpuif_addr == 'h3c);
-        decoded_reg_strb.link_cfg_acpt_timeout_err_cnt = cpuif_req_masked & (cpuif_addr == 'h40);
-        decoded_reg_strb.linkig_training_frm_rcv_cnt_low = cpuif_req_masked & (cpuif_addr == 'h44);
-        decoded_reg_strb.linkig_training_frm_rcv_cnt_high = cpuif_req_masked & (cpuif_addr == 'h48);
-        decoded_reg_strb.linkig_training_frm_snt_cnt_low = cpuif_req_masked & (cpuif_addr == 'h4c);
-        decoded_reg_strb.linkig_training_frm_snt_cnt_high = cpuif_req_masked & (cpuif_addr == 'h50);
-        decoded_reg_strb.operational_frm_rcv_cnt = cpuif_req_masked & (cpuif_addr == 'h54);
-        decoded_reg_strb.operational_frm_snt_cnt = cpuif_req_masked & (cpuif_addr == 'h58);
-        decoded_reg_strb.LTPI_Link_Ctrl = cpuif_req_masked & (cpuif_addr == 'h80);
-        decoded_reg_strb.smb_trg_dbg_cntrl_smbstate = cpuif_req_masked & (cpuif_addr == 'h84);
-        decoded_reg_strb.smb_trg_dbg_cntrl_relay_state = cpuif_req_masked & (cpuif_addr == 'h88);
-        decoded_reg_strb.smb_trg_dbg_relay_event_ioc_frame_bus = cpuif_req_masked & (cpuif_addr == 'h8c);
-        decoded_reg_strb.smb_cntrl_dbg_cntrl_smbstate = cpuif_req_masked & (cpuif_addr == 'h90);
-        decoded_reg_strb.smb_cntrl_dbg_cntrl_relay_state = cpuif_req_masked & (cpuif_addr == 'h94);
-        decoded_reg_strb.smb_cntrl_dbg_relay_event_ioc_frame_bus = cpuif_req_masked & (cpuif_addr == 'h98);
-        decoded_reg_strb.pmbus2_relay_recovery_cntr = cpuif_req_masked & (cpuif_addr == 'h9c);
+        decoded_reg_strb.LTPI_Link_Status = cpuif_req_masked & (cpuif_addr == 8'h0);
+        decoded_reg_strb.LTPI_Detect_Capabilities_Local = cpuif_req_masked & (cpuif_addr == 8'h4);
+        decoded_reg_strb.LTPI_Detect_Capabilities_Remote = cpuif_req_masked & (cpuif_addr == 8'h8);
+        decoded_reg_strb.LTPI_platform_ID_local = cpuif_req_masked & (cpuif_addr == 8'hc);
+        decoded_reg_strb.LTPI_platform_ID_remote = cpuif_req_masked & (cpuif_addr == 8'h10);
+        decoded_reg_strb.LTPI_Advertise_Capab_local_LOW = cpuif_req_masked & (cpuif_addr == 8'h14);
+        decoded_reg_strb.LTPI_Advertise_Capab_local_HIGH = cpuif_req_masked & (cpuif_addr == 8'h18);
+        decoded_reg_strb.LTPI_Advertise_Capab_remote_LOW = cpuif_req_masked & (cpuif_addr == 8'h1c);
+        decoded_reg_strb.LTPI_Advertise_Capab_remote_HIGH = cpuif_req_masked & (cpuif_addr == 8'h20);
+        decoded_reg_strb.LTPI_Config_Capab_LOW = cpuif_req_masked & (cpuif_addr == 8'h24);
+        decoded_reg_strb.LTPI_Config_Capab_HIGH = cpuif_req_masked & (cpuif_addr == 8'h28);
+        decoded_reg_strb.link_aligment_err_cnt = cpuif_req_masked & (cpuif_addr == 8'h2c);
+        decoded_reg_strb.link_lost_err_cnt = cpuif_req_masked & (cpuif_addr == 8'h30);
+        decoded_reg_strb.link_crc_err_cnt = cpuif_req_masked & (cpuif_addr == 8'h34);
+        decoded_reg_strb.unknown_comma_err_cnt = cpuif_req_masked & (cpuif_addr == 8'h38);
+        decoded_reg_strb.link_speed_timeout_err_cnt = cpuif_req_masked & (cpuif_addr == 8'h3c);
+        decoded_reg_strb.link_cfg_acpt_timeout_err_cnt = cpuif_req_masked & (cpuif_addr == 8'h40);
+        decoded_reg_strb.linkig_training_frm_rcv_cnt_low = cpuif_req_masked & (cpuif_addr == 8'h44);
+        decoded_reg_strb.linkig_training_frm_rcv_cnt_high = cpuif_req_masked & (cpuif_addr == 8'h48);
+        decoded_reg_strb.linkig_training_frm_snt_cnt_low = cpuif_req_masked & (cpuif_addr == 8'h4c);
+        decoded_reg_strb.linkig_training_frm_snt_cnt_high = cpuif_req_masked & (cpuif_addr == 8'h50);
+        decoded_reg_strb.operational_frm_rcv_cnt = cpuif_req_masked & (cpuif_addr == 8'h54);
+        decoded_reg_strb.operational_frm_snt_cnt = cpuif_req_masked & (cpuif_addr == 8'h58);
+        decoded_reg_strb.LTPI_Link_Ctrl = cpuif_req_masked & (cpuif_addr == 8'h80);
     end
 
     // Pass down signals to next stage
     assign decoded_req = cpuif_req_masked;
     assign decoded_req_is_wr = cpuif_req_is_wr;
     assign decoded_wr_data = cpuif_wr_data;
-
-    // Writes are always granted with no error response
-    assign cpuif_wr_ack = decoded_req & decoded_req_is_wr;
-    assign cpuif_wr_err = '0;
 
     //--------------------------------------------------------------------------
     // Field logic
@@ -207,11 +188,11 @@ module ltpi_csr (
             struct {
                 logic [3:0] next;
                 logic load_next;
-            } remote_Minor_Version;
+            } remote_Minor_Revision;
             struct {
                 logic [3:0] next;
                 logic load_next;
-            } remote_Major_Version;
+            } remote_Major_Revision;
             struct {
                 logic [15:0] next;
                 logic load_next;
@@ -543,10 +524,10 @@ module ltpi_csr (
         struct {
             struct {
                 logic [3:0] value;
-            } remote_Minor_Version;
+            } remote_Minor_Revision;
             struct {
                 logic [3:0] value;
-            } remote_Major_Version;
+            } remote_Major_Revision;
             struct {
                 logic [15:0] value;
             } link_Speed_capab;
@@ -780,27 +761,33 @@ module ltpi_csr (
 
     // Field: ltpi_csr.LTPI_Link_Status.aligned
     always_comb begin
-        automatic logic [0:0] next_c = field_storage.LTPI_Link_Status.aligned.value;
-        automatic logic load_next_c = '0;
-        if(1) begin // HW Write
-            next_c = hwif_in.LTPI_Link_Status.aligned.next;
-            load_next_c = '1;
-        end
+        automatic logic [0:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Link_Status.aligned.value;
+        load_next_c = '0;
+        
+        // HW Write
+        next_c = hwif_in.LTPI_Link_Status.aligned.next;
+        load_next_c = '1;
         field_combo.LTPI_Link_Status.aligned.next = next_c;
         field_combo.LTPI_Link_Status.aligned.load_next = load_next_c;
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Link_Status.aligned.value <= 'h0;
-        end else if(field_combo.LTPI_Link_Status.aligned.load_next) begin
-            field_storage.LTPI_Link_Status.aligned.value <= field_combo.LTPI_Link_Status.aligned.next;
+            field_storage.LTPI_Link_Status.aligned.value <= 1'h0;
+        end else begin
+            if(field_combo.LTPI_Link_Status.aligned.load_next) begin
+                field_storage.LTPI_Link_Status.aligned.value <= field_combo.LTPI_Link_Status.aligned.next;
+            end
         end
     end
     assign hwif_out.LTPI_Link_Status.aligned.value = field_storage.LTPI_Link_Status.aligned.value;
     // Field: ltpi_csr.LTPI_Link_Status.link_lost_error
     always_comb begin
-        automatic logic [0:0] next_c = field_storage.LTPI_Link_Status.link_lost_error.value;
-        automatic logic load_next_c = '0;
+        automatic logic [0:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Link_Status.link_lost_error.value;
+        load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Status && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.LTPI_Link_Status.link_lost_error.value & ~decoded_wr_data[1:1];
             load_next_c = '1;
@@ -813,16 +800,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Link_Status.link_lost_error.value <= 'h0;
-        end else if(field_combo.LTPI_Link_Status.link_lost_error.load_next) begin
-            field_storage.LTPI_Link_Status.link_lost_error.value <= field_combo.LTPI_Link_Status.link_lost_error.next;
+            field_storage.LTPI_Link_Status.link_lost_error.value <= 1'h0;
+        end else begin
+            if(field_combo.LTPI_Link_Status.link_lost_error.load_next) begin
+                field_storage.LTPI_Link_Status.link_lost_error.value <= field_combo.LTPI_Link_Status.link_lost_error.next;
+            end
         end
     end
     assign hwif_out.LTPI_Link_Status.link_lost_error.value = field_storage.LTPI_Link_Status.link_lost_error.value;
     // Field: ltpi_csr.LTPI_Link_Status.frm_CRC_error
     always_comb begin
-        automatic logic [0:0] next_c = field_storage.LTPI_Link_Status.frm_CRC_error.value;
-        automatic logic load_next_c = '0;
+        automatic logic [0:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Link_Status.frm_CRC_error.value;
+        load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Status && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.LTPI_Link_Status.frm_CRC_error.value & ~decoded_wr_data[2:2];
             load_next_c = '1;
@@ -835,16 +826,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Link_Status.frm_CRC_error.value <= 'h0;
-        end else if(field_combo.LTPI_Link_Status.frm_CRC_error.load_next) begin
-            field_storage.LTPI_Link_Status.frm_CRC_error.value <= field_combo.LTPI_Link_Status.frm_CRC_error.next;
+            field_storage.LTPI_Link_Status.frm_CRC_error.value <= 1'h0;
+        end else begin
+            if(field_combo.LTPI_Link_Status.frm_CRC_error.load_next) begin
+                field_storage.LTPI_Link_Status.frm_CRC_error.value <= field_combo.LTPI_Link_Status.frm_CRC_error.next;
+            end
         end
     end
     assign hwif_out.LTPI_Link_Status.frm_CRC_error.value = field_storage.LTPI_Link_Status.frm_CRC_error.value;
     // Field: ltpi_csr.LTPI_Link_Status.unknown_comma_error
     always_comb begin
-        automatic logic [0:0] next_c = field_storage.LTPI_Link_Status.unknown_comma_error.value;
-        automatic logic load_next_c = '0;
+        automatic logic [0:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Link_Status.unknown_comma_error.value;
+        load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Status && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.LTPI_Link_Status.unknown_comma_error.value & ~decoded_wr_data[3:3];
             load_next_c = '1;
@@ -857,16 +852,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Link_Status.unknown_comma_error.value <= 'h0;
-        end else if(field_combo.LTPI_Link_Status.unknown_comma_error.load_next) begin
-            field_storage.LTPI_Link_Status.unknown_comma_error.value <= field_combo.LTPI_Link_Status.unknown_comma_error.next;
+            field_storage.LTPI_Link_Status.unknown_comma_error.value <= 1'h0;
+        end else begin
+            if(field_combo.LTPI_Link_Status.unknown_comma_error.load_next) begin
+                field_storage.LTPI_Link_Status.unknown_comma_error.value <= field_combo.LTPI_Link_Status.unknown_comma_error.next;
+            end
         end
     end
     assign hwif_out.LTPI_Link_Status.unknown_comma_error.value = field_storage.LTPI_Link_Status.unknown_comma_error.value;
     // Field: ltpi_csr.LTPI_Link_Status.link_speed_timeout_error
     always_comb begin
-        automatic logic [0:0] next_c = field_storage.LTPI_Link_Status.link_speed_timeout_error.value;
-        automatic logic load_next_c = '0;
+        automatic logic [0:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Link_Status.link_speed_timeout_error.value;
+        load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Status && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.LTPI_Link_Status.link_speed_timeout_error.value & ~decoded_wr_data[4:4];
             load_next_c = '1;
@@ -879,16 +878,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Link_Status.link_speed_timeout_error.value <= 'h0;
-        end else if(field_combo.LTPI_Link_Status.link_speed_timeout_error.load_next) begin
-            field_storage.LTPI_Link_Status.link_speed_timeout_error.value <= field_combo.LTPI_Link_Status.link_speed_timeout_error.next;
+            field_storage.LTPI_Link_Status.link_speed_timeout_error.value <= 1'h0;
+        end else begin
+            if(field_combo.LTPI_Link_Status.link_speed_timeout_error.load_next) begin
+                field_storage.LTPI_Link_Status.link_speed_timeout_error.value <= field_combo.LTPI_Link_Status.link_speed_timeout_error.next;
+            end
         end
     end
     assign hwif_out.LTPI_Link_Status.link_speed_timeout_error.value = field_storage.LTPI_Link_Status.link_speed_timeout_error.value;
     // Field: ltpi_csr.LTPI_Link_Status.link_cfg_acpt_timeout_error
     always_comb begin
-        automatic logic [0:0] next_c = field_storage.LTPI_Link_Status.link_cfg_acpt_timeout_error.value;
-        automatic logic load_next_c = '0;
+        automatic logic [0:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Link_Status.link_cfg_acpt_timeout_error.value;
+        load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Status && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.LTPI_Link_Status.link_cfg_acpt_timeout_error.value & ~decoded_wr_data[5:5];
             load_next_c = '1;
@@ -901,94 +904,114 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Link_Status.link_cfg_acpt_timeout_error.value <= 'h0;
-        end else if(field_combo.LTPI_Link_Status.link_cfg_acpt_timeout_error.load_next) begin
-            field_storage.LTPI_Link_Status.link_cfg_acpt_timeout_error.value <= field_combo.LTPI_Link_Status.link_cfg_acpt_timeout_error.next;
+            field_storage.LTPI_Link_Status.link_cfg_acpt_timeout_error.value <= 1'h0;
+        end else begin
+            if(field_combo.LTPI_Link_Status.link_cfg_acpt_timeout_error.load_next) begin
+                field_storage.LTPI_Link_Status.link_cfg_acpt_timeout_error.value <= field_combo.LTPI_Link_Status.link_cfg_acpt_timeout_error.next;
+            end
         end
     end
     assign hwif_out.LTPI_Link_Status.link_cfg_acpt_timeout_error.value = field_storage.LTPI_Link_Status.link_cfg_acpt_timeout_error.value;
     // Field: ltpi_csr.LTPI_Link_Status.DDR_mode
     always_comb begin
-        automatic logic [0:0] next_c = field_storage.LTPI_Link_Status.DDR_mode.value;
-        automatic logic load_next_c = '0;
-        if(1) begin // HW Write
-            next_c = hwif_in.LTPI_Link_Status.DDR_mode.next;
-            load_next_c = '1;
-        end
+        automatic logic [0:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Link_Status.DDR_mode.value;
+        load_next_c = '0;
+        
+        // HW Write
+        next_c = hwif_in.LTPI_Link_Status.DDR_mode.next;
+        load_next_c = '1;
         field_combo.LTPI_Link_Status.DDR_mode.next = next_c;
         field_combo.LTPI_Link_Status.DDR_mode.load_next = load_next_c;
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Link_Status.DDR_mode.value <= 'h0;
-        end else if(field_combo.LTPI_Link_Status.DDR_mode.load_next) begin
-            field_storage.LTPI_Link_Status.DDR_mode.value <= field_combo.LTPI_Link_Status.DDR_mode.next;
+            field_storage.LTPI_Link_Status.DDR_mode.value <= 1'h0;
+        end else begin
+            if(field_combo.LTPI_Link_Status.DDR_mode.load_next) begin
+                field_storage.LTPI_Link_Status.DDR_mode.value <= field_combo.LTPI_Link_Status.DDR_mode.next;
+            end
         end
     end
     assign hwif_out.LTPI_Link_Status.DDR_mode.value = field_storage.LTPI_Link_Status.DDR_mode.value;
     // Field: ltpi_csr.LTPI_Link_Status.link_speed
     always_comb begin
-        automatic logic [3:0] next_c = field_storage.LTPI_Link_Status.link_speed.value;
-        automatic logic load_next_c = '0;
-        if(1) begin // HW Write
-            next_c = hwif_in.LTPI_Link_Status.link_speed.next;
-            load_next_c = '1;
-        end
+        automatic logic [3:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Link_Status.link_speed.value;
+        load_next_c = '0;
+        
+        // HW Write
+        next_c = hwif_in.LTPI_Link_Status.link_speed.next;
+        load_next_c = '1;
         field_combo.LTPI_Link_Status.link_speed.next = next_c;
         field_combo.LTPI_Link_Status.link_speed.load_next = load_next_c;
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Link_Status.link_speed.value <= 'h0;
-        end else if(field_combo.LTPI_Link_Status.link_speed.load_next) begin
-            field_storage.LTPI_Link_Status.link_speed.value <= field_combo.LTPI_Link_Status.link_speed.next;
+            field_storage.LTPI_Link_Status.link_speed.value <= 4'h0;
+        end else begin
+            if(field_combo.LTPI_Link_Status.link_speed.load_next) begin
+                field_storage.LTPI_Link_Status.link_speed.value <= field_combo.LTPI_Link_Status.link_speed.next;
+            end
         end
     end
     assign hwif_out.LTPI_Link_Status.link_speed.value = field_storage.LTPI_Link_Status.link_speed.value;
     // Field: ltpi_csr.LTPI_Link_Status.remote_link_state
     always_comb begin
-        automatic logic [3:0] next_c = field_storage.LTPI_Link_Status.remote_link_state.value;
-        automatic logic load_next_c = '0;
-        if(1) begin // HW Write
-            next_c = hwif_in.LTPI_Link_Status.remote_link_state.next;
-            load_next_c = '1;
-        end
+        automatic logic [3:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Link_Status.remote_link_state.value;
+        load_next_c = '0;
+        
+        // HW Write
+        next_c = hwif_in.LTPI_Link_Status.remote_link_state.next;
+        load_next_c = '1;
         field_combo.LTPI_Link_Status.remote_link_state.next = next_c;
         field_combo.LTPI_Link_Status.remote_link_state.load_next = load_next_c;
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Link_Status.remote_link_state.value <= 'h0;
-        end else if(field_combo.LTPI_Link_Status.remote_link_state.load_next) begin
-            field_storage.LTPI_Link_Status.remote_link_state.value <= field_combo.LTPI_Link_Status.remote_link_state.next;
+            field_storage.LTPI_Link_Status.remote_link_state.value <= 4'h0;
+        end else begin
+            if(field_combo.LTPI_Link_Status.remote_link_state.load_next) begin
+                field_storage.LTPI_Link_Status.remote_link_state.value <= field_combo.LTPI_Link_Status.remote_link_state.next;
+            end
         end
     end
     assign hwif_out.LTPI_Link_Status.remote_link_state.value = field_storage.LTPI_Link_Status.remote_link_state.value;
     // Field: ltpi_csr.LTPI_Link_Status.local_link_state
     always_comb begin
-        automatic logic [3:0] next_c = field_storage.LTPI_Link_Status.local_link_state.value;
-        automatic logic load_next_c = '0;
-        if(1) begin // HW Write
-            next_c = hwif_in.LTPI_Link_Status.local_link_state.next;
-            load_next_c = '1;
-        end
+        automatic logic [3:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Link_Status.local_link_state.value;
+        load_next_c = '0;
+        
+        // HW Write
+        next_c = hwif_in.LTPI_Link_Status.local_link_state.next;
+        load_next_c = '1;
         field_combo.LTPI_Link_Status.local_link_state.next = next_c;
         field_combo.LTPI_Link_Status.local_link_state.load_next = load_next_c;
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Link_Status.local_link_state.value <= 'h0;
-        end else if(field_combo.LTPI_Link_Status.local_link_state.load_next) begin
-            field_storage.LTPI_Link_Status.local_link_state.value <= field_combo.LTPI_Link_Status.local_link_state.next;
+            field_storage.LTPI_Link_Status.local_link_state.value <= 4'h0;
+        end else begin
+            if(field_combo.LTPI_Link_Status.local_link_state.load_next) begin
+                field_storage.LTPI_Link_Status.local_link_state.value <= field_combo.LTPI_Link_Status.local_link_state.next;
+            end
         end
     end
     assign hwif_out.LTPI_Link_Status.local_link_state.value = field_storage.LTPI_Link_Status.local_link_state.value;
-    assign hwif_out.LTPI_Detect_Capabilities_Local.local_Minor_Version.value = 'h1;
-    assign hwif_out.LTPI_Detect_Capabilities_Local.local_Major_Version.value = 'h1;
+    assign hwif_out.LTPI_Detect_Capabilities_Local.local_Minor_Revision.value = 4'h2;
+    assign hwif_out.LTPI_Detect_Capabilities_Local.local_Major_Revision.value = 4'h1;
     // Field: ltpi_csr.LTPI_Detect_Capabilities_Local.link_Speed_capab
     always_comb begin
-        automatic logic [15:0] next_c = field_storage.LTPI_Detect_Capabilities_Local.link_Speed_capab.value;
-        automatic logic load_next_c = '0;
+        automatic logic [15:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Detect_Capabilities_Local.link_Speed_capab.value;
+        load_next_c = '0;
         if(decoded_reg_strb.LTPI_Detect_Capabilities_Local && decoded_req_is_wr) begin // SW write
             next_c = decoded_wr_data[23:8];
             load_next_c = '1;
@@ -998,93 +1021,113 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Detect_Capabilities_Local.link_Speed_capab.value <= 'h800f;
-        end else if(field_combo.LTPI_Detect_Capabilities_Local.link_Speed_capab.load_next) begin
-            field_storage.LTPI_Detect_Capabilities_Local.link_Speed_capab.value <= field_combo.LTPI_Detect_Capabilities_Local.link_Speed_capab.next;
+            field_storage.LTPI_Detect_Capabilities_Local.link_Speed_capab.value <= 16'h800f;
+        end else begin
+            if(field_combo.LTPI_Detect_Capabilities_Local.link_Speed_capab.load_next) begin
+                field_storage.LTPI_Detect_Capabilities_Local.link_Speed_capab.value <= field_combo.LTPI_Detect_Capabilities_Local.link_Speed_capab.next;
+            end
         end
     end
     assign hwif_out.LTPI_Detect_Capabilities_Local.link_Speed_capab.value = field_storage.LTPI_Detect_Capabilities_Local.link_Speed_capab.value;
-    // Field: ltpi_csr.LTPI_Detect_Capabilities_Remote.remote_Minor_Version
+    // Field: ltpi_csr.LTPI_Detect_Capabilities_Remote.remote_Minor_Revision
     always_comb begin
-        automatic logic [3:0] next_c = field_storage.LTPI_Detect_Capabilities_Remote.remote_Minor_Version.value;
-        automatic logic load_next_c = '0;
-        if(1) begin // HW Write
-            next_c = hwif_in.LTPI_Detect_Capabilities_Remote.remote_Minor_Version.next;
-            load_next_c = '1;
-        end
-        field_combo.LTPI_Detect_Capabilities_Remote.remote_Minor_Version.next = next_c;
-        field_combo.LTPI_Detect_Capabilities_Remote.remote_Minor_Version.load_next = load_next_c;
+        automatic logic [3:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Detect_Capabilities_Remote.remote_Minor_Revision.value;
+        load_next_c = '0;
+        
+        // HW Write
+        next_c = hwif_in.LTPI_Detect_Capabilities_Remote.remote_Minor_Revision.next;
+        load_next_c = '1;
+        field_combo.LTPI_Detect_Capabilities_Remote.remote_Minor_Revision.next = next_c;
+        field_combo.LTPI_Detect_Capabilities_Remote.remote_Minor_Revision.load_next = load_next_c;
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Detect_Capabilities_Remote.remote_Minor_Version.value <= 'h0;
-        end else if(field_combo.LTPI_Detect_Capabilities_Remote.remote_Minor_Version.load_next) begin
-            field_storage.LTPI_Detect_Capabilities_Remote.remote_Minor_Version.value <= field_combo.LTPI_Detect_Capabilities_Remote.remote_Minor_Version.next;
+            field_storage.LTPI_Detect_Capabilities_Remote.remote_Minor_Revision.value <= 4'h0;
+        end else begin
+            if(field_combo.LTPI_Detect_Capabilities_Remote.remote_Minor_Revision.load_next) begin
+                field_storage.LTPI_Detect_Capabilities_Remote.remote_Minor_Revision.value <= field_combo.LTPI_Detect_Capabilities_Remote.remote_Minor_Revision.next;
+            end
         end
     end
-    assign hwif_out.LTPI_Detect_Capabilities_Remote.remote_Minor_Version.value = field_storage.LTPI_Detect_Capabilities_Remote.remote_Minor_Version.value;
-    // Field: ltpi_csr.LTPI_Detect_Capabilities_Remote.remote_Major_Version
+    assign hwif_out.LTPI_Detect_Capabilities_Remote.remote_Minor_Revision.value = field_storage.LTPI_Detect_Capabilities_Remote.remote_Minor_Revision.value;
+    // Field: ltpi_csr.LTPI_Detect_Capabilities_Remote.remote_Major_Revision
     always_comb begin
-        automatic logic [3:0] next_c = field_storage.LTPI_Detect_Capabilities_Remote.remote_Major_Version.value;
-        automatic logic load_next_c = '0;
-        if(1) begin // HW Write
-            next_c = hwif_in.LTPI_Detect_Capabilities_Remote.remote_Major_Version.next;
-            load_next_c = '1;
-        end
-        field_combo.LTPI_Detect_Capabilities_Remote.remote_Major_Version.next = next_c;
-        field_combo.LTPI_Detect_Capabilities_Remote.remote_Major_Version.load_next = load_next_c;
+        automatic logic [3:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Detect_Capabilities_Remote.remote_Major_Revision.value;
+        load_next_c = '0;
+        
+        // HW Write
+        next_c = hwif_in.LTPI_Detect_Capabilities_Remote.remote_Major_Revision.next;
+        load_next_c = '1;
+        field_combo.LTPI_Detect_Capabilities_Remote.remote_Major_Revision.next = next_c;
+        field_combo.LTPI_Detect_Capabilities_Remote.remote_Major_Revision.load_next = load_next_c;
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Detect_Capabilities_Remote.remote_Major_Version.value <= 'h0;
-        end else if(field_combo.LTPI_Detect_Capabilities_Remote.remote_Major_Version.load_next) begin
-            field_storage.LTPI_Detect_Capabilities_Remote.remote_Major_Version.value <= field_combo.LTPI_Detect_Capabilities_Remote.remote_Major_Version.next;
+            field_storage.LTPI_Detect_Capabilities_Remote.remote_Major_Revision.value <= 4'h0;
+        end else begin
+            if(field_combo.LTPI_Detect_Capabilities_Remote.remote_Major_Revision.load_next) begin
+                field_storage.LTPI_Detect_Capabilities_Remote.remote_Major_Revision.value <= field_combo.LTPI_Detect_Capabilities_Remote.remote_Major_Revision.next;
+            end
         end
     end
-    assign hwif_out.LTPI_Detect_Capabilities_Remote.remote_Major_Version.value = field_storage.LTPI_Detect_Capabilities_Remote.remote_Major_Version.value;
+    assign hwif_out.LTPI_Detect_Capabilities_Remote.remote_Major_Revision.value = field_storage.LTPI_Detect_Capabilities_Remote.remote_Major_Revision.value;
     // Field: ltpi_csr.LTPI_Detect_Capabilities_Remote.link_Speed_capab
     always_comb begin
-        automatic logic [15:0] next_c = field_storage.LTPI_Detect_Capabilities_Remote.link_Speed_capab.value;
-        automatic logic load_next_c = '0;
-        if(1) begin // HW Write
-            next_c = hwif_in.LTPI_Detect_Capabilities_Remote.link_Speed_capab.next;
-            load_next_c = '1;
-        end
+        automatic logic [15:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Detect_Capabilities_Remote.link_Speed_capab.value;
+        load_next_c = '0;
+        
+        // HW Write
+        next_c = hwif_in.LTPI_Detect_Capabilities_Remote.link_Speed_capab.next;
+        load_next_c = '1;
         field_combo.LTPI_Detect_Capabilities_Remote.link_Speed_capab.next = next_c;
         field_combo.LTPI_Detect_Capabilities_Remote.link_Speed_capab.load_next = load_next_c;
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Detect_Capabilities_Remote.link_Speed_capab.value <= 'h0;
-        end else if(field_combo.LTPI_Detect_Capabilities_Remote.link_Speed_capab.load_next) begin
-            field_storage.LTPI_Detect_Capabilities_Remote.link_Speed_capab.value <= field_combo.LTPI_Detect_Capabilities_Remote.link_Speed_capab.next;
+            field_storage.LTPI_Detect_Capabilities_Remote.link_Speed_capab.value <= 16'h0;
+        end else begin
+            if(field_combo.LTPI_Detect_Capabilities_Remote.link_Speed_capab.load_next) begin
+                field_storage.LTPI_Detect_Capabilities_Remote.link_Speed_capab.value <= field_combo.LTPI_Detect_Capabilities_Remote.link_Speed_capab.next;
+            end
         end
     end
     assign hwif_out.LTPI_Detect_Capabilities_Remote.link_Speed_capab.value = field_storage.LTPI_Detect_Capabilities_Remote.link_Speed_capab.value;
-    assign hwif_out.LTPI_platform_ID_local.platform_ID_local.value = 'h1234;
+    assign hwif_out.LTPI_platform_ID_local.platform_ID_local.value = 16'h1234;
     // Field: ltpi_csr.LTPI_platform_ID_remote.platform_ID_remote
     always_comb begin
-        automatic logic [15:0] next_c = field_storage.LTPI_platform_ID_remote.platform_ID_remote.value;
-        automatic logic load_next_c = '0;
-        if(1) begin // HW Write
-            next_c = hwif_in.LTPI_platform_ID_remote.platform_ID_remote.next;
-            load_next_c = '1;
-        end
+        automatic logic [15:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_platform_ID_remote.platform_ID_remote.value;
+        load_next_c = '0;
+        
+        // HW Write
+        next_c = hwif_in.LTPI_platform_ID_remote.platform_ID_remote.next;
+        load_next_c = '1;
         field_combo.LTPI_platform_ID_remote.platform_ID_remote.next = next_c;
         field_combo.LTPI_platform_ID_remote.platform_ID_remote.load_next = load_next_c;
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_platform_ID_remote.platform_ID_remote.value <= 'h0;
-        end else if(field_combo.LTPI_platform_ID_remote.platform_ID_remote.load_next) begin
-            field_storage.LTPI_platform_ID_remote.platform_ID_remote.value <= field_combo.LTPI_platform_ID_remote.platform_ID_remote.next;
+            field_storage.LTPI_platform_ID_remote.platform_ID_remote.value <= 16'h0;
+        end else begin
+            if(field_combo.LTPI_platform_ID_remote.platform_ID_remote.load_next) begin
+                field_storage.LTPI_platform_ID_remote.platform_ID_remote.value <= field_combo.LTPI_platform_ID_remote.platform_ID_remote.next;
+            end
         end
     end
     assign hwif_out.LTPI_platform_ID_remote.platform_ID_remote.value = field_storage.LTPI_platform_ID_remote.platform_ID_remote.value;
     // Field: ltpi_csr.LTPI_Advertise_Capab_local_LOW.supported_channel
     always_comb begin
-        automatic logic [4:0] next_c = field_storage.LTPI_Advertise_Capab_local_LOW.supported_channel.value;
-        automatic logic load_next_c = '0;
+        automatic logic [4:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Advertise_Capab_local_LOW.supported_channel.value;
+        load_next_c = '0;
         if(decoded_reg_strb.LTPI_Advertise_Capab_local_LOW && decoded_req_is_wr) begin // SW write
             next_c = decoded_wr_data[4:0];
             load_next_c = '1;
@@ -1097,16 +1140,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Advertise_Capab_local_LOW.supported_channel.value <= 'h0;
-        end else if(field_combo.LTPI_Advertise_Capab_local_LOW.supported_channel.load_next) begin
-            field_storage.LTPI_Advertise_Capab_local_LOW.supported_channel.value <= field_combo.LTPI_Advertise_Capab_local_LOW.supported_channel.next;
+            field_storage.LTPI_Advertise_Capab_local_LOW.supported_channel.value <= 5'h0;
+        end else begin
+            if(field_combo.LTPI_Advertise_Capab_local_LOW.supported_channel.load_next) begin
+                field_storage.LTPI_Advertise_Capab_local_LOW.supported_channel.value <= field_combo.LTPI_Advertise_Capab_local_LOW.supported_channel.next;
+            end
         end
     end
     assign hwif_out.LTPI_Advertise_Capab_local_LOW.supported_channel.value = field_storage.LTPI_Advertise_Capab_local_LOW.supported_channel.value;
     // Field: ltpi_csr.LTPI_Advertise_Capab_local_LOW.NL_GPIO_nb
     always_comb begin
-        automatic logic [9:0] next_c = field_storage.LTPI_Advertise_Capab_local_LOW.NL_GPIO_nb.value;
-        automatic logic load_next_c = '0;
+        automatic logic [9:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Advertise_Capab_local_LOW.NL_GPIO_nb.value;
+        load_next_c = '0;
         if(decoded_reg_strb.LTPI_Advertise_Capab_local_LOW && decoded_req_is_wr) begin // SW write
             next_c = decoded_wr_data[17:8];
             load_next_c = '1;
@@ -1119,16 +1166,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Advertise_Capab_local_LOW.NL_GPIO_nb.value <= 'h0;
-        end else if(field_combo.LTPI_Advertise_Capab_local_LOW.NL_GPIO_nb.load_next) begin
-            field_storage.LTPI_Advertise_Capab_local_LOW.NL_GPIO_nb.value <= field_combo.LTPI_Advertise_Capab_local_LOW.NL_GPIO_nb.next;
+            field_storage.LTPI_Advertise_Capab_local_LOW.NL_GPIO_nb.value <= 10'h0;
+        end else begin
+            if(field_combo.LTPI_Advertise_Capab_local_LOW.NL_GPIO_nb.load_next) begin
+                field_storage.LTPI_Advertise_Capab_local_LOW.NL_GPIO_nb.value <= field_combo.LTPI_Advertise_Capab_local_LOW.NL_GPIO_nb.next;
+            end
         end
     end
     assign hwif_out.LTPI_Advertise_Capab_local_LOW.NL_GPIO_nb.value = field_storage.LTPI_Advertise_Capab_local_LOW.NL_GPIO_nb.value;
     // Field: ltpi_csr.LTPI_Advertise_Capab_local_LOW.I2C_channel_en
     always_comb begin
-        automatic logic [5:0] next_c = field_storage.LTPI_Advertise_Capab_local_LOW.I2C_channel_en.value;
-        automatic logic load_next_c = '0;
+        automatic logic [5:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Advertise_Capab_local_LOW.I2C_channel_en.value;
+        load_next_c = '0;
         if(decoded_reg_strb.LTPI_Advertise_Capab_local_LOW && decoded_req_is_wr) begin // SW write
             next_c = decoded_wr_data[29:24];
             load_next_c = '1;
@@ -1141,16 +1192,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Advertise_Capab_local_LOW.I2C_channel_en.value <= 'h0;
-        end else if(field_combo.LTPI_Advertise_Capab_local_LOW.I2C_channel_en.load_next) begin
-            field_storage.LTPI_Advertise_Capab_local_LOW.I2C_channel_en.value <= field_combo.LTPI_Advertise_Capab_local_LOW.I2C_channel_en.next;
+            field_storage.LTPI_Advertise_Capab_local_LOW.I2C_channel_en.value <= 6'h0;
+        end else begin
+            if(field_combo.LTPI_Advertise_Capab_local_LOW.I2C_channel_en.load_next) begin
+                field_storage.LTPI_Advertise_Capab_local_LOW.I2C_channel_en.value <= field_combo.LTPI_Advertise_Capab_local_LOW.I2C_channel_en.next;
+            end
         end
     end
     assign hwif_out.LTPI_Advertise_Capab_local_LOW.I2C_channel_en.value = field_storage.LTPI_Advertise_Capab_local_LOW.I2C_channel_en.value;
     // Field: ltpi_csr.LTPI_Advertise_Capab_local_LOW.I2C_channel_echo_support
     always_comb begin
-        automatic logic [0:0] next_c = field_storage.LTPI_Advertise_Capab_local_LOW.I2C_channel_echo_support.value;
-        automatic logic load_next_c = '0;
+        automatic logic [0:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Advertise_Capab_local_LOW.I2C_channel_echo_support.value;
+        load_next_c = '0;
         if(decoded_reg_strb.LTPI_Advertise_Capab_local_LOW && decoded_req_is_wr) begin // SW write
             next_c = decoded_wr_data[30:30];
             load_next_c = '1;
@@ -1163,16 +1218,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Advertise_Capab_local_LOW.I2C_channel_echo_support.value <= 'h0;
-        end else if(field_combo.LTPI_Advertise_Capab_local_LOW.I2C_channel_echo_support.load_next) begin
-            field_storage.LTPI_Advertise_Capab_local_LOW.I2C_channel_echo_support.value <= field_combo.LTPI_Advertise_Capab_local_LOW.I2C_channel_echo_support.next;
+            field_storage.LTPI_Advertise_Capab_local_LOW.I2C_channel_echo_support.value <= 1'h0;
+        end else begin
+            if(field_combo.LTPI_Advertise_Capab_local_LOW.I2C_channel_echo_support.load_next) begin
+                field_storage.LTPI_Advertise_Capab_local_LOW.I2C_channel_echo_support.value <= field_combo.LTPI_Advertise_Capab_local_LOW.I2C_channel_echo_support.next;
+            end
         end
     end
     assign hwif_out.LTPI_Advertise_Capab_local_LOW.I2C_channel_echo_support.value = field_storage.LTPI_Advertise_Capab_local_LOW.I2C_channel_echo_support.value;
     // Field: ltpi_csr.LTPI_Advertise_Capab_local_HIGH.I2C_channel_speed
     always_comb begin
-        automatic logic [5:0] next_c = field_storage.LTPI_Advertise_Capab_local_HIGH.I2C_channel_speed.value;
-        automatic logic load_next_c = '0;
+        automatic logic [5:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Advertise_Capab_local_HIGH.I2C_channel_speed.value;
+        load_next_c = '0;
         if(decoded_reg_strb.LTPI_Advertise_Capab_local_HIGH && decoded_req_is_wr) begin // SW write
             next_c = decoded_wr_data[5:0];
             load_next_c = '1;
@@ -1185,16 +1244,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Advertise_Capab_local_HIGH.I2C_channel_speed.value <= 'h0;
-        end else if(field_combo.LTPI_Advertise_Capab_local_HIGH.I2C_channel_speed.load_next) begin
-            field_storage.LTPI_Advertise_Capab_local_HIGH.I2C_channel_speed.value <= field_combo.LTPI_Advertise_Capab_local_HIGH.I2C_channel_speed.next;
+            field_storage.LTPI_Advertise_Capab_local_HIGH.I2C_channel_speed.value <= 6'h0;
+        end else begin
+            if(field_combo.LTPI_Advertise_Capab_local_HIGH.I2C_channel_speed.load_next) begin
+                field_storage.LTPI_Advertise_Capab_local_HIGH.I2C_channel_speed.value <= field_combo.LTPI_Advertise_Capab_local_HIGH.I2C_channel_speed.next;
+            end
         end
     end
     assign hwif_out.LTPI_Advertise_Capab_local_HIGH.I2C_channel_speed.value = field_storage.LTPI_Advertise_Capab_local_HIGH.I2C_channel_speed.value;
     // Field: ltpi_csr.LTPI_Advertise_Capab_local_HIGH.UART_channel_cpbl
     always_comb begin
-        automatic logic [6:0] next_c = field_storage.LTPI_Advertise_Capab_local_HIGH.UART_channel_cpbl.value;
-        automatic logic load_next_c = '0;
+        automatic logic [6:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Advertise_Capab_local_HIGH.UART_channel_cpbl.value;
+        load_next_c = '0;
         if(decoded_reg_strb.LTPI_Advertise_Capab_local_HIGH && decoded_req_is_wr) begin // SW write
             next_c = decoded_wr_data[14:8];
             load_next_c = '1;
@@ -1207,16 +1270,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Advertise_Capab_local_HIGH.UART_channel_cpbl.value <= 'h0;
-        end else if(field_combo.LTPI_Advertise_Capab_local_HIGH.UART_channel_cpbl.load_next) begin
-            field_storage.LTPI_Advertise_Capab_local_HIGH.UART_channel_cpbl.value <= field_combo.LTPI_Advertise_Capab_local_HIGH.UART_channel_cpbl.next;
+            field_storage.LTPI_Advertise_Capab_local_HIGH.UART_channel_cpbl.value <= 7'h0;
+        end else begin
+            if(field_combo.LTPI_Advertise_Capab_local_HIGH.UART_channel_cpbl.load_next) begin
+                field_storage.LTPI_Advertise_Capab_local_HIGH.UART_channel_cpbl.value <= field_combo.LTPI_Advertise_Capab_local_HIGH.UART_channel_cpbl.next;
+            end
         end
     end
     assign hwif_out.LTPI_Advertise_Capab_local_HIGH.UART_channel_cpbl.value = field_storage.LTPI_Advertise_Capab_local_HIGH.UART_channel_cpbl.value;
     // Field: ltpi_csr.LTPI_Advertise_Capab_local_HIGH.OEM_capab
     always_comb begin
-        automatic logic [15:0] next_c = field_storage.LTPI_Advertise_Capab_local_HIGH.OEM_capab.value;
-        automatic logic load_next_c = '0;
+        automatic logic [15:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Advertise_Capab_local_HIGH.OEM_capab.value;
+        load_next_c = '0;
         if(decoded_reg_strb.LTPI_Advertise_Capab_local_HIGH && decoded_req_is_wr) begin // SW write
             next_c = decoded_wr_data[31:16];
             load_next_c = '1;
@@ -1229,156 +1296,188 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Advertise_Capab_local_HIGH.OEM_capab.value <= 'h0;
-        end else if(field_combo.LTPI_Advertise_Capab_local_HIGH.OEM_capab.load_next) begin
-            field_storage.LTPI_Advertise_Capab_local_HIGH.OEM_capab.value <= field_combo.LTPI_Advertise_Capab_local_HIGH.OEM_capab.next;
+            field_storage.LTPI_Advertise_Capab_local_HIGH.OEM_capab.value <= 16'h0;
+        end else begin
+            if(field_combo.LTPI_Advertise_Capab_local_HIGH.OEM_capab.load_next) begin
+                field_storage.LTPI_Advertise_Capab_local_HIGH.OEM_capab.value <= field_combo.LTPI_Advertise_Capab_local_HIGH.OEM_capab.next;
+            end
         end
     end
     assign hwif_out.LTPI_Advertise_Capab_local_HIGH.OEM_capab.value = field_storage.LTPI_Advertise_Capab_local_HIGH.OEM_capab.value;
     // Field: ltpi_csr.LTPI_Advertise_Capab_remote_LOW.supported_channel
     always_comb begin
-        automatic logic [4:0] next_c = field_storage.LTPI_Advertise_Capab_remote_LOW.supported_channel.value;
-        automatic logic load_next_c = '0;
-        if(1) begin // HW Write
-            next_c = hwif_in.LTPI_Advertise_Capab_remote_LOW.supported_channel.next;
-            load_next_c = '1;
-        end
+        automatic logic [4:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Advertise_Capab_remote_LOW.supported_channel.value;
+        load_next_c = '0;
+        
+        // HW Write
+        next_c = hwif_in.LTPI_Advertise_Capab_remote_LOW.supported_channel.next;
+        load_next_c = '1;
         field_combo.LTPI_Advertise_Capab_remote_LOW.supported_channel.next = next_c;
         field_combo.LTPI_Advertise_Capab_remote_LOW.supported_channel.load_next = load_next_c;
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Advertise_Capab_remote_LOW.supported_channel.value <= 'h0;
-        end else if(field_combo.LTPI_Advertise_Capab_remote_LOW.supported_channel.load_next) begin
-            field_storage.LTPI_Advertise_Capab_remote_LOW.supported_channel.value <= field_combo.LTPI_Advertise_Capab_remote_LOW.supported_channel.next;
+            field_storage.LTPI_Advertise_Capab_remote_LOW.supported_channel.value <= 5'h0;
+        end else begin
+            if(field_combo.LTPI_Advertise_Capab_remote_LOW.supported_channel.load_next) begin
+                field_storage.LTPI_Advertise_Capab_remote_LOW.supported_channel.value <= field_combo.LTPI_Advertise_Capab_remote_LOW.supported_channel.next;
+            end
         end
     end
     assign hwif_out.LTPI_Advertise_Capab_remote_LOW.supported_channel.value = field_storage.LTPI_Advertise_Capab_remote_LOW.supported_channel.value;
     // Field: ltpi_csr.LTPI_Advertise_Capab_remote_LOW.NL_GPIO_nb
     always_comb begin
-        automatic logic [9:0] next_c = field_storage.LTPI_Advertise_Capab_remote_LOW.NL_GPIO_nb.value;
-        automatic logic load_next_c = '0;
-        if(1) begin // HW Write
-            next_c = hwif_in.LTPI_Advertise_Capab_remote_LOW.NL_GPIO_nb.next;
-            load_next_c = '1;
-        end
+        automatic logic [9:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Advertise_Capab_remote_LOW.NL_GPIO_nb.value;
+        load_next_c = '0;
+        
+        // HW Write
+        next_c = hwif_in.LTPI_Advertise_Capab_remote_LOW.NL_GPIO_nb.next;
+        load_next_c = '1;
         field_combo.LTPI_Advertise_Capab_remote_LOW.NL_GPIO_nb.next = next_c;
         field_combo.LTPI_Advertise_Capab_remote_LOW.NL_GPIO_nb.load_next = load_next_c;
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Advertise_Capab_remote_LOW.NL_GPIO_nb.value <= 'h0;
-        end else if(field_combo.LTPI_Advertise_Capab_remote_LOW.NL_GPIO_nb.load_next) begin
-            field_storage.LTPI_Advertise_Capab_remote_LOW.NL_GPIO_nb.value <= field_combo.LTPI_Advertise_Capab_remote_LOW.NL_GPIO_nb.next;
+            field_storage.LTPI_Advertise_Capab_remote_LOW.NL_GPIO_nb.value <= 10'h0;
+        end else begin
+            if(field_combo.LTPI_Advertise_Capab_remote_LOW.NL_GPIO_nb.load_next) begin
+                field_storage.LTPI_Advertise_Capab_remote_LOW.NL_GPIO_nb.value <= field_combo.LTPI_Advertise_Capab_remote_LOW.NL_GPIO_nb.next;
+            end
         end
     end
     assign hwif_out.LTPI_Advertise_Capab_remote_LOW.NL_GPIO_nb.value = field_storage.LTPI_Advertise_Capab_remote_LOW.NL_GPIO_nb.value;
     // Field: ltpi_csr.LTPI_Advertise_Capab_remote_LOW.I2C_channel_en
     always_comb begin
-        automatic logic [5:0] next_c = field_storage.LTPI_Advertise_Capab_remote_LOW.I2C_channel_en.value;
-        automatic logic load_next_c = '0;
-        if(1) begin // HW Write
-            next_c = hwif_in.LTPI_Advertise_Capab_remote_LOW.I2C_channel_en.next;
-            load_next_c = '1;
-        end
+        automatic logic [5:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Advertise_Capab_remote_LOW.I2C_channel_en.value;
+        load_next_c = '0;
+        
+        // HW Write
+        next_c = hwif_in.LTPI_Advertise_Capab_remote_LOW.I2C_channel_en.next;
+        load_next_c = '1;
         field_combo.LTPI_Advertise_Capab_remote_LOW.I2C_channel_en.next = next_c;
         field_combo.LTPI_Advertise_Capab_remote_LOW.I2C_channel_en.load_next = load_next_c;
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Advertise_Capab_remote_LOW.I2C_channel_en.value <= 'h0;
-        end else if(field_combo.LTPI_Advertise_Capab_remote_LOW.I2C_channel_en.load_next) begin
-            field_storage.LTPI_Advertise_Capab_remote_LOW.I2C_channel_en.value <= field_combo.LTPI_Advertise_Capab_remote_LOW.I2C_channel_en.next;
+            field_storage.LTPI_Advertise_Capab_remote_LOW.I2C_channel_en.value <= 6'h0;
+        end else begin
+            if(field_combo.LTPI_Advertise_Capab_remote_LOW.I2C_channel_en.load_next) begin
+                field_storage.LTPI_Advertise_Capab_remote_LOW.I2C_channel_en.value <= field_combo.LTPI_Advertise_Capab_remote_LOW.I2C_channel_en.next;
+            end
         end
     end
     assign hwif_out.LTPI_Advertise_Capab_remote_LOW.I2C_channel_en.value = field_storage.LTPI_Advertise_Capab_remote_LOW.I2C_channel_en.value;
     // Field: ltpi_csr.LTPI_Advertise_Capab_remote_LOW.I2C_channel_echo_support
     always_comb begin
-        automatic logic [0:0] next_c = field_storage.LTPI_Advertise_Capab_remote_LOW.I2C_channel_echo_support.value;
-        automatic logic load_next_c = '0;
-        if(1) begin // HW Write
-            next_c = hwif_in.LTPI_Advertise_Capab_remote_LOW.I2C_channel_echo_support.next;
-            load_next_c = '1;
-        end
+        automatic logic [0:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Advertise_Capab_remote_LOW.I2C_channel_echo_support.value;
+        load_next_c = '0;
+        
+        // HW Write
+        next_c = hwif_in.LTPI_Advertise_Capab_remote_LOW.I2C_channel_echo_support.next;
+        load_next_c = '1;
         field_combo.LTPI_Advertise_Capab_remote_LOW.I2C_channel_echo_support.next = next_c;
         field_combo.LTPI_Advertise_Capab_remote_LOW.I2C_channel_echo_support.load_next = load_next_c;
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Advertise_Capab_remote_LOW.I2C_channel_echo_support.value <= 'h0;
-        end else if(field_combo.LTPI_Advertise_Capab_remote_LOW.I2C_channel_echo_support.load_next) begin
-            field_storage.LTPI_Advertise_Capab_remote_LOW.I2C_channel_echo_support.value <= field_combo.LTPI_Advertise_Capab_remote_LOW.I2C_channel_echo_support.next;
+            field_storage.LTPI_Advertise_Capab_remote_LOW.I2C_channel_echo_support.value <= 1'h0;
+        end else begin
+            if(field_combo.LTPI_Advertise_Capab_remote_LOW.I2C_channel_echo_support.load_next) begin
+                field_storage.LTPI_Advertise_Capab_remote_LOW.I2C_channel_echo_support.value <= field_combo.LTPI_Advertise_Capab_remote_LOW.I2C_channel_echo_support.next;
+            end
         end
     end
     assign hwif_out.LTPI_Advertise_Capab_remote_LOW.I2C_channel_echo_support.value = field_storage.LTPI_Advertise_Capab_remote_LOW.I2C_channel_echo_support.value;
     // Field: ltpi_csr.LTPI_Advertise_Capab_remote_HIGH.I2C_channel_speed
     always_comb begin
-        automatic logic [5:0] next_c = field_storage.LTPI_Advertise_Capab_remote_HIGH.I2C_channel_speed.value;
-        automatic logic load_next_c = '0;
-        if(1) begin // HW Write
-            next_c = hwif_in.LTPI_Advertise_Capab_remote_HIGH.I2C_channel_speed.next;
-            load_next_c = '1;
-        end
+        automatic logic [5:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Advertise_Capab_remote_HIGH.I2C_channel_speed.value;
+        load_next_c = '0;
+        
+        // HW Write
+        next_c = hwif_in.LTPI_Advertise_Capab_remote_HIGH.I2C_channel_speed.next;
+        load_next_c = '1;
         field_combo.LTPI_Advertise_Capab_remote_HIGH.I2C_channel_speed.next = next_c;
         field_combo.LTPI_Advertise_Capab_remote_HIGH.I2C_channel_speed.load_next = load_next_c;
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Advertise_Capab_remote_HIGH.I2C_channel_speed.value <= 'h0;
-        end else if(field_combo.LTPI_Advertise_Capab_remote_HIGH.I2C_channel_speed.load_next) begin
-            field_storage.LTPI_Advertise_Capab_remote_HIGH.I2C_channel_speed.value <= field_combo.LTPI_Advertise_Capab_remote_HIGH.I2C_channel_speed.next;
+            field_storage.LTPI_Advertise_Capab_remote_HIGH.I2C_channel_speed.value <= 6'h0;
+        end else begin
+            if(field_combo.LTPI_Advertise_Capab_remote_HIGH.I2C_channel_speed.load_next) begin
+                field_storage.LTPI_Advertise_Capab_remote_HIGH.I2C_channel_speed.value <= field_combo.LTPI_Advertise_Capab_remote_HIGH.I2C_channel_speed.next;
+            end
         end
     end
     assign hwif_out.LTPI_Advertise_Capab_remote_HIGH.I2C_channel_speed.value = field_storage.LTPI_Advertise_Capab_remote_HIGH.I2C_channel_speed.value;
     // Field: ltpi_csr.LTPI_Advertise_Capab_remote_HIGH.UART_channel_cpbl
     always_comb begin
-        automatic logic [6:0] next_c = field_storage.LTPI_Advertise_Capab_remote_HIGH.UART_channel_cpbl.value;
-        automatic logic load_next_c = '0;
-        if(1) begin // HW Write
-            next_c = hwif_in.LTPI_Advertise_Capab_remote_HIGH.UART_channel_cpbl.next;
-            load_next_c = '1;
-        end
+        automatic logic [6:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Advertise_Capab_remote_HIGH.UART_channel_cpbl.value;
+        load_next_c = '0;
+        
+        // HW Write
+        next_c = hwif_in.LTPI_Advertise_Capab_remote_HIGH.UART_channel_cpbl.next;
+        load_next_c = '1;
         field_combo.LTPI_Advertise_Capab_remote_HIGH.UART_channel_cpbl.next = next_c;
         field_combo.LTPI_Advertise_Capab_remote_HIGH.UART_channel_cpbl.load_next = load_next_c;
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Advertise_Capab_remote_HIGH.UART_channel_cpbl.value <= 'h0;
-        end else if(field_combo.LTPI_Advertise_Capab_remote_HIGH.UART_channel_cpbl.load_next) begin
-            field_storage.LTPI_Advertise_Capab_remote_HIGH.UART_channel_cpbl.value <= field_combo.LTPI_Advertise_Capab_remote_HIGH.UART_channel_cpbl.next;
+            field_storage.LTPI_Advertise_Capab_remote_HIGH.UART_channel_cpbl.value <= 7'h0;
+        end else begin
+            if(field_combo.LTPI_Advertise_Capab_remote_HIGH.UART_channel_cpbl.load_next) begin
+                field_storage.LTPI_Advertise_Capab_remote_HIGH.UART_channel_cpbl.value <= field_combo.LTPI_Advertise_Capab_remote_HIGH.UART_channel_cpbl.next;
+            end
         end
     end
     assign hwif_out.LTPI_Advertise_Capab_remote_HIGH.UART_channel_cpbl.value = field_storage.LTPI_Advertise_Capab_remote_HIGH.UART_channel_cpbl.value;
     // Field: ltpi_csr.LTPI_Advertise_Capab_remote_HIGH.OEM_capab
     always_comb begin
-        automatic logic [15:0] next_c = field_storage.LTPI_Advertise_Capab_remote_HIGH.OEM_capab.value;
-        automatic logic load_next_c = '0;
-        if(1) begin // HW Write
-            next_c = hwif_in.LTPI_Advertise_Capab_remote_HIGH.OEM_capab.next;
-            load_next_c = '1;
-        end
+        automatic logic [15:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Advertise_Capab_remote_HIGH.OEM_capab.value;
+        load_next_c = '0;
+        
+        // HW Write
+        next_c = hwif_in.LTPI_Advertise_Capab_remote_HIGH.OEM_capab.next;
+        load_next_c = '1;
         field_combo.LTPI_Advertise_Capab_remote_HIGH.OEM_capab.next = next_c;
         field_combo.LTPI_Advertise_Capab_remote_HIGH.OEM_capab.load_next = load_next_c;
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Advertise_Capab_remote_HIGH.OEM_capab.value <= 'h0;
-        end else if(field_combo.LTPI_Advertise_Capab_remote_HIGH.OEM_capab.load_next) begin
-            field_storage.LTPI_Advertise_Capab_remote_HIGH.OEM_capab.value <= field_combo.LTPI_Advertise_Capab_remote_HIGH.OEM_capab.next;
+            field_storage.LTPI_Advertise_Capab_remote_HIGH.OEM_capab.value <= 16'h0;
+        end else begin
+            if(field_combo.LTPI_Advertise_Capab_remote_HIGH.OEM_capab.load_next) begin
+                field_storage.LTPI_Advertise_Capab_remote_HIGH.OEM_capab.value <= field_combo.LTPI_Advertise_Capab_remote_HIGH.OEM_capab.next;
+            end
         end
     end
     assign hwif_out.LTPI_Advertise_Capab_remote_HIGH.OEM_capab.value = field_storage.LTPI_Advertise_Capab_remote_HIGH.OEM_capab.value;
-    assign hwif_out.LTPI_Config_Capab_LOW.supported_channel.value = 'h7;
-    assign hwif_out.LTPI_Config_Capab_LOW.NL_GPIO_nb.value = 'h3ff;
-    assign hwif_out.LTPI_Config_Capab_LOW.I2C_channel_en.value = 'h3f;
-    assign hwif_out.LTPI_Config_Capab_LOW.I2C_channel_echo_support.value = 'h1;
-    assign hwif_out.LTPI_Config_Capab_HIGH.I2C_channel_speed.value = 'h0;
-    assign hwif_out.LTPI_Config_Capab_HIGH.UART_channel_cpbl.value = 'h8;
-    assign hwif_out.LTPI_Config_Capab_HIGH.OEM_capab.value = 'h0;
+    assign hwif_out.LTPI_Config_Capab_LOW.supported_channel.value = 5'h7;
+    assign hwif_out.LTPI_Config_Capab_LOW.NL_GPIO_nb.value = 10'h3ff;
+    assign hwif_out.LTPI_Config_Capab_LOW.I2C_channel_en.value = 6'h3f;
+    assign hwif_out.LTPI_Config_Capab_LOW.I2C_channel_echo_support.value = 1'h1;
+    assign hwif_out.LTPI_Config_Capab_HIGH.I2C_channel_speed.value = 6'h0;
+    assign hwif_out.LTPI_Config_Capab_HIGH.UART_channel_cpbl.value = 7'h8;
+    assign hwif_out.LTPI_Config_Capab_HIGH.OEM_capab.value = 16'h0;
     // Field: ltpi_csr.link_aligment_err_cnt.err_cnt
     always_comb begin
-        automatic logic [31:0] next_c = field_storage.link_aligment_err_cnt.err_cnt.value;
-        automatic logic load_next_c = '0;
+        automatic logic [31:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.link_aligment_err_cnt.err_cnt.value;
+        load_next_c = '0;
         if(decoded_reg_strb.link_aligment_err_cnt && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.link_aligment_err_cnt.err_cnt.value & ~decoded_wr_data[31:0];
             load_next_c = '1;
@@ -1391,16 +1490,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.link_aligment_err_cnt.err_cnt.value <= 'h0;
-        end else if(field_combo.link_aligment_err_cnt.err_cnt.load_next) begin
-            field_storage.link_aligment_err_cnt.err_cnt.value <= field_combo.link_aligment_err_cnt.err_cnt.next;
+            field_storage.link_aligment_err_cnt.err_cnt.value <= 32'h0;
+        end else begin
+            if(field_combo.link_aligment_err_cnt.err_cnt.load_next) begin
+                field_storage.link_aligment_err_cnt.err_cnt.value <= field_combo.link_aligment_err_cnt.err_cnt.next;
+            end
         end
     end
     assign hwif_out.link_aligment_err_cnt.err_cnt.value = field_storage.link_aligment_err_cnt.err_cnt.value;
     // Field: ltpi_csr.link_lost_err_cnt.err_cnt
     always_comb begin
-        automatic logic [31:0] next_c = field_storage.link_lost_err_cnt.err_cnt.value;
-        automatic logic load_next_c = '0;
+        automatic logic [31:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.link_lost_err_cnt.err_cnt.value;
+        load_next_c = '0;
         if(decoded_reg_strb.link_lost_err_cnt && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.link_lost_err_cnt.err_cnt.value & ~decoded_wr_data[31:0];
             load_next_c = '1;
@@ -1413,16 +1516,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.link_lost_err_cnt.err_cnt.value <= 'h0;
-        end else if(field_combo.link_lost_err_cnt.err_cnt.load_next) begin
-            field_storage.link_lost_err_cnt.err_cnt.value <= field_combo.link_lost_err_cnt.err_cnt.next;
+            field_storage.link_lost_err_cnt.err_cnt.value <= 32'h0;
+        end else begin
+            if(field_combo.link_lost_err_cnt.err_cnt.load_next) begin
+                field_storage.link_lost_err_cnt.err_cnt.value <= field_combo.link_lost_err_cnt.err_cnt.next;
+            end
         end
     end
     assign hwif_out.link_lost_err_cnt.err_cnt.value = field_storage.link_lost_err_cnt.err_cnt.value;
     // Field: ltpi_csr.link_crc_err_cnt.err_cnt
     always_comb begin
-        automatic logic [31:0] next_c = field_storage.link_crc_err_cnt.err_cnt.value;
-        automatic logic load_next_c = '0;
+        automatic logic [31:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.link_crc_err_cnt.err_cnt.value;
+        load_next_c = '0;
         if(decoded_reg_strb.link_crc_err_cnt && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.link_crc_err_cnt.err_cnt.value & ~decoded_wr_data[31:0];
             load_next_c = '1;
@@ -1435,16 +1542,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.link_crc_err_cnt.err_cnt.value <= 'h0;
-        end else if(field_combo.link_crc_err_cnt.err_cnt.load_next) begin
-            field_storage.link_crc_err_cnt.err_cnt.value <= field_combo.link_crc_err_cnt.err_cnt.next;
+            field_storage.link_crc_err_cnt.err_cnt.value <= 32'h0;
+        end else begin
+            if(field_combo.link_crc_err_cnt.err_cnt.load_next) begin
+                field_storage.link_crc_err_cnt.err_cnt.value <= field_combo.link_crc_err_cnt.err_cnt.next;
+            end
         end
     end
     assign hwif_out.link_crc_err_cnt.err_cnt.value = field_storage.link_crc_err_cnt.err_cnt.value;
     // Field: ltpi_csr.unknown_comma_err_cnt.err_cnt
     always_comb begin
-        automatic logic [31:0] next_c = field_storage.unknown_comma_err_cnt.err_cnt.value;
-        automatic logic load_next_c = '0;
+        automatic logic [31:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.unknown_comma_err_cnt.err_cnt.value;
+        load_next_c = '0;
         if(decoded_reg_strb.unknown_comma_err_cnt && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.unknown_comma_err_cnt.err_cnt.value & ~decoded_wr_data[31:0];
             load_next_c = '1;
@@ -1457,16 +1568,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.unknown_comma_err_cnt.err_cnt.value <= 'h0;
-        end else if(field_combo.unknown_comma_err_cnt.err_cnt.load_next) begin
-            field_storage.unknown_comma_err_cnt.err_cnt.value <= field_combo.unknown_comma_err_cnt.err_cnt.next;
+            field_storage.unknown_comma_err_cnt.err_cnt.value <= 32'h0;
+        end else begin
+            if(field_combo.unknown_comma_err_cnt.err_cnt.load_next) begin
+                field_storage.unknown_comma_err_cnt.err_cnt.value <= field_combo.unknown_comma_err_cnt.err_cnt.next;
+            end
         end
     end
     assign hwif_out.unknown_comma_err_cnt.err_cnt.value = field_storage.unknown_comma_err_cnt.err_cnt.value;
     // Field: ltpi_csr.link_speed_timeout_err_cnt.err_cnt
     always_comb begin
-        automatic logic [31:0] next_c = field_storage.link_speed_timeout_err_cnt.err_cnt.value;
-        automatic logic load_next_c = '0;
+        automatic logic [31:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.link_speed_timeout_err_cnt.err_cnt.value;
+        load_next_c = '0;
         if(decoded_reg_strb.link_speed_timeout_err_cnt && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.link_speed_timeout_err_cnt.err_cnt.value & ~decoded_wr_data[31:0];
             load_next_c = '1;
@@ -1479,16 +1594,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.link_speed_timeout_err_cnt.err_cnt.value <= 'h0;
-        end else if(field_combo.link_speed_timeout_err_cnt.err_cnt.load_next) begin
-            field_storage.link_speed_timeout_err_cnt.err_cnt.value <= field_combo.link_speed_timeout_err_cnt.err_cnt.next;
+            field_storage.link_speed_timeout_err_cnt.err_cnt.value <= 32'h0;
+        end else begin
+            if(field_combo.link_speed_timeout_err_cnt.err_cnt.load_next) begin
+                field_storage.link_speed_timeout_err_cnt.err_cnt.value <= field_combo.link_speed_timeout_err_cnt.err_cnt.next;
+            end
         end
     end
     assign hwif_out.link_speed_timeout_err_cnt.err_cnt.value = field_storage.link_speed_timeout_err_cnt.err_cnt.value;
     // Field: ltpi_csr.link_cfg_acpt_timeout_err_cnt.err_cnt
     always_comb begin
-        automatic logic [31:0] next_c = field_storage.link_cfg_acpt_timeout_err_cnt.err_cnt.value;
-        automatic logic load_next_c = '0;
+        automatic logic [31:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.link_cfg_acpt_timeout_err_cnt.err_cnt.value;
+        load_next_c = '0;
         if(decoded_reg_strb.link_cfg_acpt_timeout_err_cnt && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.link_cfg_acpt_timeout_err_cnt.err_cnt.value & ~decoded_wr_data[31:0];
             load_next_c = '1;
@@ -1501,16 +1620,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.link_cfg_acpt_timeout_err_cnt.err_cnt.value <= 'h0;
-        end else if(field_combo.link_cfg_acpt_timeout_err_cnt.err_cnt.load_next) begin
-            field_storage.link_cfg_acpt_timeout_err_cnt.err_cnt.value <= field_combo.link_cfg_acpt_timeout_err_cnt.err_cnt.next;
+            field_storage.link_cfg_acpt_timeout_err_cnt.err_cnt.value <= 32'h0;
+        end else begin
+            if(field_combo.link_cfg_acpt_timeout_err_cnt.err_cnt.load_next) begin
+                field_storage.link_cfg_acpt_timeout_err_cnt.err_cnt.value <= field_combo.link_cfg_acpt_timeout_err_cnt.err_cnt.next;
+            end
         end
     end
     assign hwif_out.link_cfg_acpt_timeout_err_cnt.err_cnt.value = field_storage.link_cfg_acpt_timeout_err_cnt.err_cnt.value;
     // Field: ltpi_csr.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt
     always_comb begin
-        automatic logic [15:0] next_c = field_storage.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt.value;
-        automatic logic load_next_c = '0;
+        automatic logic [15:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt.value;
+        load_next_c = '0;
         if(decoded_reg_strb.linkig_training_frm_rcv_cnt_low && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt.value & ~decoded_wr_data[15:0];
             load_next_c = '1;
@@ -1523,16 +1646,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt.value <= 'h0;
-        end else if(field_combo.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt.load_next) begin
-            field_storage.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt.value <= field_combo.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt.next;
+            field_storage.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt.value <= 16'h0;
+        end else begin
+            if(field_combo.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt.load_next) begin
+                field_storage.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt.value <= field_combo.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt.next;
+            end
         end
     end
     assign hwif_out.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt.value = field_storage.linkig_training_frm_rcv_cnt_low.link_detect_frm_cnt.value;
     // Field: ltpi_csr.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt
     always_comb begin
-        automatic logic [7:0] next_c = field_storage.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt.value;
-        automatic logic load_next_c = '0;
+        automatic logic [7:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt.value;
+        load_next_c = '0;
         if(decoded_reg_strb.linkig_training_frm_rcv_cnt_low && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt.value & ~decoded_wr_data[23:16];
             load_next_c = '1;
@@ -1545,16 +1672,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt.value <= 'h0;
-        end else if(field_combo.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt.load_next) begin
-            field_storage.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt.value <= field_combo.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt.next;
+            field_storage.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt.value <= 8'h0;
+        end else begin
+            if(field_combo.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt.load_next) begin
+                field_storage.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt.value <= field_combo.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt.next;
+            end
         end
     end
     assign hwif_out.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt.value = field_storage.linkig_training_frm_rcv_cnt_low.link_speed_frm_cnt.value;
     // Field: ltpi_csr.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt
     always_comb begin
-        automatic logic [7:0] next_c = field_storage.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt.value;
-        automatic logic load_next_c = '0;
+        automatic logic [7:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt.value;
+        load_next_c = '0;
         if(decoded_reg_strb.linkig_training_frm_rcv_cnt_low && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt.value & ~decoded_wr_data[31:24];
             load_next_c = '1;
@@ -1567,16 +1698,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt.value <= 'h0;
-        end else if(field_combo.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt.load_next) begin
-            field_storage.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt.value <= field_combo.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt.next;
+            field_storage.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt.value <= 8'h0;
+        end else begin
+            if(field_combo.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt.load_next) begin
+                field_storage.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt.value <= field_combo.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt.next;
+            end
         end
     end
     assign hwif_out.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt.value = field_storage.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt.value;
     // Field: ltpi_csr.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt
     always_comb begin
-        automatic logic [31:0] next_c = field_storage.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt.value;
-        automatic logic load_next_c = '0;
+        automatic logic [31:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt.value;
+        load_next_c = '0;
         if(decoded_reg_strb.linkig_training_frm_rcv_cnt_high && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt.value & ~decoded_wr_data[31:0];
             load_next_c = '1;
@@ -1589,16 +1724,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt.value <= 'h0;
-        end else if(field_combo.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt.load_next) begin
-            field_storage.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt.value <= field_combo.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt.next;
+            field_storage.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt.value <= 32'h0;
+        end else begin
+            if(field_combo.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt.load_next) begin
+                field_storage.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt.value <= field_combo.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt.next;
+            end
         end
     end
     assign hwif_out.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt.value = field_storage.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt.value;
     // Field: ltpi_csr.linkig_training_frm_snt_cnt_low.link_detect_frm_cnt
     always_comb begin
-        automatic logic [15:0] next_c = field_storage.linkig_training_frm_snt_cnt_low.link_detect_frm_cnt.value;
-        automatic logic load_next_c = '0;
+        automatic logic [15:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.linkig_training_frm_snt_cnt_low.link_detect_frm_cnt.value;
+        load_next_c = '0;
         if(decoded_reg_strb.linkig_training_frm_snt_cnt_low && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.linkig_training_frm_snt_cnt_low.link_detect_frm_cnt.value & ~decoded_wr_data[15:0];
             load_next_c = '1;
@@ -1611,16 +1750,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.linkig_training_frm_snt_cnt_low.link_detect_frm_cnt.value <= 'h0;
-        end else if(field_combo.linkig_training_frm_snt_cnt_low.link_detect_frm_cnt.load_next) begin
-            field_storage.linkig_training_frm_snt_cnt_low.link_detect_frm_cnt.value <= field_combo.linkig_training_frm_snt_cnt_low.link_detect_frm_cnt.next;
+            field_storage.linkig_training_frm_snt_cnt_low.link_detect_frm_cnt.value <= 16'h0;
+        end else begin
+            if(field_combo.linkig_training_frm_snt_cnt_low.link_detect_frm_cnt.load_next) begin
+                field_storage.linkig_training_frm_snt_cnt_low.link_detect_frm_cnt.value <= field_combo.linkig_training_frm_snt_cnt_low.link_detect_frm_cnt.next;
+            end
         end
     end
     assign hwif_out.linkig_training_frm_snt_cnt_low.link_detect_frm_cnt.value = field_storage.linkig_training_frm_snt_cnt_low.link_detect_frm_cnt.value;
     // Field: ltpi_csr.linkig_training_frm_snt_cnt_low.link_speed_frm_cnt
     always_comb begin
-        automatic logic [7:0] next_c = field_storage.linkig_training_frm_snt_cnt_low.link_speed_frm_cnt.value;
-        automatic logic load_next_c = '0;
+        automatic logic [7:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.linkig_training_frm_snt_cnt_low.link_speed_frm_cnt.value;
+        load_next_c = '0;
         if(decoded_reg_strb.linkig_training_frm_snt_cnt_low && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.linkig_training_frm_snt_cnt_low.link_speed_frm_cnt.value & ~decoded_wr_data[23:16];
             load_next_c = '1;
@@ -1633,16 +1776,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.linkig_training_frm_snt_cnt_low.link_speed_frm_cnt.value <= 'h0;
-        end else if(field_combo.linkig_training_frm_snt_cnt_low.link_speed_frm_cnt.load_next) begin
-            field_storage.linkig_training_frm_snt_cnt_low.link_speed_frm_cnt.value <= field_combo.linkig_training_frm_snt_cnt_low.link_speed_frm_cnt.next;
+            field_storage.linkig_training_frm_snt_cnt_low.link_speed_frm_cnt.value <= 8'h0;
+        end else begin
+            if(field_combo.linkig_training_frm_snt_cnt_low.link_speed_frm_cnt.load_next) begin
+                field_storage.linkig_training_frm_snt_cnt_low.link_speed_frm_cnt.value <= field_combo.linkig_training_frm_snt_cnt_low.link_speed_frm_cnt.next;
+            end
         end
     end
     assign hwif_out.linkig_training_frm_snt_cnt_low.link_speed_frm_cnt.value = field_storage.linkig_training_frm_snt_cnt_low.link_speed_frm_cnt.value;
     // Field: ltpi_csr.linkig_training_frm_snt_cnt_low.link_cfg_acpt_frm_cnt
     always_comb begin
-        automatic logic [7:0] next_c = field_storage.linkig_training_frm_snt_cnt_low.link_cfg_acpt_frm_cnt.value;
-        automatic logic load_next_c = '0;
+        automatic logic [7:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.linkig_training_frm_snt_cnt_low.link_cfg_acpt_frm_cnt.value;
+        load_next_c = '0;
         if(decoded_reg_strb.linkig_training_frm_snt_cnt_low && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.linkig_training_frm_snt_cnt_low.link_cfg_acpt_frm_cnt.value & ~decoded_wr_data[31:24];
             load_next_c = '1;
@@ -1655,16 +1802,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.linkig_training_frm_snt_cnt_low.link_cfg_acpt_frm_cnt.value <= 'h0;
-        end else if(field_combo.linkig_training_frm_snt_cnt_low.link_cfg_acpt_frm_cnt.load_next) begin
-            field_storage.linkig_training_frm_snt_cnt_low.link_cfg_acpt_frm_cnt.value <= field_combo.linkig_training_frm_snt_cnt_low.link_cfg_acpt_frm_cnt.next;
+            field_storage.linkig_training_frm_snt_cnt_low.link_cfg_acpt_frm_cnt.value <= 8'h0;
+        end else begin
+            if(field_combo.linkig_training_frm_snt_cnt_low.link_cfg_acpt_frm_cnt.load_next) begin
+                field_storage.linkig_training_frm_snt_cnt_low.link_cfg_acpt_frm_cnt.value <= field_combo.linkig_training_frm_snt_cnt_low.link_cfg_acpt_frm_cnt.next;
+            end
         end
     end
     assign hwif_out.linkig_training_frm_snt_cnt_low.link_cfg_acpt_frm_cnt.value = field_storage.linkig_training_frm_snt_cnt_low.link_cfg_acpt_frm_cnt.value;
     // Field: ltpi_csr.linkig_training_frm_snt_cnt_high.link_advertise_frm_cnt
     always_comb begin
-        automatic logic [31:0] next_c = field_storage.linkig_training_frm_snt_cnt_high.link_advertise_frm_cnt.value;
-        automatic logic load_next_c = '0;
+        automatic logic [31:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.linkig_training_frm_snt_cnt_high.link_advertise_frm_cnt.value;
+        load_next_c = '0;
         if(decoded_reg_strb.linkig_training_frm_snt_cnt_high && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.linkig_training_frm_snt_cnt_high.link_advertise_frm_cnt.value & ~decoded_wr_data[31:0];
             load_next_c = '1;
@@ -1677,16 +1828,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.linkig_training_frm_snt_cnt_high.link_advertise_frm_cnt.value <= 'h0;
-        end else if(field_combo.linkig_training_frm_snt_cnt_high.link_advertise_frm_cnt.load_next) begin
-            field_storage.linkig_training_frm_snt_cnt_high.link_advertise_frm_cnt.value <= field_combo.linkig_training_frm_snt_cnt_high.link_advertise_frm_cnt.next;
+            field_storage.linkig_training_frm_snt_cnt_high.link_advertise_frm_cnt.value <= 32'h0;
+        end else begin
+            if(field_combo.linkig_training_frm_snt_cnt_high.link_advertise_frm_cnt.load_next) begin
+                field_storage.linkig_training_frm_snt_cnt_high.link_advertise_frm_cnt.value <= field_combo.linkig_training_frm_snt_cnt_high.link_advertise_frm_cnt.next;
+            end
         end
     end
     assign hwif_out.linkig_training_frm_snt_cnt_high.link_advertise_frm_cnt.value = field_storage.linkig_training_frm_snt_cnt_high.link_advertise_frm_cnt.value;
     // Field: ltpi_csr.operational_frm_rcv_cnt.frm_cnt
     always_comb begin
-        automatic logic [31:0] next_c = field_storage.operational_frm_rcv_cnt.frm_cnt.value;
-        automatic logic load_next_c = '0;
+        automatic logic [31:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.operational_frm_rcv_cnt.frm_cnt.value;
+        load_next_c = '0;
         if(decoded_reg_strb.operational_frm_rcv_cnt && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.operational_frm_rcv_cnt.frm_cnt.value & ~decoded_wr_data[31:0];
             load_next_c = '1;
@@ -1699,16 +1854,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.operational_frm_rcv_cnt.frm_cnt.value <= 'h0;
-        end else if(field_combo.operational_frm_rcv_cnt.frm_cnt.load_next) begin
-            field_storage.operational_frm_rcv_cnt.frm_cnt.value <= field_combo.operational_frm_rcv_cnt.frm_cnt.next;
+            field_storage.operational_frm_rcv_cnt.frm_cnt.value <= 32'h0;
+        end else begin
+            if(field_combo.operational_frm_rcv_cnt.frm_cnt.load_next) begin
+                field_storage.operational_frm_rcv_cnt.frm_cnt.value <= field_combo.operational_frm_rcv_cnt.frm_cnt.next;
+            end
         end
     end
     assign hwif_out.operational_frm_rcv_cnt.frm_cnt.value = field_storage.operational_frm_rcv_cnt.frm_cnt.value;
     // Field: ltpi_csr.operational_frm_snt_cnt.frm_cnt
     always_comb begin
-        automatic logic [31:0] next_c = field_storage.operational_frm_snt_cnt.frm_cnt.value;
-        automatic logic load_next_c = '0;
+        automatic logic [31:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.operational_frm_snt_cnt.frm_cnt.value;
+        load_next_c = '0;
         if(decoded_reg_strb.operational_frm_snt_cnt && decoded_req_is_wr) begin // SW write 1 clear
             next_c = field_storage.operational_frm_snt_cnt.frm_cnt.value & ~decoded_wr_data[31:0];
             load_next_c = '1;
@@ -1721,16 +1880,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.operational_frm_snt_cnt.frm_cnt.value <= 'h0;
-        end else if(field_combo.operational_frm_snt_cnt.frm_cnt.load_next) begin
-            field_storage.operational_frm_snt_cnt.frm_cnt.value <= field_combo.operational_frm_snt_cnt.frm_cnt.next;
+            field_storage.operational_frm_snt_cnt.frm_cnt.value <= 32'h0;
+        end else begin
+            if(field_combo.operational_frm_snt_cnt.frm_cnt.load_next) begin
+                field_storage.operational_frm_snt_cnt.frm_cnt.value <= field_combo.operational_frm_snt_cnt.frm_cnt.next;
+            end
         end
     end
     assign hwif_out.operational_frm_snt_cnt.frm_cnt.value = field_storage.operational_frm_snt_cnt.frm_cnt.value;
     // Field: ltpi_csr.LTPI_Link_Ctrl.software_reset
     always_comb begin
-        automatic logic [0:0] next_c = field_storage.LTPI_Link_Ctrl.software_reset.value;
-        automatic logic load_next_c = '0;
+        automatic logic [0:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Link_Ctrl.software_reset.value;
+        load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Ctrl && decoded_req_is_wr) begin // SW write
             next_c = decoded_wr_data[0:0];
             load_next_c = '1;
@@ -1740,16 +1903,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Link_Ctrl.software_reset.value <= 'h0;
-        end else if(field_combo.LTPI_Link_Ctrl.software_reset.load_next) begin
-            field_storage.LTPI_Link_Ctrl.software_reset.value <= field_combo.LTPI_Link_Ctrl.software_reset.next;
+            field_storage.LTPI_Link_Ctrl.software_reset.value <= 1'h0;
+        end else begin
+            if(field_combo.LTPI_Link_Ctrl.software_reset.load_next) begin
+                field_storage.LTPI_Link_Ctrl.software_reset.value <= field_combo.LTPI_Link_Ctrl.software_reset.next;
+            end
         end
     end
     assign hwif_out.LTPI_Link_Ctrl.software_reset.value = field_storage.LTPI_Link_Ctrl.software_reset.value;
     // Field: ltpi_csr.LTPI_Link_Ctrl.retraining_req
     always_comb begin
-        automatic logic [0:0] next_c = field_storage.LTPI_Link_Ctrl.retraining_req.value;
-        automatic logic load_next_c = '0;
+        automatic logic [0:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Link_Ctrl.retraining_req.value;
+        load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Ctrl && decoded_req_is_wr) begin // SW write
             next_c = decoded_wr_data[1:1];
             load_next_c = '1;
@@ -1759,16 +1926,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Link_Ctrl.retraining_req.value <= 'h0;
-        end else if(field_combo.LTPI_Link_Ctrl.retraining_req.load_next) begin
-            field_storage.LTPI_Link_Ctrl.retraining_req.value <= field_combo.LTPI_Link_Ctrl.retraining_req.next;
+            field_storage.LTPI_Link_Ctrl.retraining_req.value <= 1'h0;
+        end else begin
+            if(field_combo.LTPI_Link_Ctrl.retraining_req.load_next) begin
+                field_storage.LTPI_Link_Ctrl.retraining_req.value <= field_combo.LTPI_Link_Ctrl.retraining_req.next;
+            end
         end
     end
     assign hwif_out.LTPI_Link_Ctrl.retraining_req.value = field_storage.LTPI_Link_Ctrl.retraining_req.value;
     // Field: ltpi_csr.LTPI_Link_Ctrl.I2C_channel_reset
     always_comb begin
-        automatic logic [6:0] next_c = field_storage.LTPI_Link_Ctrl.I2C_channel_reset.value;
-        automatic logic load_next_c = '0;
+        automatic logic [6:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Link_Ctrl.I2C_channel_reset.value;
+        load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Ctrl && decoded_req_is_wr) begin // SW write
             next_c = decoded_wr_data[8:2];
             load_next_c = '1;
@@ -1778,16 +1949,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Link_Ctrl.I2C_channel_reset.value <= 'h0;
-        end else if(field_combo.LTPI_Link_Ctrl.I2C_channel_reset.load_next) begin
-            field_storage.LTPI_Link_Ctrl.I2C_channel_reset.value <= field_combo.LTPI_Link_Ctrl.I2C_channel_reset.next;
+            field_storage.LTPI_Link_Ctrl.I2C_channel_reset.value <= 7'h0;
+        end else begin
+            if(field_combo.LTPI_Link_Ctrl.I2C_channel_reset.load_next) begin
+                field_storage.LTPI_Link_Ctrl.I2C_channel_reset.value <= field_combo.LTPI_Link_Ctrl.I2C_channel_reset.next;
+            end
         end
     end
     assign hwif_out.LTPI_Link_Ctrl.I2C_channel_reset.value = field_storage.LTPI_Link_Ctrl.I2C_channel_reset.value;
     // Field: ltpi_csr.LTPI_Link_Ctrl.data_channel_reset
     always_comb begin
-        automatic logic [0:0] next_c = field_storage.LTPI_Link_Ctrl.data_channel_reset.value;
-        automatic logic load_next_c = '0;
+        automatic logic [0:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Link_Ctrl.data_channel_reset.value;
+        load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Ctrl && decoded_req_is_wr) begin // SW write
             next_c = decoded_wr_data[9:9];
             load_next_c = '1;
@@ -1797,16 +1972,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Link_Ctrl.data_channel_reset.value <= 'h0;
-        end else if(field_combo.LTPI_Link_Ctrl.data_channel_reset.load_next) begin
-            field_storage.LTPI_Link_Ctrl.data_channel_reset.value <= field_combo.LTPI_Link_Ctrl.data_channel_reset.next;
+            field_storage.LTPI_Link_Ctrl.data_channel_reset.value <= 1'h0;
+        end else begin
+            if(field_combo.LTPI_Link_Ctrl.data_channel_reset.load_next) begin
+                field_storage.LTPI_Link_Ctrl.data_channel_reset.value <= field_combo.LTPI_Link_Ctrl.data_channel_reset.next;
+            end
         end
     end
     assign hwif_out.LTPI_Link_Ctrl.data_channel_reset.value = field_storage.LTPI_Link_Ctrl.data_channel_reset.value;
     // Field: ltpi_csr.LTPI_Link_Ctrl.auto_move_config
     always_comb begin
-        automatic logic [0:0] next_c = field_storage.LTPI_Link_Ctrl.auto_move_config.value;
-        automatic logic load_next_c = '0;
+        automatic logic [0:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Link_Ctrl.auto_move_config.value;
+        load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Ctrl && decoded_req_is_wr) begin // SW write
             next_c = decoded_wr_data[10:10];
             load_next_c = '1;
@@ -1816,16 +1995,20 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Link_Ctrl.auto_move_config.value <= 'h0;
-        end else if(field_combo.LTPI_Link_Ctrl.auto_move_config.load_next) begin
-            field_storage.LTPI_Link_Ctrl.auto_move_config.value <= field_combo.LTPI_Link_Ctrl.auto_move_config.next;
+            field_storage.LTPI_Link_Ctrl.auto_move_config.value <= 1'h0;
+        end else begin
+            if(field_combo.LTPI_Link_Ctrl.auto_move_config.load_next) begin
+                field_storage.LTPI_Link_Ctrl.auto_move_config.value <= field_combo.LTPI_Link_Ctrl.auto_move_config.next;
+            end
         end
     end
     assign hwif_out.LTPI_Link_Ctrl.auto_move_config.value = field_storage.LTPI_Link_Ctrl.auto_move_config.value;
     // Field: ltpi_csr.LTPI_Link_Ctrl.trigger_config_st
     always_comb begin
-        automatic logic [0:0] next_c = field_storage.LTPI_Link_Ctrl.trigger_config_st.value;
-        automatic logic load_next_c = '0;
+        automatic logic [0:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.LTPI_Link_Ctrl.trigger_config_st.value;
+        load_next_c = '0;
         if(decoded_reg_strb.LTPI_Link_Ctrl && decoded_req_is_wr) begin // SW write
             next_c = decoded_wr_data[11:11];
             load_next_c = '1;
@@ -1835,9 +2018,11 @@ module ltpi_csr (
     end
     always_ff @(posedge clk) begin
         if(rst) begin
-            field_storage.LTPI_Link_Ctrl.trigger_config_st.value <= 'h1;
-        end else if(field_combo.LTPI_Link_Ctrl.trigger_config_st.load_next) begin
-            field_storage.LTPI_Link_Ctrl.trigger_config_st.value <= field_combo.LTPI_Link_Ctrl.trigger_config_st.next;
+            field_storage.LTPI_Link_Ctrl.trigger_config_st.value <= 1'h1;
+        end else begin
+            if(field_combo.LTPI_Link_Ctrl.trigger_config_st.load_next) begin
+                field_storage.LTPI_Link_Ctrl.trigger_config_st.value <= field_combo.LTPI_Link_Ctrl.trigger_config_st.next;
+            end
         end
     end
     assign hwif_out.LTPI_Link_Ctrl.trigger_config_st.value = field_storage.LTPI_Link_Ctrl.trigger_config_st.value;
@@ -2242,12 +2427,20 @@ module ltpi_csr (
     assign hwif_out.pmbus2_relay_recovery_cntr.recovery_cnt.value = field_storage.pmbus2_relay_recovery_cntr.recovery_cnt.value;
 
     //--------------------------------------------------------------------------
+    // Write response
+    //--------------------------------------------------------------------------
+    assign cpuif_wr_ack = decoded_req & decoded_req_is_wr;
+    // Writes are always granted with no error response
+    assign cpuif_wr_err = '0;
+
+    //--------------------------------------------------------------------------
     // Readback
     //--------------------------------------------------------------------------
+
     logic readback_err;
     logic readback_done;
     logic [31:0] readback_data;
-    
+
     // Assign readback values to a flattened array
     logic [31:0] readback_array[31];
     assign readback_array[0][0:0] = (decoded_reg_strb.LTPI_Link_Status && !decoded_req_is_wr) ? field_storage.LTPI_Link_Status.aligned.value : '0;
@@ -2262,15 +2455,15 @@ module ltpi_csr (
     assign readback_array[0][15:12] = (decoded_reg_strb.LTPI_Link_Status && !decoded_req_is_wr) ? field_storage.LTPI_Link_Status.remote_link_state.value : '0;
     assign readback_array[0][19:16] = (decoded_reg_strb.LTPI_Link_Status && !decoded_req_is_wr) ? field_storage.LTPI_Link_Status.local_link_state.value : '0;
     assign readback_array[0][31:20] = '0;
-    assign readback_array[1][3:0] = (decoded_reg_strb.LTPI_Detect_Capabilities_Local && !decoded_req_is_wr) ? 'h1 : '0;
-    assign readback_array[1][7:4] = (decoded_reg_strb.LTPI_Detect_Capabilities_Local && !decoded_req_is_wr) ? 'h1 : '0;
+    assign readback_array[1][3:0] = (decoded_reg_strb.LTPI_Detect_Capabilities_Local && !decoded_req_is_wr) ? 4'h2 : '0;
+    assign readback_array[1][7:4] = (decoded_reg_strb.LTPI_Detect_Capabilities_Local && !decoded_req_is_wr) ? 4'h1 : '0;
     assign readback_array[1][23:8] = (decoded_reg_strb.LTPI_Detect_Capabilities_Local && !decoded_req_is_wr) ? field_storage.LTPI_Detect_Capabilities_Local.link_Speed_capab.value : '0;
     assign readback_array[1][31:24] = '0;
-    assign readback_array[2][3:0] = (decoded_reg_strb.LTPI_Detect_Capabilities_Remote && !decoded_req_is_wr) ? field_storage.LTPI_Detect_Capabilities_Remote.remote_Minor_Version.value : '0;
-    assign readback_array[2][7:4] = (decoded_reg_strb.LTPI_Detect_Capabilities_Remote && !decoded_req_is_wr) ? field_storage.LTPI_Detect_Capabilities_Remote.remote_Major_Version.value : '0;
+    assign readback_array[2][3:0] = (decoded_reg_strb.LTPI_Detect_Capabilities_Remote && !decoded_req_is_wr) ? field_storage.LTPI_Detect_Capabilities_Remote.remote_Minor_Revision.value : '0;
+    assign readback_array[2][7:4] = (decoded_reg_strb.LTPI_Detect_Capabilities_Remote && !decoded_req_is_wr) ? field_storage.LTPI_Detect_Capabilities_Remote.remote_Major_Revision.value : '0;
     assign readback_array[2][23:8] = (decoded_reg_strb.LTPI_Detect_Capabilities_Remote && !decoded_req_is_wr) ? field_storage.LTPI_Detect_Capabilities_Remote.link_Speed_capab.value : '0;
     assign readback_array[2][31:24] = '0;
-    assign readback_array[3][15:0] = (decoded_reg_strb.LTPI_platform_ID_local && !decoded_req_is_wr) ? 'h1234 : '0;
+    assign readback_array[3][15:0] = (decoded_reg_strb.LTPI_platform_ID_local && !decoded_req_is_wr) ? 16'h1234 : '0;
     assign readback_array[3][31:16] = '0;
     assign readback_array[4][15:0] = (decoded_reg_strb.LTPI_platform_ID_remote && !decoded_req_is_wr) ? field_storage.LTPI_platform_ID_remote.platform_ID_remote.value : '0;
     assign readback_array[4][31:16] = '0;
@@ -2298,18 +2491,18 @@ module ltpi_csr (
     assign readback_array[8][14:8] = (decoded_reg_strb.LTPI_Advertise_Capab_remote_HIGH && !decoded_req_is_wr) ? field_storage.LTPI_Advertise_Capab_remote_HIGH.UART_channel_cpbl.value : '0;
     assign readback_array[8][15:15] = '0;
     assign readback_array[8][31:16] = (decoded_reg_strb.LTPI_Advertise_Capab_remote_HIGH && !decoded_req_is_wr) ? field_storage.LTPI_Advertise_Capab_remote_HIGH.OEM_capab.value : '0;
-    assign readback_array[9][4:0] = (decoded_reg_strb.LTPI_Config_Capab_LOW && !decoded_req_is_wr) ? 'h7 : '0;
+    assign readback_array[9][4:0] = (decoded_reg_strb.LTPI_Config_Capab_LOW && !decoded_req_is_wr) ? 5'h7 : '0;
     assign readback_array[9][7:5] = '0;
-    assign readback_array[9][17:8] = (decoded_reg_strb.LTPI_Config_Capab_LOW && !decoded_req_is_wr) ? 'h3ff : '0;
+    assign readback_array[9][17:8] = (decoded_reg_strb.LTPI_Config_Capab_LOW && !decoded_req_is_wr) ? 10'h3ff : '0;
     assign readback_array[9][23:18] = '0;
-    assign readback_array[9][29:24] = (decoded_reg_strb.LTPI_Config_Capab_LOW && !decoded_req_is_wr) ? 'h3f : '0;
-    assign readback_array[9][30:30] = (decoded_reg_strb.LTPI_Config_Capab_LOW && !decoded_req_is_wr) ? 'h1 : '0;
+    assign readback_array[9][29:24] = (decoded_reg_strb.LTPI_Config_Capab_LOW && !decoded_req_is_wr) ? 6'h3f : '0;
+    assign readback_array[9][30:30] = (decoded_reg_strb.LTPI_Config_Capab_LOW && !decoded_req_is_wr) ? 1'h1 : '0;
     assign readback_array[9][31:31] = '0;
-    assign readback_array[10][5:0] = (decoded_reg_strb.LTPI_Config_Capab_HIGH && !decoded_req_is_wr) ? 'h0 : '0;
+    assign readback_array[10][5:0] = (decoded_reg_strb.LTPI_Config_Capab_HIGH && !decoded_req_is_wr) ? 6'h0 : '0;
     assign readback_array[10][7:6] = '0;
-    assign readback_array[10][14:8] = (decoded_reg_strb.LTPI_Config_Capab_HIGH && !decoded_req_is_wr) ? 'h8 : '0;
+    assign readback_array[10][14:8] = (decoded_reg_strb.LTPI_Config_Capab_HIGH && !decoded_req_is_wr) ? 7'h8 : '0;
     assign readback_array[10][15:15] = '0;
-    assign readback_array[10][31:16] = (decoded_reg_strb.LTPI_Config_Capab_HIGH && !decoded_req_is_wr) ? 'h0 : '0;
+    assign readback_array[10][31:16] = (decoded_reg_strb.LTPI_Config_Capab_HIGH && !decoded_req_is_wr) ? 16'h0 : '0;
     assign readback_array[11][31:0] = (decoded_reg_strb.link_aligment_err_cnt && !decoded_req_is_wr) ? field_storage.link_aligment_err_cnt.err_cnt.value : '0;
     assign readback_array[12][31:0] = (decoded_reg_strb.link_lost_err_cnt && !decoded_req_is_wr) ? field_storage.link_lost_err_cnt.err_cnt.value : '0;
     assign readback_array[13][31:0] = (decoded_reg_strb.link_crc_err_cnt && !decoded_req_is_wr) ? field_storage.link_crc_err_cnt.err_cnt.value : '0;
@@ -2357,7 +2550,6 @@ module ltpi_csr (
     assign readback_array[29][31:20] = '0;
     assign readback_array[30][31:0] = (decoded_reg_strb.pmbus2_relay_recovery_cntr && !decoded_req_is_wr) ? field_storage.pmbus2_relay_recovery_cntr.recovery_cnt.value : '0;
 
-
     // Reduce the array
     always_comb begin
         automatic logic [31:0] readback_data_var;
@@ -2368,18 +2560,7 @@ module ltpi_csr (
         readback_data = readback_data_var;
     end
 
-
-    always_ff @(posedge clk) begin
-        if(rst) begin
-            cpuif_rd_ack <= '0;
-            cpuif_rd_data <= '0;
-            cpuif_rd_err <= '0;
-        end else begin
-            cpuif_rd_ack <= readback_done;
-            cpuif_rd_data <= readback_data;
-            cpuif_rd_err <= readback_err;
-        end
-    end
-
-
+    assign cpuif_rd_ack = readback_done;
+    assign cpuif_rd_data = readback_data;
+    assign cpuif_rd_err = readback_err;
 endmodule

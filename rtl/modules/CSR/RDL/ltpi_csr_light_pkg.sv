@@ -2,6 +2,11 @@
 //  https://github.com/SystemRDL/PeakRDL-regblock
 
 package ltpi_csr_light_pkg;
+
+    localparam LTPI_CSR_LIGHT_DATA_WIDTH = 32;
+    localparam LTPI_CSR_LIGHT_MIN_ADDR_WIDTH = 8;
+    localparam LTPI_CSR_LIGHT_SIZE = 'h84;
+
     typedef struct {
         logic next;
     } ltpi_csr_light__LTPI_Link_Status__aligned__in_t;
@@ -57,19 +62,19 @@ package ltpi_csr_light_pkg;
 
     typedef struct {
         logic [3:0] next;
-    } ltpi_csr_light__LTPI_Detect_Capabilities_Remote__remote_Minor_Version__in_t;
+    } ltpi_csr_light__LTPI_Detect_Capabilities_Remote__remote_Minor_Revision__in_t;
 
     typedef struct {
         logic [3:0] next;
-    } ltpi_csr_light__LTPI_Detect_Capabilities_Remote__remote_Major_Version__in_t;
+    } ltpi_csr_light__LTPI_Detect_Capabilities_Remote__remote_Major_Revision__in_t;
 
     typedef struct {
         logic [15:0] next;
     } ltpi_csr_light__LTPI_Detect_Capabilities_Remote__link_Speed_capab__in_t;
 
     typedef struct {
-        ltpi_csr_light__LTPI_Detect_Capabilities_Remote__remote_Minor_Version__in_t remote_Minor_Version;
-        ltpi_csr_light__LTPI_Detect_Capabilities_Remote__remote_Major_Version__in_t remote_Major_Version;
+        ltpi_csr_light__LTPI_Detect_Capabilities_Remote__remote_Minor_Revision__in_t remote_Minor_Revision;
+        ltpi_csr_light__LTPI_Detect_Capabilities_Remote__remote_Major_Revision__in_t remote_Major_Revision;
         ltpi_csr_light__LTPI_Detect_Capabilities_Remote__link_Speed_capab__in_t link_Speed_capab;
     } ltpi_csr_light__LTPI_Detect_Capabilities_Remote__in_t;
 
@@ -343,37 +348,37 @@ package ltpi_csr_light_pkg;
 
     typedef struct {
         logic [3:0] value;
-    } ltpi_csr_light__LTPI_Detect_Capabilities_Local__local_Minor_Version__out_t;
+    } ltpi_csr_light__LTPI_Detect_Capabilities_Local__local_Minor_Revision__out_t;
 
     typedef struct {
         logic [3:0] value;
-    } ltpi_csr_light__LTPI_Detect_Capabilities_Local__local_Major_Version__out_t;
+    } ltpi_csr_light__LTPI_Detect_Capabilities_Local__local_Major_Revision__out_t;
 
     typedef struct {
         logic [15:0] value;
     } ltpi_csr_light__LTPI_Detect_Capabilities_Local__link_Speed_capab__out_t;
 
     typedef struct {
-        ltpi_csr_light__LTPI_Detect_Capabilities_Local__local_Minor_Version__out_t local_Minor_Version;
-        ltpi_csr_light__LTPI_Detect_Capabilities_Local__local_Major_Version__out_t local_Major_Version;
+        ltpi_csr_light__LTPI_Detect_Capabilities_Local__local_Minor_Revision__out_t local_Minor_Revision;
+        ltpi_csr_light__LTPI_Detect_Capabilities_Local__local_Major_Revision__out_t local_Major_Revision;
         ltpi_csr_light__LTPI_Detect_Capabilities_Local__link_Speed_capab__out_t link_Speed_capab;
     } ltpi_csr_light__LTPI_Detect_Capabilities_Local__out_t;
 
     typedef struct {
         logic [3:0] value;
-    } ltpi_csr_light__LTPI_Detect_Capabilities_Remote__remote_Minor_Version__out_t;
+    } ltpi_csr_light__LTPI_Detect_Capabilities_Remote__remote_Minor_Revision__out_t;
 
     typedef struct {
         logic [3:0] value;
-    } ltpi_csr_light__LTPI_Detect_Capabilities_Remote__remote_Major_Version__out_t;
+    } ltpi_csr_light__LTPI_Detect_Capabilities_Remote__remote_Major_Revision__out_t;
 
     typedef struct {
         logic [15:0] value;
     } ltpi_csr_light__LTPI_Detect_Capabilities_Remote__link_Speed_capab__out_t;
 
     typedef struct {
-        ltpi_csr_light__LTPI_Detect_Capabilities_Remote__remote_Minor_Version__out_t remote_Minor_Version;
-        ltpi_csr_light__LTPI_Detect_Capabilities_Remote__remote_Major_Version__out_t remote_Major_Version;
+        ltpi_csr_light__LTPI_Detect_Capabilities_Remote__remote_Minor_Revision__out_t remote_Minor_Revision;
+        ltpi_csr_light__LTPI_Detect_Capabilities_Remote__remote_Major_Revision__out_t remote_Major_Revision;
         ltpi_csr_light__LTPI_Detect_Capabilities_Remote__link_Speed_capab__out_t link_Speed_capab;
     } ltpi_csr_light__LTPI_Detect_Capabilities_Remote__out_t;
 

@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2022 Intel Corporation
+// Copyright (c) 2025 Intel Corporation
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -22,7 +22,7 @@
 
 // -------------------------------------------------------------------
 // -- Author        : Katarzyna Krzewska
-// -- Date          : July 2022
+// -- Date          : October 2025
 // -- Project Name  : LTPI
 // -- Description   :
 // -- Management of LTPI transmitted frame
@@ -43,7 +43,6 @@ import ltpi_pkg::*;
 
     output reg                      transmited_255_detect_frm,
     output reg                      transmited_7_speed_frm,
-    output reg                      link_speed_timeout_detect,
 
     output reg                      link_accept_timeout_detect,
     output reg                      link_cfg_timeout_detect,
@@ -68,7 +67,6 @@ logic [31:0]        link_advertise_frm_snt_cnt;
 logic [31:0]        operational_frm_snt_cnt;
 
 //Error counters
-logic [31:0]        link_speed_timeout_err_cnt;
 logic [31:0]        link_cfg_acpt_timeout_err_cnt;
 logic [31:0]        link_aligment_err_cnt;
 logic [31:0]        link_lost_err_cnt;
@@ -118,7 +116,7 @@ assign local_software_reset                = LTPI_CSR_In.LTPI_Link_Ctrl.software
 assign LTPI_CSR_Out.LTPI_Link_Status.local_link_state               = local_link_state;
 assign LTPI_CSR_Out.LTPI_Link_Status.DDR_mode                       = ((LTPI_link_ST >= ST_WAIT_LINK_ADVERTISE_LOCKED && LTPI_link_ST != ST_LINK_LOST_ERR) || (change_freq_st && LTPI_link_ST == ST_COMMA_HUNTING)) ? DDR_mode : 1'b0;
 assign LTPI_CSR_Out.LTPI_Link_Status.link_speed                     = ((LTPI_link_ST >= ST_WAIT_LINK_ADVERTISE_LOCKED && LTPI_link_ST != ST_LINK_LOST_ERR) || (change_freq_st && LTPI_link_ST == ST_COMMA_HUNTING)) ? speed : base_freq_x1;
-assign LTPI_CSR_Out.LTPI_Link_Status.link_speed_timeout_error       = link_speed_timeout_detect;
+
 assign LTPI_CSR_Out.LTPI_Link_Status.link_cfg_acpt_timeout_error    = link_cfg_timeout_detect;
 assign LTPI_CSR_Out.LTPI_Link_Status.link_lost_error                = link_lost_err;
 
@@ -130,7 +128,6 @@ assign LTPI_CSR_Out.LTPI_counter.operational_frm_snt_cnt                        
 assign LTPI_CSR_Out.LTPI_counter.link_aligment_err_cnt                                      = link_aligment_err_cnt;
 assign LTPI_CSR_Out.LTPI_counter.link_lost_err_cnt                                          = link_lost_err_cnt;
 assign LTPI_CSR_Out.LTPI_counter.link_cfg_acpt_timeout_err_cnt                              = link_cfg_acpt_timeout_err_cnt;
-assign LTPI_CSR_Out.LTPI_counter.link_speed_timeout_err_cnt                                 = link_speed_timeout_err_cnt;
 
 
 //Generate frame training 
@@ -494,12 +491,10 @@ end
 always @ (posedge clk or posedge reset) begin
     if(reset) begin
         transmited_7_speed_frm                  <= 1'b0; 
-        link_speed_timeout_detect               <= 1'b0;
     end
     else begin
         if(LTPI_link_ST == ST_INIT || LTPI_link_ST == ST_LINK_LOST_ERR) begin
             transmited_7_speed_frm              <= 1'b0;
-            link_speed_timeout_detect           <= 1'b0;
         end
         else begin 
             if(link_speed_frm_snt_cnt < TX_K28_5_SUB_1_CNT) begin 
@@ -508,7 +503,6 @@ always @ (posedge clk or posedge reset) begin
             else begin
                 transmited_7_speed_frm          <= 1'b1;
                 if(link_speed_frm_snt_cnt >= LINK_SPEED_TIMEOUT) begin
-                    link_speed_timeout_detect   <= 1'b1;
                 end
             end
         end
@@ -669,13 +663,11 @@ end
 
 //COUNTERS
 //link aligment error cnt
-//link speed timeout error count 
 //link configuration/accept timeout error count
 
 always @ (posedge clk or posedge reset) begin
     if(reset) begin
         link_aligment_err_cnt                   <= '0;
-        link_speed_timeout_err_cnt              <= '0;
         link_cfg_acpt_timeout_err_cnt           <= '0;
         link_lost_err_cnt                       <= '0;
     end
@@ -684,10 +676,6 @@ always @ (posedge clk or posedge reset) begin
         if(LTPI_CSR_In.clear_reg) begin
             if(LTPI_CSR_In.LTPI_counter.link_aligment_err_cnt == '0) begin
                 link_aligment_err_cnt           <= '0;
-            end
-
-            if(LTPI_CSR_In.LTPI_counter.link_speed_timeout_err_cnt == '0) begin
-                link_speed_timeout_err_cnt      <= '0;
             end
 
             if(LTPI_CSR_In.LTPI_counter.link_cfg_acpt_timeout_err_cnt == '0) begin
@@ -708,10 +696,6 @@ always @ (posedge clk or posedge reset) begin
             end
         end
         else begin
-
-            if(link_speed_timeout_detect) begin
-                link_speed_timeout_err_cnt      <= link_speed_timeout_err_cnt + 31'd1;
-            end 
 
             if(link_cfg_timeout_detect) begin
                 link_cfg_acpt_timeout_err_cnt   <= link_cfg_acpt_timeout_err_cnt + 31'd1;

@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2022 Intel Corporation
+// Copyright (c) 2025 Intel Corporation
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -22,7 +22,7 @@
 
 // -------------------------------------------------------------------
 // -- Author        : Katarzyna Krzewska
-// -- Date          : July 2022
+// -- Date          : October 2025
 // -- Project Name  : LTPI
 // -- Description   :
 // -- Management of LTPI recived frame
@@ -46,6 +46,7 @@ import ltpi_pkg::*;
     output reg                  link_detect_locked,
     output reg                  link_speed_locked,
     output reg                  advertise_locked,
+    output reg                  link_speed_timeout_detect,
 
     output reg                  accept_frm_rcv,
     output reg                  configure_frm_recv,
@@ -82,7 +83,7 @@ Configure_Frm_t     remote_conf_or_acpt_frm;
 logic [31:0]        crc_error_cnt;
 logic [31:0]        unknown_comma_err_cnt;
 logic [31:0]        unknown_subtype_err_cnt;
-
+logic [ 7:0]        unexpected_frame_error_err_cnt;
 
 logic [ 7:0]        frame_comma_check   [1:0];
 logic [15:0]        link_detect_frm_rcv_cnt;
@@ -91,6 +92,7 @@ logic [ 7:0]        link_cfg_acpt_frm_rcv_cnt;
 logic [31:0]        link_advertise_frm_rcv_cnt;
 logic [31:0]        advertise_frm_rcv_cnt;
 logic [31:0]        operational_frm_rcv_cnt;
+logic [31:0]        link_speed_timeout_err_cnt;
 logic               rx_frm_offset_flag;
 
 Advertise_Frm_t     local_advertise_frm;
@@ -116,7 +118,8 @@ assign LTPI_CSR_Out.LTPI_Config_Capab_remote                        = remote_con
 assign LTPI_CSR_Out.LTPI_Link_Status.unknown_subtype_error          = unknown_subtype_error;
 assign LTPI_CSR_Out.LTPI_Link_Status.unknown_comma_error            = unknown_comma_error;
 assign LTPI_CSR_Out.LTPI_Link_Status.frm_CRC_error                  = frame_crc_err;
-assign LTPI_CSR_Out.LTPI_Link_Status.remote_link_state              = remote_link_state;
+assign LTPI_CSR_Out.LTPI_Link_Status.remote_link_state              = remote_link_state_d;
+assign LTPI_CSR_Out.LTPI_Link_Status.link_speed_timeout_error       = link_speed_timeout_detect;
 
 assign LTPI_CSR_Out.LTPI_counter.unknown_comma_err_cnt              = unknown_comma_err_cnt;
 assign LTPI_CSR_Out.LTPI_counter.unknown_subtype_err_cnt            = unknown_subtype_err_cnt;
@@ -128,6 +131,21 @@ assign LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_speed_frm_
 assign LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_high.link_advertise_frm_cnt    = link_advertise_frm_rcv_cnt;
 assign LTPI_CSR_Out.LTPI_counter.linkig_training_frm_rcv_cnt_low.link_cfg_acpt_frm_cnt      = link_cfg_acpt_frm_rcv_cnt;
 assign LTPI_CSR_Out.LTPI_counter.operational_frm_rcv_cnt                                    = operational_frm_rcv_cnt;
+assign LTPI_CSR_Out.LTPI_counter.link_speed_timeout_err_cnt                                 = link_speed_timeout_err_cnt;
+
+assign LTPI_CSR_Out.LTPI_Link_Status.local_link_state               = link_detect_st;
+assign LTPI_CSR_Out.LTPI_Link_Status.link_speed                     = base_freq_x1;
+assign LTPI_CSR_Out.LTPI_Link_Status.DDR_mode                       = 0;
+assign LTPI_CSR_Out.LTPI_Link_Status.link_cfg_acpt_timeout_error    = 0;
+assign LTPI_CSR_Out.LTPI_Link_Status.aligned                        = 0;
+assign LTPI_CSR_Out.LTPI_Link_Status.link_lost_error                = 0;
+assign LTPI_CSR_Out.LTPI_counter.link_aligment_err_cnt              = 0; 
+assign LTPI_CSR_Out.LTPI_counter.link_lost_err_cnt                  = 0;
+assign LTPI_CSR_Out.LTPI_counter.link_cfg_acpt_timeout_err_cnt      = 0;
+assign LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_low    = 0;
+assign LTPI_CSR_Out.LTPI_counter.linkig_training_frm_snt_cnt_high   = 0;
+assign LTPI_CSR_Out.LTPI_counter.operational_frm_snt_cnt            = 0;
+
 
 assign local_advertise_frm.LTPI_Capabilites     = LTPI_CSR_In.LTPI_Advertise_Capab_local;
 assign local_advertise_frm.platform_type        = LTPI_CSR_In.LTPI_platform_ID_local;
@@ -174,45 +192,140 @@ always @ (posedge clk or posedge reset) begin
     end
 end
 
-logic unexpected_frame_error_ff;
-logic unexpected_frame_error_r_edge;
+logic unexpected_comma_error;
+logic check_error;
+logic check_error_ff;
+assign check_error = rx_frm_offset_ff == 4'hF & rx_frm_offset == 0 ? 1'b1 : 1'b0;
+always @ (posedge clk) begin check_error_ff <= check_error; end
+link_state_t prev_local_link_state;
 
-always_ff @(posedge clk) unexpected_frame_error_ff <= unexpected_frame_error;
-assign unexpected_frame_error_r_edge = ~unexpected_frame_error_ff & unexpected_frame_error;
-
-//Check if there was recived unexpected frame
-always @ (posedge clk or posedge reset) begin
+// LTPI 1.2 spec changed added
+always @ (posedge clk) begin
     if(reset) begin
-        unexpected_frame_error                  <= 1'b0;
+        unexpected_comma_error                  <= 1'b0;
         remote_software_reset                   <= 1'b0;
+
+        local_link_state                        <= reset_st;
+        prev_local_link_state                   <= invalid_st;
     end
     else begin
         if (LTPI_link_ST == ST_INIT) begin
-            unexpected_frame_error              <= 1'b0;
+            unexpected_comma_error              <= 1'b0;
         end
         else begin
-            if(LTPI_link_ST > ST_COMMA_HUNTING) begin
-                if(unexpected_frame_error_r_edge) begin
-                    unexpected_frame_error      <= 1'b1;
-                end
-                //else if(remote_link_state >= remote_link_state_d) begin
-                else if ((remote_link_state - remote_link_state_d) == 1 || (remote_link_state - remote_link_state_d) == 0) begin
-                    unexpected_frame_error      <= 1'b0;
-                    remote_software_reset       <= 1'b0;
-                end
-                else begin
-                    if(remote_link_state_d == operational_st && remote_link_state == advertise_st ) begin
-                        remote_software_reset   <= 1'b1;
+            unexpected_comma_error <= 0;
+            if(check_error_ff) begin
+
+
+                case (LTPI_link_ST)
+                    ST_WAIT_LINK_DETECT_LOCKED : begin
+                        local_link_state        <= link_detect_st;
+                        prev_local_link_state   <= link_detect_st;
+                        if(remote_link_state != link_detect_st && remote_link_state != link_speed_st) begin
+                            unexpected_comma_error              <= 1'b1;
+                        end
                     end
-                    else begin
-                        unexpected_frame_error  <= 1'b1;
+                    ST_WAIT_LINK_SPEED_LOCKED: begin
+                        local_link_state <= link_speed_st;
+
+                        if(prev_local_link_state != link_detect_st) begin
+                            unexpected_comma_error              <= 1'b1;
+                        end
+                        else begin
+                            prev_local_link_state               <= link_speed_st;
+                            unexpected_comma_error              <= 1'b0;
+                        end
+                        if (prev_local_link_state == local_link_state) begin
+                            if(remote_link_state != link_speed_st && remote_link_state != advertise_st) begin
+                                unexpected_comma_error              <= 1'b1;
+                                prev_local_link_state               <= remote_link_state;
+                            end
+
+                            if ((remote_link_state - remote_link_state_d) == 1 || (remote_link_state - remote_link_state_d) == 0) begin
+                                unexpected_comma_error              <= 1'b0;
+                            end
+                        end
+
                     end
-                end
-            end
+                    ST_WAIT_LINK_ADVERTISE_LOCKED, ST_WAIT_IN_ADVERTISE: begin
+                        local_link_state                    <= advertise_st;
+                        remote_software_reset               <= 1'b0;
+                        if(prev_local_link_state != link_speed_st) begin
+                            if ( prev_local_link_state == operational_st ) begin
+                                prev_local_link_state               <= advertise_st;
+                                unexpected_comma_error              <= 1'b0;
+                            end
+                            else begin
+                                unexpected_comma_error              <= 1'b1;
+                            end
+                        end
+                        else begin
+                            prev_local_link_state               <= advertise_st;
+                            unexpected_comma_error              <= 1'b0;
+
+                        end
+
+                        if (prev_local_link_state == local_link_state) begin
+                            if(remote_link_state != advertise_st && remote_link_state != configuration_accept_st) begin
+                                unexpected_comma_error              <= 1'b1;
+                                prev_local_link_state               <= remote_link_state;
+                            end
+
+                            if ((remote_link_state - remote_link_state_d) == 1 || (remote_link_state - remote_link_state_d) == 0) begin
+                                unexpected_comma_error              <= 1'b0;
+                            end
+                        end
+
+                    end
+                    ST_CONFIGURATION_OR_ACCEPT: begin
+                        local_link_state                        <= configuration_accept_st;
+                        if(prev_local_link_state != advertise_st) begin
+                            unexpected_comma_error              <= 1'b1;
+                        end
+                        else begin
+                            prev_local_link_state               <= configuration_accept_st;
+                            unexpected_comma_error              <= 1'b0;
+                        end
+                        if (prev_local_link_state == local_link_state) begin
+                            if(remote_link_state != configuration_accept_st && remote_link_state != operational_st) begin
+                                unexpected_comma_error              <= 1'b1;
+                                prev_local_link_state               <= remote_link_state;
+                            end
+
+                            if ((remote_link_state - remote_link_state_d) == 1 || (remote_link_state - remote_link_state_d) == 0) begin
+                                unexpected_comma_error              <= 1'b0;
+                            end
+                        end
+                    end
+                    ST_OPERATIONAL, ST_OPERATIONAL_RESET: begin
+                        local_link_state <= operational_st;
+                        if(prev_local_link_state != configuration_accept_st) begin
+                            unexpected_comma_error              <= 1'b1;
+                        end
+                        else begin
+                            prev_local_link_state               <= operational_st;
+                            unexpected_comma_error              <= 1'b0;
+                        end
+                        if(remote_link_state != operational_st) begin
+                            unexpected_comma_error              <= 1'b1;
+                        end
+                        if (prev_local_link_state == local_link_state) begin
+                            if(remote_link_state_d == operational_st && remote_link_state == advertise_st ) begin
+                                remote_software_reset               <= 1'b1;
+                                prev_local_link_state               <= remote_link_state;
+                            end
+
+                            if ((remote_link_state - remote_link_state_d) == 1 || (remote_link_state - remote_link_state_d) == 0) begin
+                                unexpected_comma_error              <= 1'b0;
+                            end
+                        end
+                    end
+                endcase
+
+            end 
         end
     end
 end
-
 //delay remote_link_state
 always @ (posedge clk or posedge reset) begin
     if(reset) begin
@@ -222,6 +335,7 @@ always @ (posedge clk or posedge reset) begin
         remote_link_state_d         <= remote_link_state;
     end
 end
+
 
 //check recive correct comma and subtype
 //LTPI Link Status - set remote link state
@@ -281,7 +395,8 @@ always @ (posedge clk or posedge reset) begin
             unknown_subtype_error               <= 1'b0;
             rx_frm_offset_flag                  <= 1'b0;
         end
-        else if(rx_frm_offset == frame_length & rx_frm_offset_flag == 1'b0) begin
+        //else if(rx_frm_offset == frame_length & rx_frm_offset_flag == 1'b0) begin
+        else if(check_error) begin
             //to make sure it will be done once each rx_frm_offset == frame_length
             rx_frm_offset_flag <= 1'b1;
 
@@ -341,6 +456,13 @@ always @ (posedge clk or posedge reset) begin
                         unknown_subtype_error           <= 1'b1;
                     end
                 end
+                8'h0: begin
+                    if(frame_crc_err == 0) begin
+                        unknown_comma_error             <= 1'b0;
+                        unknown_subtype_error           <= 1'b0;
+                        remote_link_state               <= operational_st;
+                    end
+                end
                 default: begin
                     unknown_comma_error                 <= 1'b1;
 
@@ -348,11 +470,11 @@ always @ (posedge clk or posedge reset) begin
             endcase
         end
         else begin
-            if(rx_frm_offset != frame_length) begin
+            //if(rx_frm_offset != frame_length) begin
                 rx_frm_offset_flag      <= 1'b0;
                 unknown_comma_error     <= 1'b0;
                 unknown_subtype_error   <= 1'b0;
-            end
+            //end
         end
     end
 end
@@ -499,7 +621,10 @@ always @ (posedge clk or posedge reset or posedge remote_software_reset) begin
         remote_conf_or_acpt_frm <= '0;
     end
     else begin
-        if(LTPI_link_ST == ST_CONFIGURATION_OR_ACCEPT) begin
+        if(LTPI_link_ST == ST_INIT || remote_software_reset || local_software_reset) begin
+            remote_conf_or_acpt_frm <= '0;
+        end
+        else if(LTPI_link_ST == ST_CONFIGURATION_OR_ACCEPT) begin
 
             case(rx_frm_offset_ff)
                 4'd0: begin
@@ -575,48 +700,68 @@ always @ (posedge clk or posedge reset) begin
             if(ltpi_frame_rx.frame_subtype == K28_7_SUB_0) begin
                 data_channel_rx_valid               <= 0;
                 data_channel_rx                     <= 0;
-
-                operational_frm_rx.comma_symbol     <= ltpi_frame_rx.comma_symbol;
-                operational_frm_rx.frame_subtype    <= ltpi_frame_rx.frame_subtype;
-                operational_frm_rx.frame_counter    <= ltpi_frame_rx.data[0];
-                if(rx_frm_offset_ff == 3) begin
+                if(remote_link_state_d == configuration_accept_st && remote_link_state == operational_st ) begin
+                    operational_frm_rx.comma_symbol     <= ltpi_frame_rx.comma_symbol;
+                    operational_frm_rx.frame_subtype    <= ltpi_frame_rx.frame_subtype;
+                    operational_frm_rx.frame_counter    <= ltpi_frame_rx.data[0];
                     operational_frm_rx.ll_GPIO[0]       <= ltpi_frame_rx.data[1];
-                end
-                else if (rx_frm_offset_ff == 4) begin
                     operational_frm_rx.ll_GPIO[1]       <= ltpi_frame_rx.data[2];
-                end
-                else if (rx_frm_offset_ff == 5) begin
                     operational_frm_rx.nl_GPIO[0]       <= ltpi_frame_rx.data[3];
-                end
-                else if (rx_frm_offset_ff == 6) begin
                     operational_frm_rx.nl_GPIO[1]       <= ltpi_frame_rx.data[4];
-                end
-                else if (rx_frm_offset_ff == 7) begin
                     operational_frm_rx.uart_data        <= ltpi_frame_rx.data[5];
-                end
-                else if (rx_frm_offset_ff == 8) begin
                     operational_frm_rx.i2c_data[0]      <= ltpi_frame_rx.data[6];
-                end
-                else if (rx_frm_offset_ff == 9) begin
                     operational_frm_rx.i2c_data[1]      <= ltpi_frame_rx.data[7];
-                end
-                else if (rx_frm_offset_ff == 10) begin
                     operational_frm_rx.i2c_data[2]      <= ltpi_frame_rx.data[8];
-                end
-                else if (rx_frm_offset_ff == 11) begin
                     operational_frm_rx.OEM_data[0]      <= ltpi_frame_rx.data[9];
-                end
-                else if (rx_frm_offset_ff == 12) begin
                     operational_frm_rx.OEM_data[1]      <= ltpi_frame_rx.data[10];
-                end
-                else if (rx_frm_offset_ff == 13) begin
                     operational_frm_rx.OEM_data[2]      <= ltpi_frame_rx.data[11];
-                end
-                else if (rx_frm_offset_ff == 14) begin
                     operational_frm_rx.OEM_data[3]      <= ltpi_frame_rx.data[12];
                 end
+                else begin
+                    operational_frm_rx.comma_symbol     <= ltpi_frame_rx.comma_symbol;
+                    operational_frm_rx.frame_subtype    <= ltpi_frame_rx.frame_subtype;
+                    operational_frm_rx.frame_counter    <= ltpi_frame_rx.data[0];
+                    
+                    if(rx_frm_offset_ff == 3) begin
+                        operational_frm_rx.ll_GPIO[0]       <= ltpi_frame_rx.data[1];
+                    end
+                    else if (rx_frm_offset_ff == 4) begin
+                        operational_frm_rx.ll_GPIO[1]       <= ltpi_frame_rx.data[2];
+                    end
+                    else if (rx_frm_offset_ff == 5) begin
+                        operational_frm_rx.nl_GPIO[0]       <= ltpi_frame_rx.data[3];
+                    end
+                    else if (rx_frm_offset_ff == 6) begin
+                        operational_frm_rx.nl_GPIO[1]       <= ltpi_frame_rx.data[4];
+                    end
+                    else if (rx_frm_offset_ff == 7) begin
+                        operational_frm_rx.uart_data        <= ltpi_frame_rx.data[5];
+                    end
+                    else if (rx_frm_offset_ff == 8) begin
+                        operational_frm_rx.i2c_data[0]      <= ltpi_frame_rx.data[6];
+                    end
+                    else if (rx_frm_offset_ff == 9) begin
+                        operational_frm_rx.i2c_data[1]      <= ltpi_frame_rx.data[7];
+                    end
+                    else if (rx_frm_offset_ff == 10) begin
+                        operational_frm_rx.i2c_data[2]      <= ltpi_frame_rx.data[8];
+                    end
+                    else if (rx_frm_offset_ff == 11) begin
+                        operational_frm_rx.OEM_data[0]      <= ltpi_frame_rx.data[9];
+                    end
+                    else if (rx_frm_offset_ff == 12) begin
+                        operational_frm_rx.OEM_data[1]      <= ltpi_frame_rx.data[10];
+                    end
+                    else if (rx_frm_offset_ff == 13) begin
+                        operational_frm_rx.OEM_data[2]      <= ltpi_frame_rx.data[11];
+                    end
+                    else if (rx_frm_offset_ff == 14) begin
+                        operational_frm_rx.OEM_data[3]      <= ltpi_frame_rx.data[12];
+                    end
+                end
             end
-            else if(ltpi_frame_rx.frame_subtype == K28_7_SUB_1) begin
+            else if(ltpi_frame_rx.frame_subtype == K28_7_SUB_1 ) begin
+
                 operational_frm_rx.comma_symbol     <= ltpi_frame_rx.comma_symbol;
                 operational_frm_rx.frame_subtype    <= ltpi_frame_rx.frame_subtype;
                 if(rx_frm_offset_ff == 2) begin
@@ -649,46 +794,95 @@ always @ (posedge clk or posedge reset) begin
     end
 end
 
-logic [6:0] frm_counter_prev;
-logic [6:0] frm_cnt_subtract;
+logic [4:0][6:0] frm_counter_prev;
+logic [4:0][6:0] frm_cnt_subtract;
+logic [4:0]      operational_frm_lost_error_hpms;
 
 always @ (posedge clk or posedge reset) begin
     if(reset) begin
         operational_frm_lost_error              <= 0;
-        frm_counter_prev                        <= 0;
-        frm_cnt_subtract                        <= 0;
     end
     else begin
-        if(LTPI_link_ST == ST_OPERATIONAL & operational_frm_rx.frame_subtype == K28_7_SUB_0) begin
-            if(rx_frm_offset_ff == 0) begin
-                frm_counter_prev                <= operational_frm_rx.frame_counter;
-            end
-            else if (rx_frm_offset_ff == frame_length - 1 ) begin
-                if(frm_counter_prev == NL_GPIO_MAX_FRM_CNT - 1) begin
-                    frm_cnt_subtract            <= operational_frm_rx.frame_counter;
-                end
-                else begin
-                    frm_cnt_subtract            <= operational_frm_rx.frame_counter - frm_counter_prev ;
-                end
-            end
-            else if (rx_frm_offset_ff == frame_length) begin
-
-                if(frm_cnt_subtract >= MAX_OPERATIONAL_LOST_FRM) begin
-                    operational_frm_lost_error  <= 1;
-                end
-                else begin
-                    operational_frm_lost_error  <= 0;
-                end
-            end
-            
+        if(operational_frm_lost_error_hpms!=0) begin
+            operational_frm_lost_error <= 1;
         end
-        else if (LTPI_link_ST != ST_OPERATIONAL) begin
-            operational_frm_lost_error          <= 0;
-            frm_counter_prev                    <= 0;
-            frm_cnt_subtract                    <= 0;
+        else begin
+            operational_frm_lost_error <= 0;
         end
     end
 end
+
+logic [7:0] sub_array;
+assign sub_array = {K28_7_SUB_0};
+logic [4:0] state;
+
+genvar i;
+generate
+    for ( i = 0 ; i < 1; i++ ) begin: lost_error_anls
+        always @ (posedge clk) begin
+            if(reset) begin
+                operational_frm_lost_error_hpms[i]         <= 0;
+                frm_counter_prev[i]                        <= 0;
+                frm_cnt_subtract[i]                        <= 0;
+                state[i] <= 0;
+            end
+            else begin
+                case (state[i]) 
+                0: begin
+                    if(LTPI_link_ST == ST_OPERATIONAL & operational_frm_rx.frame_subtype == sub_array[i]) begin
+                        if(rx_frm_offset_ff == 1) begin
+                            frm_counter_prev[i]                <= operational_frm_rx.frame_counter[6:0];
+                        end
+                        else if (rx_frm_offset_ff == 0) begin
+                            operational_frm_lost_error_hpms[i]  <= 0;
+                            state[i]                            <= 1;
+                        end
+                    end
+                    else if (LTPI_link_ST != ST_OPERATIONAL) begin
+                        operational_frm_lost_error_hpms[i]     <= 0;
+                        frm_counter_prev[i]                    <= 0;
+                        frm_cnt_subtract[i]                    <= 0;
+                    end
+                end
+                1: begin
+                    if(LTPI_link_ST == ST_OPERATIONAL & operational_frm_rx.frame_subtype == sub_array[i] &remote_link_state != advertise_st) begin
+                        if(rx_frm_offset_ff == 0) begin
+                            frm_counter_prev[i]                <= operational_frm_rx.frame_counter[6:0];
+                        end
+                        else if (rx_frm_offset_ff == frame_length ) begin
+                            if((frm_counter_prev[i] == NL_GPIO_MAX_FRM_CNT - 1'b1) & operational_frm_rx.frame_counter[6:0] != frm_counter_prev[i]) begin
+                                frm_cnt_subtract[i]            <= operational_frm_rx.frame_counter[6:0];
+                            end
+                            else if (operational_frm_rx.frame_counter == 0) begin
+                                frm_cnt_subtract[i] <= operational_frm_rx.frame_counter[6:0];
+                            end
+                            else begin
+                                frm_cnt_subtract[i]            <= operational_frm_rx.frame_counter[6:0] - frm_counter_prev[i] ;
+                            end
+                        end
+                        else if (rx_frm_offset_ff == 0) begin
+                            if(frm_cnt_subtract[i] >= MAX_OPERATIONAL_LOST_FRM  ) begin
+                                operational_frm_lost_error_hpms[i]  <= 1;
+                            end
+                            else begin
+                                operational_frm_lost_error_hpms[i]  <= 0;
+                            end
+                        end
+                        
+                    end
+                    else if (LTPI_link_ST != ST_OPERATIONAL) begin
+                        operational_frm_lost_error_hpms[i]     <= 0;
+                        frm_counter_prev[i]                    <= 0;
+                        frm_cnt_subtract[i]                    <= 0;
+                        state[i]                               <= 0;
+                    end
+                end
+            endcase
+        end
+        end
+    end
+endgenerate
+
 
 //COUNTERS
 //crc errorr count
@@ -699,6 +893,8 @@ always @ (posedge clk or posedge reset) begin
         crc_error_cnt                           <= '0;
         unknown_comma_err_cnt                   <= '0;
         unknown_subtype_err_cnt                 <= '0;
+        unexpected_frame_error_err_cnt          <= '0;
+        link_speed_timeout_err_cnt              <= '0;
     end
     else begin
 
@@ -715,9 +911,39 @@ always @ (posedge clk or posedge reset) begin
             if(rx_frm_offset == '0 && unknown_subtype_error) begin
                 unknown_subtype_err_cnt         <= unknown_subtype_err_cnt + 32'd1; 
             end
+            if (LTPI_link_ST == ST_INIT || remote_software_reset == 1 || local_software_reset == 1) begin
+                unexpected_frame_error_err_cnt  <= '0;
+            end
+            else if(LTPI_link_ST != ST_LINK_SPEED_CHANGE && rx_frm_offset == '0 && (unknown_comma_error || unexpected_comma_error || unknown_subtype_error )) begin
+                unexpected_frame_error_err_cnt           <= unexpected_frame_error_err_cnt + 32'd1; 
+            
+            end
+
+            if(LTPI_CSR_In.clear_reg) begin
+                if(LTPI_CSR_In.LTPI_counter.link_speed_timeout_err_cnt == '0) begin
+                    link_speed_timeout_err_cnt      <= '0;
+                end
+            end
+
+            if(link_speed_timeout_detect) begin
+                link_speed_timeout_err_cnt      <= link_speed_timeout_err_cnt + 31'd1;
+            end 
     end
 end
 
+always @ (posedge clk) begin
+    if(reset) begin
+        unexpected_frame_error      <= '0;
+    end
+    else begin
+            if ( unexpected_frame_error_err_cnt >= MAX_UNEXPECTED_FRAME_ERROR ) begin
+                unexpected_frame_error      <= 1;
+            end
+            else begin
+                unexpected_frame_error      <= '0;
+            end
+    end
+end
 //*********************************ONLY for Target
 //Check if we get configuration frame 
 always @ (posedge clk or posedge reset) begin
@@ -809,7 +1035,7 @@ always @ (posedge clk or posedge reset) begin
         accept_phase_done            <= 1'b0;
     end
     else begin 
-        if ( LTPI_link_ST == ST_INIT) begin
+        if ( LTPI_link_ST == ST_INIT || remote_software_reset == 1 || local_software_reset == 1) begin
             accept_phase_done            <= 1'b0;
         end 
         else if(remote_conf_or_acpt_frm.comma_symbol == K28_7 && remote_conf_or_acpt_frm.frame_subtype == K28_7_SUB_0) begin
@@ -872,6 +1098,23 @@ always @ (posedge clk or posedge reset) begin
             end
             else begin
                 NL_gpio_frm_nb <= (remote_conf_or_acpt_frm.LTPI_Capabilites.NL_GPIO_nb >> 4) ;
+            end
+        end
+    end
+end
+
+// link_speed_timeout_detect generation
+always @ (posedge clk) begin
+    if(reset) begin
+        link_speed_timeout_detect               <= 1'b0;
+    end
+    else begin
+        if(LTPI_link_ST == ST_INIT || LTPI_link_ST == ST_LINK_LOST_ERR) begin
+            link_speed_timeout_detect           <= 1'b0;
+        end
+        else begin 
+            if(link_speed_frm_rcv_cnt >= LINK_SPEED_TIMEOUT) begin
+                link_speed_timeout_detect   <= 1'b1;
             end
         end
     end
