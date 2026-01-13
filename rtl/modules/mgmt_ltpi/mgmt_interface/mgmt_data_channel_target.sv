@@ -80,7 +80,12 @@ always_ff @ (posedge clk or posedge reset or posedge data_channel_rst) begin
                 resp_ack <=  0;
                 if(tx_frm_offset != frame_length) begin
                     resp_fsm            <= REQ_DATA_CHANNEL_FSM_DATA_VALID_DLY;
-                    operational_frm_sent_latch <= operational_frm_sent;
+                    if(operational_frm_sent == 32'hFFFF_FFFD ) begin // CORNER case when counter wraps around
+                        operational_frm_sent_latch <= operational_frm_sent + 1;
+                    end
+                    else  begin
+                        operational_frm_sent_latch <= operational_frm_sent;
+                    end
                 end
             end
             REQ_DATA_CHANNEL_FSM_DATA_VALID_DLY: begin

@@ -15,7 +15,7 @@ The list of unit tests implemented for LTPI IP is located [docs/LTPI_test_plan.x
 # License:
 Unless otherwise identified in the header file, all source code in ths repository is under MIT license and all documentation is under Creative Commons Attribution 4.0 International License available at http://creativecommons.org/licenses/by/4.0/
 
-# Versions
+# LTPI Ip Versions
 
 | Version       | Date                  | Description |
 | -----------   | -----------           | ----------- |
@@ -24,3 +24,4 @@ Unless otherwise identified in the header file, all source code in ths repositor
 | 1.09          | 16 May, 2025          |- Exposed to the top LTPI modules data channel and CSR access signals <br>  - Increased data channel timeout to 10ms <br>  - Synchronize lvds phy reset signals   <br>  - Changed SMBUSs timing parameters <br>  - Added gpio ltpi top module and ltpi top module parameterized unit test |
 | 1.10          | 19 May, 2025          |- Added requirement for Data Echo and Data Received Echo to be sent at least 3 times and received at least once correctly <br> Implementation compliant with 1.1 LTPI Specification. |
 | 1.20          | 12 December, 2025          | Implementation compliant with 1.2 LTPI Specification. <br> LTPI IP 1v2 version updates:<br>1. Extend CRC and Other Errors Handling with details for all LTPI error types and handling:<br>  - Added Frame lost error - Frame CRC verification failed or Unexpected Frame (modules: mgmt_phy_controller.sv and mgmt_phy_target.sv)<br> 2. Changed the LTPI Version name to LTPI Revision to match intended use:<br> - Regenerate CSR packages for all LTPI CSR configurations. (rtl/modules/CSR/RDL directory)<br> - Updated CSR generation packages script to use peakRDL version 1.4.0 (csr_gen.py)<br> 3. Modified Timeout condition for Link Speed (modules: mgmt_phy_controller.sv and mgmt_phy_target.sv)<br> 4. Extended the Link Speed condition for SCM with at least 1 Link Speed received from HPM (modules: mgmt_phy_controller.sv and mgmt_phy_target.sv, mgmt_ltpi_frm_rx.sv, mgmt_ltpi_frm_tx.sv)<br> 5. Updated Link Lost conditions in main controller and target FSM (modules: mgmt_phy_controller.sv and mgmt_phy_target.sv)<br> |
+| 1.20          | 13 January, 2026          |  Fix corner case bug in data channel managment for target and controller device|
